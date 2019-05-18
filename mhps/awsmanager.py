@@ -25,6 +25,7 @@ def create_bucket(bucket_name):
 def upload(foldername):
     print('I am here')
     create_bucket(foldername)
+    print('I have reached back to upload')
     # get an access token, local (from) directory, and S3 (to) directory
     # from the command-line
     local_directory = os.path.join('results', foldername)
