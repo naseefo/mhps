@@ -8,7 +8,7 @@ import io
 import pstats
 import pandas as pd
 from mhps.postprocessor import ResultFixedXY, ModelInfo
-from math import sin, cos, tan, sec, atan, pow, exp, sqrt, pi
+from math import sin, cos, tan, atan, pow, exp, sqrt, pi
 import scipy.integrate as integrate
 
 from data.defaults.param_manager import *
@@ -396,11 +396,10 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
             dvy[0:nst, 0] = (gamma/beta/dt)*ddy[0:nst, 0] - gamma/beta*vy1[0:nst, 0] + dt*(1.0 - gamma/2.0/beta)*ay1[0:nst, 0]
             vy2[0:nst, 0] = vy1[0:nst, 0] + dvy[0:nst, 0]
             
-
             drb = sqrt(pow(dy2[ndof-1, 0], 2.0) + pow(dx2[ndof-1, 0], 2.0))
             phi_drb = atan(dy2[ndof-1, 0]/dx2[ndof-1, 0])
             theta_d0 = np.interp(drb, iso.xbtab, iso.ttab) 
-            fs1x, fs1y = fs1fixed(iso, tm, mr, theta_d0, phi_drb) ##? # Calculate resultant of restoring force (Maybe this part is not required as it would be calcaulted later)  ##@
+            fs1x, fs1y = fs1fixed(iso, tm, mr, theta_d0, phi_drb)
             arg = sqrt(pow(xg[i], 2.0) + pow(yg[i], 2.0))
             phi_arg = atan(yg[i]/xg[i])
             fbx, fby = fbfixed(mr, arg, phi_arg)
@@ -410,9 +409,7 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
             fs2y = (-1.0*cdy[nst, nst-1])*vy2[nst-1,0] + (-1.0*sky[nst, nst-1])*dy2[nst-1,0] - cdy[ndof-1, ndof-1]*vy2[ndof-1,0] - sky[ndof-1, ndof-1]*dy2[ndof-1,0] + py2[ndof-1] - fs1y - fby
 
             mu = mu_val(iso, drb)
-
             qx, qy = fs2fixed(mu, M, mr)
-           
             rolling_state, fs2x, fs2y = stat1(fs2x, fs2y, qx, qy)
 
             if rolling_state == False:
@@ -421,10 +418,8 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
             else:
                 epx = px2 - np.dot(cdx, vx2) - np.dot(skx, dx2)
                 epy = py2 - np.dot(cdy, vy2) - np.dot(sky, dy2)
-
-                epx[ndof-1,0] = epx[ndof-1,0] - fs2x - fs1x - fbx    # 0.5*Mr*(ab/2+xg)  The last component of fb maybe taken
-                epy[ndof-1,0] = epy[ndof-1,0] - fs2y - fs1y - fby    # 0.5*Mr*(ab/2+xg)
-
+                epx[ndof-1,0] = epx[ndof-1,0] - fs2x - fs1x - fbx    
+                epy[ndof-1,0] = epy[ndof-1,0] - fs2y - fs1y - fby    
                 ax2 = np.dot(smx_inv, epx)
                 ay2 = np.dot(smy_inv, epy)
             
