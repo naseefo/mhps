@@ -22,6 +22,7 @@ import numpy as np
 import io
 import csv
 from mhps.awsmanager import upload
+s
 
 def profile(fnc):
     
@@ -179,8 +180,12 @@ def fixed(const_param, var_param, earthquakes, knor, results_type, lxy, folder, 
                 peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
                 # peakmat.to_csv('results\\' + folder + "\\Peak.csv", mode='w', sep=',', index=False)
 
-    print(folder)
-    upload(folder)
+    
+    try:
+        upload(folder)
+        shutil.rmtree(os.path.join('results',folder))
+    except:
+        pass
 
     return None
 

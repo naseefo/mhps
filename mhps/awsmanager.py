@@ -30,8 +30,9 @@ def create_bucket(bucket_name):
     s3 = boto3.client('s3', aws_access_key_id='AKIA3N2CFDTPQRPWUE3W', aws_secret_access_key= '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', region_name='us-east-2b')
     try:
         s3.create_bucket(Bucket=bucket_name)
+        print('Bucket creation successful!')
     except ClientError as e:
-        print()
+        print('Bucket creation failed!')
         logging.error(e)
         exit()
 
@@ -50,21 +51,17 @@ def upload(foldername):
     # enumerate local files recursively
     for root, dirs, files in os.walk(local_directory):
 
-        print(root)
-        print(dirs)
-        print(files)
-
         for filename in files:
 
             # construct the full local path
             local_path = os.path.join(root, filename)
-            print(local_path)
+          
 
             # construct the full Dropbox path
             relative_path = os.path.relpath(local_path, local_directory)
-            print(relative_path)
+         
             s3_path = os.path.join(destination, relative_path)
-            print(s3_path)
+         
 
             # relative_path = os.path.relpath(os.path.join(root, filename))
 
@@ -81,3 +78,4 @@ def upload(foldername):
 
                 print("Uploading %s..." % s3_path)
                 client.upload_file(local_path, bucket, s3_path)
+                print('Upload successful!')

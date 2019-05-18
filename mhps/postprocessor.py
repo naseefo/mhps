@@ -129,8 +129,8 @@ def result_viewer(result, model, results_type, analysis_folder):
         timeresponses = pd.DataFrame(timeresponses)
         timeresponses.columns = timeresponsehead
         superstructure = pd.DataFrame(result.skx)
-        timeresponses.to_csv(analysis_folder + "\\TimeDomainResponses.csv", mode='w', sep=',', index=False)
-        superstructure.to_csv(analysis_folder + "\\SimulationInfo.csv", mode='w', index=False)
+        timeresponses.to_csv(os.path.join(analysis_folder, "TimeDomainResponses.csv"), mode='w', sep=',', index=False)
+        superstructure.to_csv(os.path.join(analysis_folder, "SimulationInfo.csv"), mode='w', index=False)
     return peakvalues, peakhead
 
 def pattern_reader(rpattern, nst):
@@ -189,19 +189,19 @@ def pattern_reader(rpattern, nst):
 
 def createfolder(folder):
     try:      
-        if os.path.exists('results\\' + folder):
+        if os.path.exists(os.path.join('results', folder)):
             for i in range(1,1000):
-                if not os.path.exists('results\\' + folder + '-' + str(i)):
+                if not os.path.exists(os.path.join('results', folder + '-' + str(i))):
                     folder = folder + '-' + str(i)
                     folder_input = input('Folder already exists! Enter new folder name ['+ folder + '] :')
                     if folder_input == "":
-                        os.makedirs('results\\' + folder)
+                        os.makedirs(os.path.join('results', folder))
                     else:
                         folder = folder_input
-                        os.makedirs('results\\' + folder)
+                        os.makedirs(os.path.join('results', folder))
                     break
         else:
-            os.makedirs('results\\' + folder)
+            os.makedirs(os.path.join('results', folder))
     except OSError:
         print('Error creating directory')
     
