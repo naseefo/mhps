@@ -33,6 +33,7 @@ def create_bucket(bucket_name):
     except ClientError as e:
         print()
         logging.error(e)
+        exit()
 
 def upload(foldername):
 
