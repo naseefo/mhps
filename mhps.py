@@ -22,7 +22,7 @@ import numpy as np
 import io
 import csv
 from mhps.awsmanager import upload
-s
+import shutil
 
 def profile(fnc):
     
