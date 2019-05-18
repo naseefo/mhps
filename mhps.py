@@ -184,6 +184,7 @@ def fixed(const_param, var_param, earthquakes, knor, results_type, lxy, folder, 
 
     
     if access_id != '':
+        print(access_id)
         upload(folder, access_id, access_secret)
         shutil.rmtree(os.path.join('results',folder))
     else:
