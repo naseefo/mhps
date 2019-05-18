@@ -21,6 +21,7 @@ from pathlib import Path
 import numpy as np
 import io
 import csv
+from mhps.awsmanager import upload
 
 def profile(fnc):
     
@@ -55,7 +56,7 @@ def cli1():
 @click.option('--var_param', '-vp',type=str, default= 'SS_VP.csv', help= 'File name containing variable parameters for the structure')
 @click.option('--earthquakes','-eq', type=(str), default= "Excitations.csv", help= 'Earthquakes')
 @click.option('--knor', '-knor', type=int, default=1, help="Normalizing the superstructure for given time period. 1 for normalized and 0 for un-normalized.")
-@click.option('--results_type', '-r', type=str, default="aa1", help="Choice to select output results")
+@click.option('--results_type', '-r', type=str, default="aa1, paa1", help="Choice to select output results")
 @click.option('--lxy', '-lxy', type=int, default=0)
 @click.option('--folder', '-f', type=str, default="Result", help="Folder name to store result")
 @click.option('--outputunits', type=list, default=['m/s2', 'cm/s', 'cm', 'kn', 'j'])
@@ -112,11 +113,13 @@ def fixed(const_param, var_param, earthquakes, knor, results_type, lxy, folder, 
 
     # RESULT FOLDER SETUP
     folder = createfolder(folder)
-    os.makedirs('results\\' + folder + '\\Time History Response')
+    os.makedirs(os.path.join('results', folder, 'Time History Response'))
+    # os.makedirs('results\\' + folder + '\\Time History Response')
     simulationdesc = input('Enter simulation description [None] : ')
     if simulationdesc:
-        Path('results\\' + folder + "\\SimulationInfo.csv").touch()
-        with open('results\\' + folder + "\\SimulationInfo.csv", 'w') as f:
+        Path(os.path.join('results', folde, "SimulationInfo.csv")).touch()
+        # Path('results\\' + folder + "\\SimulationInfo.csv").touch()
+        with open(os.path.join('results', folde, "SimulationInfo.csv"), 'w') as f:
             for line in simulationdesc:
                 f.write(line)
         f.close()
@@ -147,7 +150,8 @@ def fixed(const_param, var_param, earthquakes, knor, results_type, lxy, folder, 
                 p_nst, p_tx1, p_rtytx, p_zeta = nst, tx1, rtytx, zeta
                 
             result, model = fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx[0:nst,0:nst], skx[0:nst,0:nst], cdx[0:nst,0:nst], smy[0:nst,0:nst], sky[0:nst,0:nst], cdy[0:nst,0:nst])
-            analysis_folder = 'results\\' + folder + '\\Time History Response\\' + 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk)
+            analysis_folder = os.path.join('results', folder,'Time History Response','ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))
+            # analysis_folder = 'results\\' + folder + '\\Time History Response\\' + 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk)
             os.makedirs(analysis_folder)
             peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, analysis_folder)
          
@@ -172,9 +176,11 @@ def fixed(const_param, var_param, earthquakes, knor, results_type, lxy, folder, 
                 # print(peakmat)
                 # print(peakvaluesparamhead)
                 peakmat.columns = peakmathead
-                peakmat.to_csv('results\\' + folder + "\\Peak.csv", mode='w', sep=',', index=False)
+                peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
+                # peakmat.to_csv('results\\' + folder + "\\Peak.csv", mode='w', sep=',', index=False)
 
-    
+    upload(folder)
+
     return None
 
 

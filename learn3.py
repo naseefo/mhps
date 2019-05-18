@@ -21,10 +21,10 @@ import boto3
 # get an access token, local (from) directory, and S3 (to) directory
 # from the command-line
 local_directory = 'results'
-bucket = 'phdresults'
-destination = 'System-a-001'
+bucket = 'system-a-001'
+destination=''
 
-client = boto3.client('s3', aws_access_key_id='AKIA3N2CFDTP6OZHB2NF', aws_secret_access_key= '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')
+client = boto3.client('s3', aws_access_key_id='AKIA3N2CFDTPQRPWUE3W', aws_secret_access_key= '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')
 
 # enumerate local files recursively
 for root, dirs, files in os.walk(local_directory):
@@ -44,7 +44,7 @@ for root, dirs, files in os.walk(local_directory):
         print(relative_path)
         s3_path = os.path.join(destination, relative_path)
         print(s3_path)
-        
+
         # relative_path = os.path.relpath(os.path.join(root, filename))
 
         print('Searching "%s" in "%s"' % (s3_path, bucket))
@@ -57,5 +57,6 @@ for root, dirs, files in os.walk(local_directory):
             # except:
                 # print "Unable to delete %s..." % s3_path
         except:
+
             print("Uploading %s..." % s3_path)
             client.upload_file(local_path, bucket, s3_path)
