@@ -7,13 +7,13 @@ from botocore.exceptions import ClientError
 
 
 
-def create_bucket(bucket_name):
+def create_bucket(bucket_name, access_id, access_secret):
     """ Create an Amazon S3 bucket
     :param bucket_name: Unique string name
     :return: True if bucket is created, else False
     """
     print('I am in create bucket')
-    s3 = boto3.client('s3', aws_access_key_id='AKIA3N2CFDTPQRPWUE3W', aws_secret_access_key= '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', region_name='us-east-2b')
+    s3 = boto3.client('s3', aws_access_key_id=access_id, aws_secret_access_key= access_secret, region_name='us-east-2b')
     try:
         s3.create_bucket(Bucket=bucket_name)
         print('Bucket creation successful!')
@@ -22,9 +22,9 @@ def create_bucket(bucket_name):
         logging.error(e)
         exit()
 
-def upload(foldername):
+def upload(foldername, access_id, access_secret):
     print('I am here')
-    create_bucket(foldername)
+    create_bucket(foldername, access_id, access_secret)
     print('I have reached back to upload')
     # get an access token, local (from) directory, and S3 (to) directory
     # from the command-line
@@ -32,7 +32,7 @@ def upload(foldername):
     bucket = foldername
     destination=''
 
-    client = boto3.client('s3', aws_access_key_id='AKIA3N2CFDTPQRPWUE3W', aws_secret_access_key= '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', region_name='us-east-2b')
+    client = boto3.client('s3', aws_access_key_id=access_id, aws_secret_access_key= access_secret, region_name='us-east-2b')
 
     # enumerate local files recursively
     for root, dirs, files in os.walk(local_directory):

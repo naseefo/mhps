@@ -61,7 +61,9 @@ def cli1():
 @click.option('--lxy', '-lxy', type=int, default=0)
 @click.option('--folder', '-f', type=str, default="result", help="Folder name to store result")
 @click.option('--outputunits', type=list, default=['m/s2', 'cm/s', 'cm', 'kn', 'j'])
-def fixed(const_param, var_param, earthquakes, knor, results_type, lxy, folder, outputunits):
+@click.option('--access_id', '-i', type=str, default='')
+@click.option('--access_secret', '-s', type=str, default='')
+def fixed(const_param, var_param, earthquakes, knor, results_type, lxy, folder, outputunits, access_id, access_secret):
 
 
     """
@@ -181,9 +183,16 @@ def fixed(const_param, var_param, earthquakes, knor, results_type, lxy, folder, 
                 # peakmat.to_csv('results\\' + folder + "\\Peak.csv", mode='w', sep=',', index=False)
 
     
-    
-    upload(folder)
-    shutil.rmtree(os.path.join('results',folder))
+    if access_id != '':
+        upload(folder, access_id, access_secret)
+        shutil.rmtree(os.path.join('results',folder))
+    else:
+        print('Result stored locally')
+        chk = input('Do you wish to upload? (y/n) :')
+        if chk == 'y':
+            access_id = input('Enter Access ID: ')
+            access_secret = input('Enter Access Secret Key: ')
+            upload(folder, access_id, access_secret)
     
 
     return None
