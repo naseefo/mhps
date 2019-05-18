@@ -181,11 +181,10 @@ def fixed(const_param, var_param, earthquakes, knor, results_type, lxy, folder, 
                 # peakmat.to_csv('results\\' + folder + "\\Peak.csv", mode='w', sep=',', index=False)
 
     
-    try:
-        upload(folder)
-        shutil.rmtree(os.path.join('results',folder))
-    except:
-        pass
+    
+    upload(folder)
+    shutil.rmtree(os.path.join('results',folder))
+    
 
     return None
 

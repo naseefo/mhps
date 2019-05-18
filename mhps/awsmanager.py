@@ -37,8 +37,6 @@ def create_bucket(bucket_name):
         exit()
 
 def upload(foldername):
-    print('I am in upload')
-    print('This is the bucke tname: %s' %(foldername))
     create_bucket(foldername)
     # get an access token, local (from) directory, and S3 (to) directory
     # from the command-line
