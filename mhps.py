@@ -58,7 +58,7 @@ def cli1():
 @click.option('--knor', '-knor', type=int, default=1, help="Normalizing the superstructure for given time period. 1 for normalized and 0 for un-normalized.")
 @click.option('--results_type', '-r', type=str, default="aa1, paa1", help="Choice to select output results")
 @click.option('--lxy', '-lxy', type=int, default=0)
-@click.option('--folder', '-f', type=str, default="Result", help="Folder name to store result")
+@click.option('--folder', '-f', type=str, default="result", help="Folder name to store result")
 @click.option('--outputunits', type=list, default=['m/s2', 'cm/s', 'cm', 'kn', 'j'])
 def fixed(const_param, var_param, earthquakes, knor, results_type, lxy, folder, outputunits):
 
