@@ -1,0 +1,30 @@
+{
+    "elc": {
+        "Type": "NF",
+        "Earthquake Name": "Elcentro",
+        "Year": 1940,
+        "Component 1 File Name": "Cent_acc_00.txt",
+        "Component 1 Max": null,
+        "Component 1 Min": null,
+        "Component 2 File Name": "Cent_acc_90.txt",
+        "Component 2 Max": null,
+        "Component 2 Min": null,
+        "Time Step": 0.02,
+        "Data Points": null,
+        "Total Duration": null
+    },
+    "sylm": {
+        "Type": "NC",
+        "Earthquake Name": "Sylmar",
+        "Year": null,
+        "Component 1 File Name": "Sylmar90.txt",
+        "Component 1 Max": null,
+        "Component 1 Min": null,
+        "Component 2 File Name": "Sylmar360.txt",
+        "Component 2 Max": null,
+        "Component 2 Min": null,
+        "Time Step": 0.02,
+        "Data Points": null,
+        "Total Duration": null
+    }
+}

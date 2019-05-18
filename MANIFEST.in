@@ -1,0 +1,4 @@
+include data/eq_info.csv
+include data/earthquakes/far_fault/*.*
+include data/earthquakes/near_fault/*.*
+include data/earthquakes/not_classified/*.*

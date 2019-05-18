@@ -1,0 +1,24 @@
+# Format: ax, ay, dt, unit, scale, dur, ndiv
+# e.g. Cent_acc_00.txt, Cent_acc_00.txt, 0.02, cm/s2, 1.0, 20, 120;
+
+# Format: a, dt, unit, dur, dirn, ndiv;
+# e.g. Cent_acc_00.csv, 0.02, g, 1.0, 10, y, 120;
+
+# Format: AXI, TX1, PHX1, AY1, TY1, PHY1, DT, UNIT, DUR, NDIV
+# e.g. 3.0, 0.1, 1.5, 2.0, 0.2, 1.0, 0.02, cm/s2, 20, 120;
+
+# Format: A, T, PH, DT, UNIT, DUR, DIRN, NDIV
+# e.g. 3.0, 0.1, 1.5, 0.02, cm/s2, 20, x, 120;
+
+# Format: A, T0:DTT:TN, PH, DT, UNIT, DUR, DIR, NDIV
+# e.g. 3.0, 0.1:0.01:5.0, 1.5, 0.02, cm/s2, 20, x, 120;
+
+# EARTHQUAKE EXCITATIONS
+# Cent_acc_00.txt, Cent_acc_90.txt, 0.02, cm/s2, 1.0, 10.0, 1;
+# Cent_acc_00.txt, Cent_acc_90.txt, 0.02, cm/s2, 1.0, 20, 100;
+# Cent_acc_00.txt, 0.02, g, 1.0, 20, x, 120;
+Imperial5_Elcentro.txt, 0.02, cm/s2, 1.0, 39.40, x, 10;
+#
+# HARMONIC EXCITATIONS
+# 3.0, 1.0:1.0:5.0, 0.0, 0.01, m/s2, 5.0, x, 1;
+# 3.0, 0.1, 1.5, 0.02, cm/s2, 10.0, x, 120;

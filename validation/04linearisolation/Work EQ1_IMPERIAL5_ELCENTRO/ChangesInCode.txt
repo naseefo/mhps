@@ -1,0 +1,26 @@
+Parameters for validation
+-------------------------
+
+IJK	RMBM	BEFF	NST	T1	F0	TB	G1
+1	1.0	0.1	5	0.5	100	2.5	0.1
+2	1.0	0.1	5	0.5	100	3.0	0.1
+3	1.0	0.1	5	0.5	100	2.5	0.1
+4	1.0	0.1	5	0.5	100	3.0	0.1
+
+
+
+CKAB=TM*WB*WB
+ALP=FY/(G1*CKAB)
+
+for linear isolation system, ALP = 1.0
+Therefore, 
+ 
+
+FY = G1*CKAB
+=> FY = G1*TM*(2pi/Tb)^2
+      = 0.1*
+
+
+F0 = G1*CKAB/(TM*9.81) 
+
+Comment: Doesn't matter what value F0 is given in the input.

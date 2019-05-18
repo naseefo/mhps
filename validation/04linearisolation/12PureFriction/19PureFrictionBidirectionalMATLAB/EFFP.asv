@@ -1,0 +1,9 @@
+function [EFP] = EFFP(V1,A1,SM,CD,PINC,T,N)
+
+EFP = PINC(1:N,1);
+X1 = SM*((6/T)*V1 + 3*A1);
+X2 = CD*(3*V1 + 0.5*T*A1);
+EFP = EFP + X1 + X2;
+
+end
+
