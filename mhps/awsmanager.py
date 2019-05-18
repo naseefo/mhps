@@ -27,7 +27,7 @@ def create_bucket(bucket_name):
     :return: True if bucket is created, else False
     """
 
-    s3 = boto3.client('s3', aws_access_key_id='AKIA3N2CFDTPQRPWUE3W', aws_secret_access_key= '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')
+    s3 = boto3.client('s3', aws_access_key_id='AKIA3N2CFDTPQRPWUE3W', aws_secret_access_key= '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', region_name='us-east-2b')
     try:
         s3.create_bucket(Bucket=bucket_name)
     except ClientError as e:
@@ -36,7 +36,8 @@ def create_bucket(bucket_name):
         exit()
 
 def upload(foldername):
-
+    print('I am in upload')
+    print('This is the bucke tname: %s' %(foldername))
     create_bucket(foldername)
     # get an access token, local (from) directory, and S3 (to) directory
     # from the command-line
