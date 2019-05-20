@@ -61,9 +61,7 @@ def cli1():
 @click.option('--lxy', '-lxy', type=int, default=0)
 @click.option('--folder', '-f', type=str, default="result", help="Folder name to store result")
 @click.option('--outputunits', type=list, default=['m/s2', 'cm/s', 'cm', 'kn', 'j'])
-@click.option('--access_id', '-i', type=str, default='')
-@click.option('--access_secret', '-s', type=str, default='')
-def fixed(const_param, var_param, earthquakes, knor, results_type, lxy, folder, outputunits, access_id, access_secret):
+def fixed(const_param, var_param, earthquakes, knor, results_type, lxy, folder, outputunits):
 
 
     """
@@ -113,6 +111,7 @@ def fixed(const_param, var_param, earthquakes, knor, results_type, lxy, folder, 
     direction and Cent_acc_90.txt in y-direction.
 
     """
+    upload_preference = input('Do you wish to upload (default: no) ? [y/n] : ')
 
     # RESULT FOLDER SETUP
     folder = createfolder(folder)
@@ -120,9 +119,9 @@ def fixed(const_param, var_param, earthquakes, knor, results_type, lxy, folder, 
     # os.makedirs('results\\' + folder + '\\Time History Response')
     simulationdesc = input('Enter simulation description [None] : ')
     if simulationdesc:
-        Path(os.path.join('results', folde, "SimulationInfo.csv")).touch()
+        Path(os.path.join('results', folder, "SimulationInfo.csv")).touch()
         # Path('results\\' + folder + "\\SimulationInfo.csv").touch()
-        with open(os.path.join('results', folde, "SimulationInfo.csv"), 'w') as f:
+        with open(os.path.join('results', folder, "SimulationInfo.csv"), 'w') as f:
             for line in simulationdesc:
                 f.write(line)
         f.close()
@@ -182,12 +181,14 @@ def fixed(const_param, var_param, earthquakes, knor, results_type, lxy, folder, 
                 peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
                 # peakmat.to_csv('results\\' + folder + "\\Peak.csv", mode='w', sep=',', index=False)
 
+
     try:
-        data = pd.read_csv("accesskeys.csv")
-        access_id = data['Access key ID'][0]
-        access_secret = data['Secret access key'][0]
-        upload(folder, access_id, access_secret)
-        shutil.rmtree(os.path.join('results',folder))
+        if upload_preference == 'y':
+            data = pd.read_csv("accesskeys.csv")
+            access_id = data['Access key ID'][0]
+            access_secret = data['Secret access key'][0]
+            upload(folder, access_id, access_secret)
+            shutil.rmtree(os.path.join('results',folder))
     except:
         print('Result stored locally')
         chk = input('Do you wish to upload? (y/n) :')
