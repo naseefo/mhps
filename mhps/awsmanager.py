@@ -12,7 +12,7 @@ def create_bucket(bucket_name, access_id, access_secret):
  
     print('I am in create bucket')
     data = pd.read_csv("accesskeys.csv") 
-    s3 = boto3.client('s3', aws_access_key_id=data['Access key ID'][0], aws_secret_access_key= data['Secret access key'][0], region_name='us-east-1')
+    s3 = boto3.client('s3', aws_access_key_id=access_id, aws_secret_access_key= access_secret, region_name='us-east-1')
     try:
         s3.create_bucket(Bucket=bucket_name)
         print('Bucket creation successful!')

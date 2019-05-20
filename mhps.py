@@ -182,12 +182,13 @@ def fixed(const_param, var_param, earthquakes, knor, results_type, lxy, folder, 
                 peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
                 # peakmat.to_csv('results\\' + folder + "\\Peak.csv", mode='w', sep=',', index=False)
 
-    
-    if access_id != '':
-        print(access_id)
+    try:
+        data = pd.read_csv("accesskeys.csv")
+        access_id = data['Access key ID'][0]
+        access_secret = data['Secret access key'][0]
         upload(folder, access_id, access_secret)
         shutil.rmtree(os.path.join('results',folder))
-    else:
+    except:
         print('Result stored locally')
         chk = input('Do you wish to upload? (y/n) :')
         if chk == 'y':
