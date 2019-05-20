@@ -56,7 +56,7 @@ def get_earthquake_list(eq):
 def eq_finder(command):
     # eq_type, ref_count, xg_filename, yg_filename, dt, unit, scale, dur, ndiv
     
-    path = 'data\\earthquakes\\not_classified\\'
+    path = os.path.join('data', 'earthquakes', 'not_classified')
     ndt = int(command[7]/command[4]) + 1
     scale = command[6]
 
