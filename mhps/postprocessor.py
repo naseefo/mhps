@@ -5,6 +5,29 @@ import numpy as np
 from pathlib import Path
 import pandas as pd
 import csv
+import cProfile
+import io
+import pstats
+
+def profile(fnc):
+    
+    """A decorator that uses cProfile to profile a function"""
+    
+    def inner(*args, **kwargs):
+        
+        pr = cProfile.Profile()
+        pr.enable()
+        retval = fnc(*args, **kwargs)
+        pr.disable()
+        s = io.StringIO()
+        sortby = 'cumulative'
+        ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+        ps.print_stats()
+        print(s.getvalue())
+        return retval
+
+    return inner
+
 
 class ResultFixedXY:
     def __init__(self, eq_refi, ijki, timei, gxi, dxi, vxi, axi, aaxi, gyi, dyi, vyi, ayi, aayi, fxi, fyi, eki, edi, esi, eii, errori, smxi, skxi, cdxi, smyi, skyi, cdyi):
@@ -98,6 +121,7 @@ def get_result(result, responsevariable, floorstart, floorend, peaktype, dirn):
     elif peaktype == 0:
         responsevalues = vector
     return responsevalues, vectorhead
+
 
 def result_viewer(result, model, results_type, analysis_folder):
     results_type = results_type.split(',')

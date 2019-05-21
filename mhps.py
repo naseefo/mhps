@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import cProfile
+import pstats
 import click
 import re
 import data.defaults.params as dflt
@@ -35,7 +36,7 @@ def profile(fnc):
         retval = fnc(*args, **kwargs)
         pr.disable()
         s = io.StringIO()
-        sortby = 'cumulative'
+        sortby = 'time'
         ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
         ps.print_stats()
         print(s.getvalue())
@@ -52,6 +53,7 @@ def cli1():
     pass
 
 
+
 @cli1.command()
 @click.option('--const_param', '-cp',type=str, default= 'ConstantParameters.txt', help= 'File name containing constant parameters for the structure')
 @click.option('--var_param', '-vp',type=str, default= 'SS_VP.csv', help= 'File name containing variable parameters for the structure')
@@ -60,8 +62,15 @@ def cli1():
 @click.option('--results_type', '-r', type=str, default="aa1, paa1", help="Choice to select output results")
 @click.option('--lxy', '-lxy', type=int, default=0)
 @click.option('--folder', '-f', type=str, default="result", help="Folder name to store result")
+@click.option('--folder', '-f', type=str, default="result", help="Folder name to store result")
 @click.option('--outputunits', type=list, default=['m/s2', 'cm/s', 'cm', 'kn', 'j'])
-def fixed(const_param, var_param, earthquakes, knor, results_type, lxy, folder, outputunits):
+@click.option('--screen/--no-screen', default=False)
+def fixed(const_param, var_param, earthquakes, knor, results_type, lxy, folder, outputunits, screen):
+    fixedfn(const_param, var_param, earthquakes, knor, results_type, lxy, folder, outputunits, screen)
+    return None
+
+@profile
+def fixedfn(const_param, var_param, earthquakes, knor, results_type, lxy, folder, outputunits, screen):
 
 
     """
@@ -151,7 +160,7 @@ def fixed(const_param, var_param, earthquakes, knor, results_type, lxy, folder, 
                 smx, skx, cdx, smy, sky, cdy = superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor)
                 p_nst, p_tx1, p_rtytx, p_zeta = nst, tx1, rtytx, zeta
                 
-            result, model = fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx[0:nst,0:nst], skx[0:nst,0:nst], cdx[0:nst,0:nst], smy[0:nst,0:nst], sky[0:nst,0:nst], cdy[0:nst,0:nst])
+            result, model = fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx[0:nst,0:nst], skx[0:nst,0:nst], cdx[0:nst,0:nst], smy[0:nst,0:nst], sky[0:nst,0:nst], cdy[0:nst,0:nst], screen)
             analysis_folder = os.path.join('results', folder,'Time History Response','ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))
             # analysis_folder = 'results\\' + folder + '\\Time History Response\\' + 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk)
             os.makedirs(analysis_folder)
@@ -175,12 +184,13 @@ def fixed(const_param, var_param, earthquakes, knor, results_type, lxy, folder, 
                 peakmathead += [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
             if i == (total_eq - 1):
                 peakmat = pd.DataFrame(peakmat)
-                # print(peakmat)
-                # print(peakvaluesparamhead)
+                print(peakmat)
+                print(peakvaluesparamhead)
                 peakmat.columns = peakmathead
                 peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
                 # peakmat.to_csv('results\\' + folder + "\\Peak.csv", mode='w', sep=',', index=False)
 
+    
 
     try:
         if upload_preference == 'y':
@@ -206,21 +216,31 @@ def fixed(const_param, var_param, earthquakes, knor, results_type, lxy, folder, 
 @click.option('--results_type', '-r', type=str, default="paa1, pv1, pd1", help="Choice to select output results")
 @click.option('--folder', '-f', type=str, default="Result", help="Folder name to store result")
 @click.option('--damping', '-d', type=float, default=0.05, help="Critical damping ratio")
+@click.option('--screen/--no-screen', default=False)
+def spectral(earthquakes, results_type, folder, damping, screen):
 
-def spectral(earthquakes, results_type, folder, damping):
+    """
+
+    SAMPLE COMMAND: py -3.6-32 mhps.py spectral
+
+    """
     
-    var_param = 'data\\defaults\\SpectralVariableParameters.csv'
-    const_param = 'data\\defaults\\SpectralConstantParameters.txt'
+    var_param = os.path.join("data", "defaults", "SpectralVariableParameters.csv")
+    const_param = os.path.join("data", "defaults", "SpectralConstantParameters.txt")
     knor = 1
     lxy = 1
+    
+    upload_preference = input('Do you wish to upload (default: no) ? [y/n] : ')
 
     # RESULT FOLDER SETUP
     folder = createfolder(folder)
-    os.makedirs('results\\' + folder + '\\Time History Response')
+    os.makedirs(os.path.join('results', folder, 'Time History Response'))
+    # os.makedirs('results\\' + folder + '\\Time History Response')
     simulationdesc = input('Enter simulation description [None] : ')
     if simulationdesc:
-        Path('results\\' + folder + "\\SimulationInfo.csv").touch()
-        with open('results\\' + folder + "\\SimulationInfo.csv", 'w') as f:
+        Path(os.path.join('results', folder, "SimulationInfo.csv")).touch()
+        # Path('results\\' + folder + "\\SimulationInfo.csv").touch()
+        with open(os.path.join('results', folder, "SimulationInfo.csv"), 'w') as f:
             for line in simulationdesc:
                 f.write(line)
         f.close()
@@ -249,7 +269,7 @@ def spectral(earthquakes, results_type, folder, damping):
             if ((i == 0) and (j==0)) or ((p_nst, p_tx1, p_rtytx, p_zeta != nst, tx1, rtytx, zeta)):
                 smx, skx, cdx, smy, sky, cdy = superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor)
                 p_nst, p_tx1, p_rtytx, p_zeta = nst, tx1, rtytx, zeta
-            result, model = fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx[0:nst,0:nst], skx[0:nst,0:nst], cdx[0:nst,0:nst], smy[0:nst,0:nst], sky[0:nst,0:nst], cdy[0:nst,0:nst])
+            result, model = fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx[0:nst,0:nst], skx[0:nst,0:nst], cdx[0:nst,0:nst], smy[0:nst,0:nst], sky[0:nst,0:nst], cdy[0:nst,0:nst], screen)
             analysis_folder = 'results\\' + folder + '\\Time History Response\\' + 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk)
             os.makedirs(analysis_folder)
             peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, analysis_folder)
@@ -284,7 +304,23 @@ def spectral(earthquakes, results_type, folder, damping):
                 # print(peakmat)
                 # print(peakvaluesparamhead)
                 peakmat.columns = peakmathead
-                peakmat.to_csv('results\\' + folder + "\\Peak.csv", mode='w', sep=',', index=False)
+                # peakmat.to_csv('results\\' + folder + "\\Peak.csv", mode='w', sep=',', index=False)
+                peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
+        
+    try:
+        if upload_preference == 'y':
+            data = pd.read_csv("accesskeys.csv")
+            access_id = data['Access key ID'][0]
+            access_secret = data['Secret access key'][0]
+            upload(folder, access_id, access_secret)
+            shutil.rmtree(os.path.join('results',folder))
+    except:
+        print('Result stored locally')
+        chk = input('Do you wish to upload? (y/n) :')
+        if chk == 'y':
+            access_id = input('Enter Access ID: ')
+            access_secret = input('Enter Access Secret Key: ')
+            upload(folder, access_id, access_secret)
 
     
     return None

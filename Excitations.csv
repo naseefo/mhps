@@ -1,30 +1,119 @@
-# Format: ax, ay, dt, unit, scale, dur, ndiv
-# e.g. Cent_acc_00.txt, Cent_acc_00.txt, 0.02, cm/s2, 1.0, 20, 120;
+#########################################################################
+#                                                                       #
+# Format: ax, ay, dt, unit, scale, dur, ndiv                            #
+# e.g. Cent_acc_00.txt, Cent_acc_00.txt, 0.02, cm/s2, 1.0, 20, 120;     #
+#                                                                       #
+# Format: a, dt, unit, dur, dirn, ndiv;                                 #
+# e.g. Cent_acc_00.csv, 0.02, g, 1.0, 10, y, 120;                       #
+#                                                                       #
+# Format: AXI, TX1, PHX1, AY1, TY1, PHY1, DT, UNIT, DUR, NDIV           #
+# e.g. 3.0, 0.1, 1.5, 2.0, 0.2, 1.0, 0.02, cm/s2, 20, 120;              #
+#                                                                       #
+# Format: A, T, PH, DT, UNIT, DUR, DIRN, NDIV                           #
+# e.g. 3.0, 0.1, 1.5, 0.02, cm/s2, 20, x, 120;                          #
+#                                                                       #
+# Format: A, T0:DTT:TN, PH, DT, UNIT, DUR, DIR, NDIV                    #
+# e.g. 3.0, 0.1:0.01:5.0, 1.5, 0.02, cm/s2, 20, x, 120;                 #
+#                                                                       #
+#########################################################################
 
-# Format: a, dt, unit, dur, dirn, ndiv;
-# e.g. Cent_acc_00.csv, 0.02, g, 1.0, 10, y, 120;
-
-# Format: AXI, TX1, PHX1, AY1, TY1, PHY1, DT, UNIT, DUR, NDIV
-# e.g. 3.0, 0.1, 1.5, 2.0, 0.2, 1.0, 0.02, cm/s2, 20, 120;
-
-# Format: A, T, PH, DT, UNIT, DUR, DIRN, NDIV
-# e.g. 3.0, 0.1, 1.5, 0.02, cm/s2, 20, x, 120;
-
-# Format: A, T0:DTT:TN, PH, DT, UNIT, DUR, DIR, NDIV
-# e.g. 3.0, 0.1:0.01:5.0, 1.5, 0.02, cm/s2, 20, x, 120;
-
-# EARTHQUAKE EXCITATIONS
-# Cent_acc_00.txt, Cent_acc_90.txt, 0.02, cm/s2, 1.0, 20.0, 10;
+# EARTHQUAKE EXCITATIONS - RANDOM (FROM MY STANDARD TABLE)
+Cent_acc_00.txt, Cent_acc_90.txt, 0.02, cm/s2, 1.0, 20.0, 100;
 # Cent_acc_00.txt, Cent_acc_90.txt, 0.02, cm/s2, 1.0, 20, 100;
 # Cent_acc_00.txt, 0.02, cm/s2, 1.0, 20.0, x, 100;
 # Imperial5_Elcentro.txt, 0.02, cm/s2, 1.0, 39.40, x, 2;
 # Imperial5_Elcentro.txt, 0.02, cm/s2, 1.0, 15.0, x, 100;
 # Imperial5_Elcentro.txt, 0.02, cm/s2, 1.0, 0.2, x, 2;
-#
+
+# EARTHQUAKE EXCITATIONS - SAC PROJECT
+# (LOS ANGELES - 2% IN 50 YEARS)
+# r_la21, r_la22, 0.02, cm/s2, 1.0, 59.98, 20;
+# r_la23, r_la24, 0.01, cm/s2, 1.0, 24.99, 20;
+# r_la25, r_la26, 0.005, cm/s2, 1.0, 14.945, 20;
+# r_la27, r_la28, 0.02, cm/s2, 1.0, 59.98, 20;
+# r_la29, r_la30, 0.02, cm/s2, 1.0, 49.98, 20;
+# r_la31, r_la32, 0.01, cm/s2, 1.0, 29.99, 20;
+# r_la33, r_la34, 0.01, cm/s2, 1.0, 29.99, 20;
+# r_la35, r_la36, 0.01, cm/s2, 1.0, 29.99, 20;
+# r_la37, r_la38, 0.02, cm/s2, 1.0, 59.98, 20;
+# r_la39, r_la40, 0.02, cm/s2, 1.0, 59.98, 20;
+
+# (LOS ANGELES - 10% IN 50 YEARS)
+# r_la01, r_la02, 0.02, cm/s2, 1.0, 39.38, 20;
+# r_la03, r_la04, 0.01, cm/s2, 1.0, 39.38, 20;
+# r_la05, r_la06, 0.01, cm/s2, 1.0, 39.08, 20;
+# r_la07, r_la08, 0.02, cm/s2, 1.0, 79.98, 20;
+# r_la09, r_la10, 0.02, cm/s2, 1.0, 79.98, 20;
+# r_la11, r_la12, 0.02, cm/s2, 1.0, 39.98, 20;
+# r_la13, r_la14, 0.02, cm/s2, 1.0, 59.98, 20;
+# r_la15, r_la16, 0.005, cm/s2, 1.0, 14.945, 20;
+# r_la17, r_la18, 0.02, cm/s2, 1.0, 59.98, 20;
+# r_la19, r_la20, 0.02, cm/s2, 1.0, 59.98, 20;
+
+# (LOS ANGELES - 50% IN 50 YEARS)
+# r_la41, r_la42, 0.01, cm/s2, 1.0, 39.38, 20;
+# r_la43, r_la44, 0.01, cm/s2, 1.0, 39.08, 20;
+# r_la45, r_la46, 0.02, cm/s2, 1.0, 78.60, 20;
+# r_la47, r_la48, 0.02, cm/s2, 1.0, 79.98, 20;
+# r_la49, r_la50, 0.02, cm/s2, 1.0, 59.98, 20;
+# r_la51, r_la52, 0.02, cm/s2, 1.0, 43.92, 20;
+# r_la53, r_la54, 0.02, cm/s2, 1.0, 26.14, 20;
+# r_la55, r_la56, 0.02, cm/s2, 1.0, 59.98, 20;
+# r_la57, r_la58, 0.02, cm/s2, 1.0, 79.46, 20;
+# r_la59, r_la60, 0.02, cm/s2, 1.0, 39.98, 20;
+
+# (BOSTON - 2% IN 50 YEARS)
+# r_bo21, r_bo22, 0.01, cm/s2, 1.0, 29.99, 20;
+# r_bo23, r_bo24, 0.01, cm/s2, 1.0, 29.99, 20;
+# r_bo25, r_bo26, 0.01, cm/s2, 1.0, 29.99, 20;
+# r_bo27, r_bo28, 0.005, cm/s2, 1.0, 20.335, 20;
+# r_bo29, r_bo30, 0.005, cm/s2, 1.0, 18.755, 20;
+# r_bo31, r_bo32, 0.005, cm/s2, 1.0, 19.015, 20;
+# r_bo33, r_bo34, 0.005, cm/s2, 1.0, 17.735, 20;
+# r_bo35, r_bo36, 0.01, cm/s2, 1.0, 29.57, 20;
+# r_bo37, r_bo38, 0.01, cm/s2, 1.0, 39.05, 20;
+# r_bo39, r_bo40, 0.01, cm/s2, 1.0, 33.24, 20;
+
+# (BOSTON - 10% IN 50 YEARS)
+# r_bo01, r_bo02, 0.01, cm/s2, 1.0, 29.99, 20;
+# r_bo03, r_bo04, 0.01, cm/s2, 1.0, 29.99, 20;
+# r_bo05, r_bo06, 0.005, cm/s2, 1.0, 19.23, 20;
+# r_bo07, r_bo08, 0.005, cm/s2, 1.0, 20.335, 20;
+# r_bo09, r_bo10, 0.005, cm/s2, 1.0, 18.755, 20;
+# r_bo11, r_bo12, 0.005, cm/s2, 1.0, 19.015, 20;
+# r_bo13, r_bo14, 0.005, cm/s2, 1.0, 17.735, 20;
+# r_bo15, r_bo16, 0.01, cm/s2, 1.0, 29.57, 20;
+# r_bo17, r_bo18, 0.01, cm/s2, 1.0, 39.05, 20;
+# r_bo19, r_bo20, 0.01, cm/s2, 1.0, 33.24, 20;
+
+# (SEATTLE - 2% IN 50 YEARS)
+# r_se21, r_se22, 0.02, cm/s2, 1.0, 59.98, 20;
+# r_se23, r_se24, 0.005, cm/s2, 1.0, 20.775, 20;
+# r_se25, r_se26, 0.02, cm/s2, 1.0, 79.98, 20;
+# r_se27, r_se28, 0.02, cm/s2, 1.0, 81.82, 20;
+# r_se29, r_se30, 0.025, cm/s2, 1.0, 99.975, 20;
+# r_se31, r_se32, 0.025, cm/s2, 1.0, 99.975, 20;
+# r_se33, r_se34, 0.02, cm/s2, 1.0, 79.98, 20;
+# r_se35, r_se36, 0.02, cm/s2, 1.0, 79.98, 20;
+# r_se37, r_se38, 0.02, cm/s2, 1.0, 79.98, 20;
+# r_se39, r_se40, 0.02, cm/s2, 1.0, 79.98, 20;
+
+# (SEATTLE - 10% IN 50 YEARS)
+# r_se01, r_se02, 0.01, cm/s2, 1.0, 39.08, 20;
+# r_se03, r_se04, 0.02, cm/s2, 1.0, 59.98, 20;
+# r_se05, r_se06, 0.02, cm/s2, 1.0, 79.98, 20;
+# r_se07, r_se08, 0.02, cm/s2, 1.0, 66.68, 20;
+# r_se09, r_se10, 0.02, cm/s2, 1.0, 59.98, 20;
+# r_se11, r_se12, 0.02, cm/s2, 1.0, 81.82, 20;
+# r_se13, r_se14, 0.02, cm/s2, 1.0, 74.08, 20;
+# r_se15, r_se16, 0.02, cm/s2, 1.0, 59.98, 20;
+# r_se17, r_se18, 0.025, cm/s2, 1.0, 99.975, 20;
+# r_se19, r_se20, 0.025, cm/s2, 1.0, 99.975, 20;
+
 # HARMONIC EXCITATIONS
 # 490.5, 0.2:0.2:2.0, 0.0, 0.02, cm/s2, 15.0, x, 100;
 # 490.5, 1.5, 0.0, 0.02, cm/s2, 15.0, x, 10;
-490.5, 1.5, 0.0, 490.5, 1.5, 0.0, 0.02, cm/s2, 20, 10;
+# 490.5, 1.5, 0.0, 490.5, 1.5, 0.0, 0.02, cm/s2, 20, 10;
 
 # LIST OF UNI-DIRECTIONAL NEAR-FAULT EARTHQUAKES (NORMAL COMPONENT)
 

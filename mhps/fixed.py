@@ -1,5 +1,6 @@
 
 import numpy as np
+from scipy import linalg
 import math
 from data.defaults.param_manager import default
 from data.defaults.param_manager import get_default_param_values
@@ -166,8 +167,8 @@ def superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor):
 
     return smx, skx, cdx, smy, sky, cdy
 
-#@profile
-def fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx, skx, cdx, smy, sky, cdy):
+
+def fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx, skx, cdx, smy, sky, cdy, screen_on):
     
 
     gamma = 0.5
@@ -265,6 +266,12 @@ def fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx, skx, cdx, sm
         t += dt
         px2 = smx_diag*xg[i]
         pcx1 = px2 + np.dot(na1x, dx1) + np.dot(na2x, vx1) + np.dot(na3x, ax1)
+
+        if i == 1:
+            print('I am in flags')
+            print(knx_inv.flags)
+            print(pcx1.flags)
+
         dx2 = np.dot(knx_inv, pcx1)
         vx2 = (gamma/beta/dt)*(dx2 - dx1) + (1.0 - gamma/beta)*vx1 + dt*(1.0 - gamma/2.0/beta)*ax1
         ax2 = np.dot(smx_inv, px2 - np.dot(cdx, vx2) - np.dot(skx, dx2))
@@ -279,7 +286,8 @@ def fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx, skx, cdx, sm
         eki = eki + 0.5*dt*(np.dot(np.dot(vx2.T, smx),ax2) + np.dot(np.dot(vx1.T, smx),ax1)) + 0.5*dt*(np.dot(np.dot(vy2.T, smy),ay2) + np.dot(np.dot(vy1.T, smy),ay1))
         edi = edi + 0.5*dt*(np.dot(np.dot(vx2.T, cdx),vx2) + np.dot(np.dot(vx1.T, cdx),vx1)) + 0.5*dt*(np.dot(np.dot(vy2.T, cdy),vy2) + np.dot(np.dot(vy1.T, cdy),vy1))
         esi = esi + 0.5*dt*(np.dot(np.dot(vx2.T, skx),dx2) + np.dot(np.dot(vx1.T, skx),dx1)) + 0.5*dt*(np.dot(np.dot(vy2.T, sky),dy2) + np.dot(np.dot(vy1.T, sky),dy1))
-        eii = eii - 0.5*dt*(np.dot(np.dot(vx2.T, smx),np.dot(r, xg[i])) + np.dot(np.dot(vx1.T, smx),np.dot(r, xg[i-1]))) - 0.5*dt*(np.dot(np.dot(vy2.T, smy),np.dot(r, yg[i])) + np.dot(np.dot(vy1.T, smy),np.dot(r, yg[i-1])))
+        # eii = eii - 0.5*dt*(np.dot(np.dot(vx2.T, smx),np.dot(r, xg[i])) + np.dot(np.dot(vx1.T, smx),np.dot(r, xg[i-1]))) - 0.5*dt*(np.dot(np.dot(vy2.T, smy),np.dot(r, yg[i])) + np.dot(np.dot(vy1.T, smy),np.dot(r, yg[i-1])))
+        eii = eii - 0.5*dt*(np.dot(np.dot(vx2.T, smx),r*xg[i]) + np.dot(np.dot(vx1.T, smx),r*xg[i-1])) - 0.5*dt*(np.dot(np.dot(vy2.T, smy), r*yg[i]) + np.dot(np.dot(vy1.T, smy), r*yg[i-1]))
         
 
         dy1, vy1, py1, ay1 = dy2, vy2, py2, ay2 
@@ -321,14 +329,15 @@ def fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx, skx, cdx, sm
     peaktopdispx = max(abs(dx[0,:]))
     peaktopdispy = max(abs(dy[0,:]))
 
-    print(" ")
-    print("Simulation" + "\033[91m" + " SET%d-%d" %(ref, ijk) + "\033[0m" + ": Earthquake #: %d, Parameter #: %d" %(ref, ijk))
-    print("Peak Error: % 8.6f" %(peakerror))
-    print("Absolute Sum of Errors: % 8.6f" %(sumerror))
-    print("Peak Top Floor Absolute Acceleration in X-Direction: % 8.6f m/s2" %(peaktopaccx))
-    print("Peak Top Floor Absolute Acceleration in Y-Direction: % 8.6f m/s2" %(peaktopaccy))
-    print("Peak Top Floor Relative Displacement in X-Direction: % 8.6f cm" %(peaktopdispx*100.0))
-    print("Peak Top Floor Relative Displacement in Y-Direction: % 8.6f cm" %(peaktopdispy*100.0))
+    if screen_on == True:
+        print(" ")
+        print("Simulation" + "\033[91m" + " SET%d-%d" %(ref, ijk) + "\033[0m" + ": Earthquake #: %d, Parameter #: %d" %(ref, ijk))
+        print("Peak Error: % 8.6f" %(peakerror))
+        print("Absolute Sum of Errors: % 8.6f" %(sumerror))
+        print("Peak Top Floor Absolute Acceleration in X-Direction: % 8.6f m/s2" %(peaktopaccx))
+        print("Peak Top Floor Absolute Acceleration in Y-Direction: % 8.6f m/s2" %(peaktopaccy))
+        print("Peak Top Floor Relative Displacement in X-Direction: % 8.6f cm" %(peaktopdispx*100.0))
+        print("Peak Top Floor Relative Displacement in Y-Direction: % 8.6f cm" %(peaktopdispy*100.0))
     
     result = ResultFixedXY(ref, ijk, time.T, gx.T, dx.T, vx.T, ax.T, aax.T, gy.T, dy.T, vy.T, ay.T, aay.T, fx, fy, ek, ed, es, ei, error, smx, skx, cdx, smy, sky, cdy)
     model = ModelInfo(nst)

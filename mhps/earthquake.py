@@ -5,6 +5,7 @@ import numpy as np
 import re
 import pandas as pd
 import numexpr as ne
+import os
 
 
 def sample():
@@ -51,7 +52,10 @@ def get_earthquake_list(eq):
                 ref, xg, yg, dt, ndiv, ndt = harmonic_finder(command)
                 yield ref, xg, yg, dt, ndiv, ndt
     
-    
+def eq_path_finder(name, path):
+    for root, dirs, files in os.walk(path):
+        if name in files:
+            return os.path.join(root, name)    
 
 def eq_finder(command):
     # eq_type, ref_count, xg_filename, yg_filename, dt, unit, scale, dur, ndiv
@@ -61,7 +65,8 @@ def eq_finder(command):
     scale = command[6]
 
     if command[2] != '' and command[3] =='':
-        xg = pd.read_csv(path + command[2], header=None).values
+        # xg = pd.read_csv(path + command[2], header=None).values
+        xg = pd.read_csv(eq_path_finder(command[2], os.path.join("data", "earthquakes")), header=None).values
         xg = xg*scale*scale_finder(command[5])
         yg = np.zeros(xg.size, dtype='float')
         # xg = np.insert(xg, 0, 0.0, axis=0)
@@ -74,7 +79,8 @@ def eq_finder(command):
         if len_yg >= ndt:
             yg = yg[:ndt]
     elif command[3] != '' and command[2] =='':
-        yg = pd.read_csv(path + command[3], header=None).values
+        # yg = pd.read_csv(path + command[3], header=None).values
+        yg = pd.read_csv(eq_path_finder(command[3], os.path.join("data", "earthquakes")), header=None).values
         yg = yg*scale*scale_finder(command[5])
         xg = np.zeros(yg.size, dtype='float')
         # xg = np.insert(xg, 0, 0.0, axis=0)
@@ -86,8 +92,10 @@ def eq_finder(command):
         if len_yg >= ndt:
             yg = yg[:ndt]
     else:
-        xg = pd.read_csv(path + command[2], header=None).values
-        yg = pd.read_csv(path + command[3], header=None).values
+        # xg = pd.read_csv(path + command[2], header=None).values
+        xg = pd.read_csv(eq_path_finder(command[2], os.path.join("data", "earthquakes")), header=None).values
+        # yg = pd.read_csv(path + command[3], header=None).values
+        yg = pd.read_csv(eq_path_finder(command[3], os.path.join("data", "earthquakes")), header=None).values
         xg = xg*scale*scale_finder(command[5])
         yg = yg*scale*scale_finder(command[5])
         # xg = np.insert(xg, 0, 0.0, axis=0)
