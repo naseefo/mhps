@@ -18,7 +18,7 @@
 #########################################################################
 
 # EARTHQUAKE EXCITATIONS - RANDOM (FROM MY STANDARD TABLE)
-Cent_acc_00.txt, Cent_acc_90.txt, 0.02, cm/s2, 1.0, 20.0, 100;
+Cent_acc_00.txt, Cent_acc_90.txt, 0.02, cm/s2, 1.0, 20.0, 1;
 # Cent_acc_00.txt, Cent_acc_90.txt, 0.02, cm/s2, 1.0, 20, 100;
 # Cent_acc_00.txt, 0.02, cm/s2, 1.0, 20.0, x, 100;
 # Imperial5_Elcentro.txt, 0.02, cm/s2, 1.0, 39.40, x, 2;

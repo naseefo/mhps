@@ -162,7 +162,7 @@ def pattern_reader(rpattern, nst):
     flag = 0
     for i in range(0,23):
         pattern_check = re.findall(pattern_res, rpattern)
-        print(pattern_check)
+        # print(pattern_check)
         if pattern_check[0]:
             if pattern_check[0][0] == 'p':
                 peaktype = 1

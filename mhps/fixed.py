@@ -267,10 +267,10 @@ def fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx, skx, cdx, sm
         px2 = smx_diag*xg[i]
         pcx1 = px2 + np.dot(na1x, dx1) + np.dot(na2x, vx1) + np.dot(na3x, ax1)
 
-        if i == 1:
-            print('I am in flags')
-            print(knx_inv.flags)
-            print(pcx1.flags)
+        # if i == 1:
+        #     print('I am in flags')
+        #     print(knx_inv.flags)
+        #     print(pcx1.flags)
 
         dx2 = np.dot(knx_inv, pcx1)
         vx2 = (gamma/beta/dt)*(dx2 - dx1) + (1.0 - gamma/beta)*vx1 + dt*(1.0 - gamma/2.0/beta)*ax1
