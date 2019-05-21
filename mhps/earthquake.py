@@ -26,6 +26,9 @@ def get_total_excitations(eq):
 
 def get_earthquake_list(eq):
 
+    pattern_eq_1 = "EQ"
+    pattern_check_1 = re.findall(pattern_eq_1, eq_string)
+
     ref_count = 1
     if eq == "Excitations.csv":
         f1 = open('Excitations.csv', 'r')
