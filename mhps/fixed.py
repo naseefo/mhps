@@ -290,7 +290,8 @@ def fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx, skx, cdx, sm
         eii = eii - 0.5*dt*(np.dot(np.dot(vx2.T, smx),r*xg[i]) + np.dot(np.dot(vx1.T, smx),r*xg[i-1])) - 0.5*dt*(np.dot(np.dot(vy2.T, smy), r*yg[i]) + np.dot(np.dot(vy1.T, smy), r*yg[i-1]))
         
 
-        dy1, vy1, py1, ay1 = dy2, vy2, py2, ay2 
+        dy1, vy1, py1, ay1 = dy2, vy2, py2, ay2
+
 
         if not i%(ndiv):
             index += 1
@@ -324,10 +325,13 @@ def fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx, skx, cdx, sm
     # for in 
     peakerror = max(abs(error))
     sumerror = sum(abs(error))
+    
     peaktopaccx = max(abs(aax[0,:]))
     peaktopaccy = max(abs(aay[0,:]))
     peaktopdispx = max(abs(dx[0,:]))
     peaktopdispy = max(abs(dy[0,:]))
+
+   
 
     if screen_on == True:
         print(" ")

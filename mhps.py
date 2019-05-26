@@ -24,6 +24,10 @@ import io
 import csv
 from mhps.awsmanager import upload
 import shutil
+import matplotlib.pyplot as plt
+
+
+np.seterr(all='warn')
 
 def profile(fnc):
     
@@ -150,7 +154,7 @@ def fixedfn(const_param, var_param, earthquakes, knor, results_type, lxy, folder
 
     peakvalues = None
     for i in range(total_eq):
-        ref, xg, yg, dt, ndiv, ndt = next(earthquake_generator)
+        ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
         # SUPERSTRUCTURE VARIABLE PARAMETER SETUP
         superstructure_param_generator = read_ss_var_param(var_param)
         for j in range(total_param):
@@ -210,6 +214,58 @@ def fixedfn(const_param, var_param, earthquakes, knor, results_type, lxy, folder
 
     return None
 
+@cli1.command()
+@click.option('--earthquakes','-eq', type=(str), default= "Excitations.csv", help= 'Earthquakes')
+@click.option('--unit', '-u', type=(str), default='m/s2')
+@click.option('--screen/--no-screen', default=False)
+def seeq(earthquakes, unit, screen):
+    if earthquakes:
+        total_eq = get_total_excitations(earthquakes)
+        earthquake_generator = get_earthquake_list(earthquakes)
+    else:
+        earthquake_generator = get_earthquake_list('db elc')
+    
+    if unit == "m/s2":
+        scale = 1.0
+    elif unit == "g":
+        scale = 1.0/9.81
+    elif unit == "cm/s2":
+        scale = 1.0/981
+
+    for i in range(total_eq):
+        ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
+        time = np.arange(0, ndt*dt, dt)
+
+        plt.figure(i)
+
+        # Plot X
+        plt.subplot(311)
+        plt.plot(time, xg*scale)
+        plt.xlabel('Time (sec)')
+        plt.ylabel('Acceleration (' + unit +')')
+        plt.title('Acceleration in X-Dir')
+        plt.grid(True)
+
+        # Plot Y
+        plt.subplot(312)
+        plt.plot(time, yg*scale)
+        plt.xlabel('Time (sec)')
+        plt.ylabel('Acceleration (' + unit +')')
+        plt.title('Acceleration in Y-Dir')
+        plt.grid(True)
+
+        # Plot Z
+        plt.subplot(313)
+        plt.plot(time, zg*scale)
+        plt.xlabel('Time (sec)')
+        plt.ylabel('Acceleration (' + unit +')')
+        plt.title('Acceleration in Z-Dir')
+        plt.grid(True)
+        
+        plt.subplots_adjust(top=0.92, bottom=0.08, left=0.10, right=0.95, hspace=0.25, wspace=0.35)
+        plt.show()
+
+
 
 @cli1.command()
 @click.option('--earthquakes','-eq', type=(str), default= "Excitations.csv", help= 'Earthquakes')
@@ -218,7 +274,7 @@ def fixedfn(const_param, var_param, earthquakes, knor, results_type, lxy, folder
 @click.option('--damping', '-d', type=float, default=0.05, help="Critical damping ratio")
 @click.option('--screen/--no-screen', default=False)
 def spectral(earthquakes, results_type, folder, damping, screen):
-
+    np.seterr(all='warn')
     """
 
     SAMPLE COMMAND: py -3.6-32 mhps.py spectral
@@ -261,7 +317,6 @@ def spectral(earthquakes, results_type, folder, damping, screen):
     peakvalues = None
     for i in range(total_eq):
         ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
-        print(xg)
         # SUPERSTRUCTURE VARIABLE PARAMETER SETUP
         superstructure_param_generator = read_ss_var_param(var_param)
         for j in range(total_param):

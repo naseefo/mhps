@@ -67,12 +67,15 @@ def eq_finder(command):
     # eq_type, ref_count, xg_filename, yg_filename, dt, unit, scale, dur, ndiv
     # [1, ref_count, xg_file, yg_file, zg_file, dt, unit, scale, dur, ndiv, rot]
     # eq_type, ref_count, xg_filename, yg_filename, zg_filename, dt, unit, scale, dur, ndiv, alpha1, alpha2, strike, rot
+    # eq_type, ref_count, xg_filename, yg_filename, zg_filename, dt, unit, scale, dur, ndiv, alpha1, alpha2, strike, rotx, roty
 
     alpha1 = command[10]
     alpha2 = command[11]
     strike = command[12]
     rotx = command[13]
     roty = command[14]
+    dirn = command[15]
+    rot_flag = command[16]
 
     
 
@@ -126,15 +129,25 @@ def eq_finder(command):
             h1 = h1[:ndt]
         if len_yg >= ndt:
             h2 = h2[:ndt]
-        # print(alpha1, alpha2, strike, rotx, roty)
-        # print(strike - alpha1 - rotx)
-        # print(strike - alpha2 - roty)
-        beta1 = (strike - alpha1 - rotx)*math.pi/180.0
-        beta2 = (strike - alpha2 - roty)*math.pi/180.0
-        # print(beta1)
-        # print(beta2)
-        yg = h1*math.sin(beta1) + h2*math.sin(beta2)  # Fault-normal component
-        xg = h1*math.cos(beta1) + h2*math.cos(beta2)  # Fault-parallel component
+
+        if rot_flag == True:
+            # print(alpha1, alpha2, strike, rotx, roty)
+            # print(strike - alpha1 - rotx)
+            # print(strike - alpha2 - roty)
+            beta1 = (strike - alpha1 - rotx)*math.pi/180.0
+            beta2 = (strike - alpha2 - roty)*math.pi/180.0
+            # print(beta1)
+            # print(beta2)
+            yg = h1*math.sin(beta1) + h2*math.sin(beta2)  # Fault-normal component
+            xg = h1*math.cos(beta1) + h2*math.cos(beta2)  # Fault-parallel component
+        elif rot_flag == False:
+            xg = h1
+            yg = h2
+
+        if dirn == "y":
+            xg = np.zeros(xg.size, dtype='float')
+        elif dirn == "x":
+            yg = np.zeros(yg.size, dtype='float')
 
     if command[4] != '':
         zg = pd.read_csv(eq_path_finder(command[4], os.path.join("data", "earthquakes")), header=None).values
@@ -150,6 +163,8 @@ def eq_finder(command):
             yg = yg[:ndt]
     else:
         zg = np.zeros(xg.size, dtype='float')
+    
+    
 
 
 
@@ -157,7 +172,7 @@ def eq_finder(command):
     yg = excitation_divide(yg, command[9])
     zg = excitation_divide(zg, command[9])
     dt = command[5]/command[9]
-    return command[1], xg, yg, zg, dt, command[8], ndt
+    return command[1], xg, yg, zg, dt, command[9], ndt
 
 def excitation_divide(eq_data,ndiv):
 
@@ -238,13 +253,13 @@ def pattern_reader(eq_string, ref_count, count_flag):
     # ^([\w\.\s]+),([\w\.\s]+),([\s0-9\.]+),([\sa-z0-9/]+),([\s0-9\.]+),([\s0-9\.]+),([\s0-9]+)(,[\s0-9\.]+|)\;
     # ^([\w\.\s\-]+),([\w\.\s\-]+),([\w\.\s\-]+),([\s0-9\.]+),([\sa-z0-9/]+),([\s0-9\.]+),([\s0-9\.]+),([\s0-9]+)(,[\s0-9\.]+|)\;
     # ^([\w\.\s\-]+),([\w\.\s\-]+),([\w\.\s\-]+),([\s0-9\.]+),([\sa-z0-9/]+),([\s0-9\.]+),([\s0-9\.]+),([\s0-9]+),([\s0-9\.\-]+),([\s0-9\.\-]+),([\s0-9\.\-]+),([\s0-9\.\-]+)(,[\s0-9\.]+|)\;
-
-    pattern_eq_1 = "^([\w\.\s]+),([\w\.\s]+),([\s0-9\.]+),([\sa-z0-9/]+),([\s0-9\.]+),([\s0-9\.]+),([\s0-9]+),([\s0-9\.\-]+),([\s0-9\.\-]+),([\s0-9\.\-]+),([\s0-9\.\-]+)(,[\s0-9\.\-]+|)\;"
+    # ^([\w\.\s\-]+),([\w\.\s\-]+),([\w\.\s\-]+),([\s0-9\.]+),([\sa-z0-9/]+),([\s0-9\.]+),([\s0-9\.]+),([\s0-9]+),([\s0-9\.\-]+),([\s0-9\.\-]+),([\s0-9\.\-]+),([\s0-9\.\-]+),([\s0-9\.\-]+),([\w])(,[\w]+|)\;
+    pattern_eq_1 = "^([\w\.\s]+),([\w\.\s]+),([\s0-9\.]+),([\sa-z0-9/]+),([\s0-9\.]+),([\s0-9\.]+),([\s0-9]+),([\s0-9\.\-]+),([\s0-9\.\-]+),([\s0-9\.\-]+),([\s0-9\.\-]+),([\s0-9\.\-]+),([\s\w]+)(,[\s\w]+|)\;"
     pattern_eq_2 = "^([\w\.\s]+)[,\s]+([s0-9\.]+)[,\s]+([a-z0-9/]+)[,\s]([\s0-9\.]+)[,\s]+([0-9\.]+)[,\s]+([\w])[,\s]+([0-9]+);"
     pattern_eq_3 = "^([0-9\.]+)[,\s]+([0-9\.]+)[,\s]+([0-9\.]+)[,\s]+([0-9\.]+)[,\s]+([0-9\.]+)[,\s]+([0-9\.]+)[,\s]+([0-9\.]+)[,\s]+([\w/]+)[,\s]+([0-9\.]+)[,\s]+([0-9\.]+)\;"
     pattern_eq_4 = "([0-9\.]+)[,\s]+([0-9\.]+)[,\s]+([0-9\.]+)[,\s]+([0-9\.]+)[,\s]+([\w/]+)[,\s]+([0-9\.]+)[,\s]+([\w])[,\s]+([0-9\.]+)\;"
     pattern_eq_5 = "^([0-9\.]+)[,\s]+([0-9\.]+):([0-9\.]+):([0-9\.]+)[,\s]+([0-9\.]+)[,\s]+([0-9\.]+)[,\s]+([\w/]+)[,\s]+([0-9\.]+)[,\s]+([\w])[,\s]+([0-9\.]+)\;"
-    pattern_eq_6 = "^([\w\.\s\-]+),([\w\.\s\-]+),([\w\.\s\-]+),([\s0-9\.]+),([\sa-z0-9/]+),([\s0-9\.]+),([\s0-9\.]+),([\s0-9]+),([\s0-9\.\-]+),([\s0-9\.\-]+),([\s0-9\.\-]+),([\s0-9\.\-]+)(,[\s0-9\.\-]+|)\;"
+    pattern_eq_6 = "^([\w\.\s\-]+),([\w\.\s\-]+),([\w\.\s\-]+),([\s0-9\.]+),([\sa-z0-9/]+),([\s0-9\.]+),([\s0-9\.]+),([\s0-9]+),([\s0-9\.\-]+),([\s0-9\.\-]+),([\s0-9\.\-]+),([\s0-9\.\-]+),([\s0-9\.\-]+),([\s\w]+)(,[\s\w]+|)\;"
 
     pattern_check_1 = re.findall(pattern_eq_1, eq_string)
     pattern_check_2 = re.findall(pattern_eq_2, eq_string)
@@ -295,9 +310,15 @@ def pattern_eq_1_handler(eq_string, ref_count, count_flag):
     strike = float(eq_string[9].strip(', '))
     rotx = float(eq_string[10].strip(', '))
     roty = float(eq_string[11].strip(', '))
+    dirn = eq_string[12].strip(', ')
+    rot_flag = eq_string[13].strip(', ')
+    if rot_flag == 'ry':
+        rot_flag = True
+    elif rot_flag == 'rn':
+        rot_flag = False
     
 
-    command = [(eq_type, ref_count, xg_filename, yg_filename, zg_filename, dt, unit, scale, dur, ndiv, alpha1, alpha2, strike, rotx, roty)]
+    command = [(eq_type, ref_count, xg_filename, yg_filename, zg_filename, dt, unit, scale, dur, ndiv, alpha1, alpha2, strike, rotx, roty, dirn, rot_flag)]
     ref_count += 1
     return ref_count, command
 
@@ -334,8 +355,9 @@ def pattern_eq_2_handler(eq_string, ref_count, count_flag):
     strike = 0.0
     rotx = 0.0
     roty = 0.0
+    rot_flag = False
 
-    command = [(eq_type, ref_count, xg_filename, yg_filename, zg_filename, dt, unit, scale, dur, ndiv, alpha1, alpha2, strike, rotx, roty)]
+    command = [(eq_type, ref_count, xg_filename, yg_filename, zg_filename, dt, unit, scale, dur, ndiv, alpha1, alpha2, strike, rotx, roty, dirn, rot_flag)]
     ref_count += 1
     return ref_count, command
 
@@ -468,8 +490,14 @@ def pattern_eq_6_handler(eq_string, ref_count, count_flag):
     strike = float(eq_string[10].strip(', '))
     rotx = float(eq_string[11].strip(', '))
     roty = float(eq_string[12].strip(', '))
+    dirn = eq_string[13].strip(', ')
+    rot_flag = eq_string[14].strip(', ')
+    if rot_flag == 'ry':
+        rot_flag = True
+    elif rot_flag == 'rn':
+        rot_flag = False
     
-    command = [(eq_type, ref_count, xg_filename, yg_filename, zg_filename, dt, unit, scale, dur, ndiv, alpha1, alpha2, strike, rotx, roty)]
+    command = [(eq_type, ref_count, xg_filename, yg_filename, zg_filename, dt, unit, scale, dur, ndiv, alpha1, alpha2, strike, rotx, roty, dirn, rot_flag)]
     ref_count += 1
     return ref_count, command
 
