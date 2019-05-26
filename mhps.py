@@ -260,7 +260,8 @@ def spectral(earthquakes, results_type, folder, damping, screen):
 
     peakvalues = None
     for i in range(total_eq):
-        ref, xg, yg, dt, ndiv, ndt = next(earthquake_generator)
+        ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
+        print(xg)
         # SUPERSTRUCTURE VARIABLE PARAMETER SETUP
         superstructure_param_generator = read_ss_var_param(var_param)
         for j in range(total_param):
