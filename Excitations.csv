@@ -125,6 +125,14 @@
 # Lgpc_acc_00.txt, Lgpc_acc_90.txt, 0.02, cm/s2, 1.0, 150.0, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # Sylmar360.txt, Sylmar90.txt, 0.02, cm/s2, 1.0, 60.0, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 
+# VASANT SIRS NEAR-FAULT MOTIONS
+w11.txt, w12.txt, 0.02, cm/s2, 1.0, 39.42, 20, 0.0, 0.0, 0.0, 0.0, 90, a, rn;
+w21.txt, w22.txt, 0.02, cm/s2, 1.0, 36.90, 20, 0.0, 0.0, 0.0, 0.0, 90, a, rn;
+w31.txt, w32.txt, 0.02, cm/s2, 1.0, 60.00, 20, 0.0, 0.0, 0.0, 0.0, 90, a, rn;
+w41.txt, w42.txt, 0.02, cm/s2, 1.0, 49.28, 20, 0.0, 0.0, 0.0, 0.0, 90, a, rn;
+w51.txt, w52.txt, 0.02, cm/s2, 1.0, 14.95, 20, 0.0, 0.0, 0.0, 0.0, 90, a, rn;
+w61.txt, w62.txt, 0.02, cm/s2, 1.0, 60.00, 20, 0.0, 0.0, 0.0, 0.0, 90, a, rn;
+
 
 # BAKER ET. AL. PEER PROJECT - SET #1A: BROAD-BAND GROUND MOTIONS (M = 7, R = 10 KM, SOIL SITE) (39 items - 1 item missing)
 # r_RSN6_IMPVALL.I_I-ELC180.AT2, r_RSN6_IMPVALL.I_I-ELC270.AT2, r_RSN6_IMPVALL.I_I-ELC-UP.AT2, 0.01, g, 1.0, 53.46, 100, 0.0, 0.0, 0.0, 0.0, 90.0, a, ry;

@@ -70,11 +70,11 @@ def cli1():
 @click.option('--outputunits', type=list, default=['m/s2', 'cm/s', 'cm', 'kn', 'j'])
 @click.option('--screen/--no-screen', default=False)
 def fixed(const_param, var_param, earthquakes, knor, results_type, lxy, folder, outputunits, screen):
-    fixedfn(const_param, var_param, earthquakes, knor, results_type, lxy, folder, outputunits, screen)
+    fixed_fn(const_param, var_param, earthquakes, knor, results_type, lxy, folder, outputunits, screen)
     return None
 
-@profile
-def fixedfn(const_param, var_param, earthquakes, knor, results_type, lxy, folder, outputunits, screen):
+# @profile
+def fixed_fn(const_param, var_param, earthquakes, knor, results_type, lxy, folder, outputunits, screen):
 
 
     """
@@ -346,7 +346,6 @@ def spectral(earthquakes, results_type, folder, damping, screen):
             if i == 0:
                 # Path('results\\' + folder + "\\Peak.csv").touch()
                 dtype1 = np.dtype([('IJK', 'i4'), ('NST', 'i4'), ('TX1', 'f4'), ('ZETA','f4'), ('RTYTX','f4')])
-
                 ijk, nst, tx1, zeta, rtytx = np.loadtxt(var_param, delimiter=',', usecols=range(5), skiprows=1, unpack = True, dtype=dtype1)
                 vector_length = len(ijk)
                 ijk = ijk.reshape(vector_length,1)
@@ -354,6 +353,7 @@ def spectral(earthquakes, results_type, folder, damping, screen):
                 tx1 = tx1.reshape(vector_length,1)
                 zeta = zeta.reshape(vector_length,1)
                 rtytx = rtytx.reshape(vector_length,1)
+
                 peakmat = np.hstack((ijk, nst, tx1, zeta, rtytx, peakvalues))
                 peakmathead = ['#', 'N', 'T', 'ZETA', 'RTYTX'] +  [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
             else:
@@ -578,11 +578,11 @@ def biso_osbi(const_param, var_param, iso_param, earthquakes, knor, results_type
 
     # RESULT FOLDER SETUP
     folder = createfolder(folder)
-    os.makedirs('results\\' + folder + '\\Time History Response')
+    os.makedirs(os.path.join('results', folder, 'Time History Response'))
     simulationdesc = input('Enter simulation description [None] : ')
     if simulationdesc:
-        Path('results\\' + folder + "\\SimulationInfo.csv").touch()
-        with open('results\\' + folder + "\\SimulationInfo.csv", 'w') as f:
+        Path(os.path.join('results', folder, "SimulationInfo.csv")).touch()
+        with open(os.path.join('results', folder, "SimulationInfo.csv"), 'w') as f:
             for line in simulationdesc:
                 f.write(line)
         f.close()
@@ -596,13 +596,14 @@ def biso_osbi(const_param, var_param, iso_param, earthquakes, knor, results_type
 
     total_param = get_total_variable_parameter_set(var_param)
     print("Total Parameters: " + str(total_param))
+    print("Total EQs: " + str(total_eq))
     
     # CONSTANT PARAMETER SETUP
     maxnst, am, ak = read_const_param(const_param)
 
     peakvalues = None
     for i in range(total_eq):
-        ref, xg, yg, dt, ndiv, ndt = next(earthquake_generator)
+        ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
         # SUPERSTRUCTURE VARIABLE PARAMETER SETUP
         superstructure_param_generator = read_ss_var_param(var_param)
         
@@ -620,7 +621,7 @@ def biso_osbi(const_param, var_param, iso_param, earthquakes, knor, results_type
                 p_iso = iso
             
             result, model = simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso)    
-            analysis_folder = 'results\\' + folder + '\\Time History Response\\' + 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk)
+            analysis_folder = os.path.join('results', folder, 'Time History Response', 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))
             os.makedirs(analysis_folder)
             peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, analysis_folder)
          
@@ -629,9 +630,18 @@ def biso_osbi(const_param, var_param, iso_param, earthquakes, knor, results_type
                     peakvalues = peakvaluesparam
                 else:
                     peakvalues = np.vstack((peakvalues, peakvaluesparam))
+        
+        print('EQ' + str(ref) + 'Successful!')
 
         if peakvalues is not None:
             if i == 0:
+
+                #
+
+                # This place is dedicated to add model info in peak results as in spectral
+
+                # 
+
                 peakmat = peakvalues
                 peakmathead = [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
             else:
@@ -640,7 +650,7 @@ def biso_osbi(const_param, var_param, iso_param, earthquakes, knor, results_type
             if i == (total_eq - 1):
                 peakmat = pd.DataFrame(peakmat)
                 peakmat.columns = peakmathead
-                peakmat.to_csv('results\\' + folder + "\\Peak.csv", mode='w', sep=',', index=False)
+                peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
 
     return None
 

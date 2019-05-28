@@ -1,0 +1,32 @@
+function [PA PD] = PEAK(D1, A2, EQ, N, I, PAT, PDT)
+global PA PD
+[m n] = size(EQ);
+
+
+if m ==2
+AA(N-1:N,1) = A2(N-1:N,1) + EQ;
+AA(1:N-2,1) = A2(1:N-2,1) + I(1:N-2,1)*A2(N-1:N,1) + I(1:N-2,1)*EQ;
+PD = [max(abs(D1(1:2:N))); max(abs(D1(2:2:N)))];
+PA = [max(abs(AA(1:2:N))); max(abs(AA(2:2:N)));]
+else
+AA(N,1) = A2(N,1) + EQ;
+AA(1:N-1,1) = A2(1:N-1,1) + I(1:N-1,1)*A2(N,1) + I(1:N-1,1)*EQ;
+
+for i = 1:N
+    if (abs(PAT(i)) - abs(AA(i)) < 0
+        PAT = abs(AA(i));
+    end
+        
+    PD = max(abs(D1));
+
+end
+
+end
+
+
+
+
+
+
+end
+

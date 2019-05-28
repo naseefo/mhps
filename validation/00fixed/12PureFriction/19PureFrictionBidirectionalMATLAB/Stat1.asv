@@ -1,0 +1,14 @@
+function [ID,FAB] = Stat1(Q,QXY)
+
+ratio = sqrt(sum((Q.^2)./(QXY.^2)))
+ratio = 3
+if (ratio-1) < 1
+    FAB = Q;
+    ID = 1;
+else
+    FAB = Q/ratio;
+    ID = 0;
+end
+
+end
+

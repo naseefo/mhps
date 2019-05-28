@@ -1,0 +1,342 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Main_Stage02</title><meta name="generator" content="MATLAB 8.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2017-01-29"><meta name="DC.source" content="Main_Stage02.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">Constants</a></li><li><a href="#4">Checkboxes</a></li><li><a href="#5">Fixed Parameters Intialization</a></li><li><a href="#7">Superstructure Iterative Paramters Intialization</a></li><li><a href="#8">Base Isolator Iterative Parameters Initialization</a></li><li><a href="#9">Base Isolator Properties and Other Variables Calculations</a></li><li><a href="#11">Newmark Beta Parameters</a></li></ul></div><pre class="codeinput"><span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+<span class="comment">%                                                                         Program to find bi-directional response of shear type                                                                                                %</span>
+<span class="comment">%                                                                             building base-isolated with pure-friction system                                                                                                     %</span>
+<span class="comment">%                                                                                                                                                                                                                                                             %</span>
+<span class="comment">%                                                                                                     Developed by                                                                                                                                  %</span>
+<span class="comment">%                                                                              Naseef Ummer, Doctoral Research Scholar, IIT Delhi                                                                                            %</span>
+<span class="comment">%                                                                           Dr. Vasant A. Matsagar, Associate Professor, IIT Delhi                                                                                           %</span>
+<span class="comment">%                                                                                                                                                                                                                                                             %</span>
+<span class="comment">%     Last Updated On: 29.01.2017                                                                                                                                                                                                        %</span>
+<span class="comment">%     Approval Status: Pending | Validated but supervisor approval required                                                                                                                                        %</span>
+<span class="comment">%                                                                                                                                                                                                                                                             %</span>
+<span class="comment">%     Note: Pleasre refer for variable definitions towards the end of the code                                                                                                                                      %</span>
+<span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+
+
+clear <span class="string">all</span>
+clc
+
+tic
+</pre><p><img src="Main_Stage02_eq05913.png" alt="$$e^{\pi i} + 1 = 0$$"></p><pre class="codeinput">format <span class="string">short</span>
+format <span class="string">compact</span>
+</pre><h2>Constants<a name="3"></a></h2><pre class="codeinput">g = 9.8; <span class="comment">%m/s2</span>
+rad=pi/180; <span class="comment">% for converting degrees to radians</span>
+</pre><h2>Checkboxes<a name="4"></a></h2><pre class="codeinput">G_f_k_adjust=1; <span class="comment">%Change Line 26 accordingly (L_stiffness)</span>
+G_f_c_adjust=1; <span class="comment">%Change Line 27, 28 accordingly (L_damping ratios and G_f_damping)</span>
+</pre><h2>Fixed Parameters Intialization<a name="5"></a></h2><pre class="codeinput">fk= 1;      <span class="comment">%Common factor for L_stiffness</span>
+fm= 1;      <span class="comment">%Common factor for L_mass</span>
+fdr=0.05;   <span class="comment">% Common factor for L_dampring_ratios</span>
+
+L_mass = fm*[1 1 1 1 1]; <span class="comment">% Enter in unit kg</span>
+L_stiffness = fk*[1 1 1 1 1]; <span class="comment">% Enter in unit N/m</span>
+L_damping_ratios = fdr*[1 1 1 1 1]; <span class="comment">%Specify if classical caughey damping matrix is to be constructed</span>
+
+G_f_damping=[0]; <span class="comment">%Specify explicity if required but ensure G_f_c_adjust=0</span>
+
+load <span class="string">'Cent_acc_00.txt'</span> <span class="comment">%Ensure the data starts from "zero".</span>
+load <span class="string">'Cent_acc_90.txt'</span>
+XG = Cent_acc_00./100; <span class="comment">% '/100' used to converted cm/s2 to m/s2</span>
+YG = Cent_acc_90./100; <span class="comment">% '/100' used to converted cm/s2 to m/s2</span>
+
+DTN = 0.02; <span class="comment">% Time step in seconds</span>
+NDIV = 50;   <span class="comment">% Number of intervals the specified time interval is divided</span>
+NIT = 10;     <span class="comment">% Number of time gauss siedel method is applied to determine iterative solution for coupled equations</span>
+NST= length(L_mass); <span class="comment">% Number of storey</span>
+N = 1; <span class="comment">% Number of set of runs for different parameters to be executed</span>
+
+<span class="keyword">for</span> KN = 1:N
+</pre><h2>Superstructure Iterative Paramters Intialization<a name="7"></a></h2><pre class="codeinput">    TX1 = 0.5;
+    RTYTX = 1.0;
+</pre><h2>Base Isolator Iterative Parameters Initialization<a name="8"></a></h2><pre class="codeinput">    RMBM = 1;
+    TBX = 1;
+    TBY = 1;
+    ZETABX = 0.0;
+    ZETABY = 0.0;
+    BM = RMBM*L_mass(end);
+    AMU = 0.1;
+</pre><h2>Base Isolator Properties and Other Variables Calculations<a name="9"></a></h2><pre class="codeinput">    WBX = 2*pi/TBX;
+    WBY = 2*pi/TBY;
+    TM = BM+sum(L_mass);
+    QX = 9.81*AMU*TM;
+    QY = QX;
+    CKABX = TM*WBX^2;;
+    CKABY = TM*WBY^2;
+    CDABX = 2*ZETABX*WBX*TM;
+    CDABY = 2*ZETABY*WBY*TM;
+    DT = DTN/NDIV;
+    TY1 = RTYTX*TX1;
+
+    NSTC = 2*NST;
+    NDOF = NST + 1;
+    NDOFC = NSTC + 2;
+
+    [MSSx, CSSx, KSSx, MSGx] = MCKSS(L_mass, L_damping_ratios, L_stiffness,G_f_k_adjust,TX1,G_f_c_adjust);
+    [MSSy, CSSy, KSSy, MSGy] = MCKSS(L_mass, L_damping_ratios, L_stiffness,G_f_k_adjust,TY1,G_f_c_adjust);
+    [MSS, CSS, KSS, MSG] = MCKXY(MSSx, CSSx, KSSx, MSGx, MSSy, CSSy, KSSy, MSGy);
+
+    [MSBx, CSBx, KSBx, MSBGx, CNx, KNx] = MCKSB(MSSx, CSSx, KSSx, BM, CDABX, CKABX, NST, NDOF);
+    [MSBy, CSBy, KSBy, MSBGy, CNy, KNy] = MCKSB(MSSy, CSSy, KSSy, BM, CDABY, CKABY, NST, NDOF);
+    [MSB, CSB, KSB, MSBG] = MCKXY(MSBx, CSBx, KSBx, MSBGx, MSBy, CSBy, KSBy, MSBGy)
+</pre><pre class="codeoutput">MSB =
+     1     0     0     0     0     0     0     0     0     0     1     0
+     0     1     0     0     0     0     0     0     0     0     0     1
+     0     0     1     0     0     0     0     0     0     0     1     0
+     0     0     0     1     0     0     0     0     0     0     0     1
+     0     0     0     0     1     0     0     0     0     0     1     0
+     0     0     0     0     0     1     0     0     0     0     0     1
+     0     0     0     0     0     0     1     0     0     0     1     0
+     0     0     0     0     0     0     0     1     0     0     0     1
+     0     0     0     0     0     0     0     0     1     0     1     0
+     0     0     0     0     0     0     0     0     0     1     0     1
+     0     0     0     0     0     0     0     0     0     0     1     0
+     0     0     0     0     0     0     0     0     0     0     0     1
+CSB =
+  Columns 1 through 7
+    3.7864         0   -2.2073         0   -0.4891         0   -0.1946
+         0    3.7864         0   -2.2073         0   -0.4891         0
+   -2.2073         0    5.5047         0   -1.9129         0   -0.3702
+         0   -2.2073         0    5.5047         0   -1.9129         0
+   -0.4891         0   -1.9129         0    5.6235         0   -1.8371
+         0   -0.4891         0   -1.9129         0    5.6235         0
+   -0.1946         0   -0.3702         0   -1.8371         0    5.6993
+         0   -0.1946         0   -0.3702         0   -1.8371         0
+   -0.0757         0   -0.1189         0   -0.2945         0   -1.7183
+         0   -0.0757         0   -0.1189         0   -0.2945         0
+         0         0         0         0         0         0         0
+         0         0         0         0         0         0         0
+  Columns 8 through 12
+         0   -0.0757         0         0         0
+   -0.1946         0   -0.0757         0         0
+         0   -0.1189         0         0         0
+   -0.3702         0   -0.1189         0         0
+         0   -0.2945         0         0         0
+   -1.8371         0   -0.2945         0         0
+         0   -1.7183         0         0         0
+    5.6993         0   -1.7183         0         0
+         0    5.9938         0         0         0
+   -1.7183         0    5.9938         0         0
+         0   -4.2755         0    4.2755         0
+         0         0   -4.2755         0    4.2755
+KSB =
+   1.0e+03 *
+  Columns 1 through 7
+    1.9492         0   -1.9492         0         0         0         0
+         0    1.9492         0   -1.9492         0         0         0
+   -1.9492         0    3.8984         0   -1.9492         0         0
+         0   -1.9492         0    3.8984         0   -1.9492         0
+         0         0   -1.9492         0    3.8984         0   -1.9492
+         0         0         0   -1.9492         0    3.8984         0
+         0         0         0         0   -1.9492         0    3.8984
+         0         0         0         0         0   -1.9492         0
+         0         0         0         0         0         0   -1.9492
+         0         0         0         0         0         0         0
+         0         0         0         0         0         0         0
+         0         0         0         0         0         0         0
+  Columns 8 through 12
+         0         0         0         0         0
+         0         0         0         0         0
+         0         0         0         0         0
+         0         0         0         0         0
+         0         0         0         0         0
+   -1.9492         0         0         0         0
+         0   -1.9492         0         0         0
+    3.8984         0   -1.9492         0         0
+         0    3.8984         0         0         0
+   -1.9492         0    3.8984         0         0
+         0   -1.9492         0    2.1861         0
+         0         0   -1.9492         0    2.1861
+MSBG =
+     1     0     0     0     0     0     0     0     0     0     0     0
+     0     1     0     0     0     0     0     0     0     0     0     0
+     0     0     1     0     0     0     0     0     0     0     0     0
+     0     0     0     1     0     0     0     0     0     0     0     0
+     0     0     0     0     1     0     0     0     0     0     0     0
+     0     0     0     0     0     1     0     0     0     0     0     0
+     0     0     0     0     0     0     1     0     0     0     0     0
+     0     0     0     0     0     0     0     1     0     0     0     0
+     0     0     0     0     0     0     0     0     1     0     0     0
+     0     0     0     0     0     0     0     0     0     1     0     0
+     0     0     0     0     0     0     0     0     0     0     1     0
+     0     0     0     0     0     0     0     0     0     0     0     1
+</pre><pre class="codeinput"><span class="keyword">end</span>
+
+ht = toc
+avg_time_per_run = ht/N
+</pre><pre class="codeoutput">ht =
+    0.3448
+avg_time_per_run =
+    0.3448
+</pre><h2>Newmark Beta Parameters<a name="11"></a></h2><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2013a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                         Program to find bi-directional response of shear type                                                                                                %
+%                                                                             building base-isolated with pure-friction system                                                                                                     %
+%                                                                                                                                                                                                                                                             %
+%                                                                                                     Developed by                                                                                                                                  %
+%                                                                              Naseef Ummer, Doctoral Research Scholar, IIT Delhi                                                                                            %
+%                                                                           Dr. Vasant A. Matsagar, Associate Professor, IIT Delhi                                                                                           %
+%                                                                                                                                                                                                                                                             %
+%     Last Updated On: 29.01.2017                                                                                                                                                                                                        %
+%     Approval Status: Pending | Validated but supervisor approval required                                                                                                                                        %
+%                                                                                                                                                                                                                                                             %
+%     Note: Pleasre refer for variable definitions towards the end of the code                                                                                                                                      %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+clear all
+clc
+
+tic
+%%
+% 
+% $$e^{\pi i} + 1 = 0$$
+% 
+
+format short
+format compact
+
+%% Constants
+g = 9.8; %m/s2
+rad=pi/180; % for converting degrees to radians
+
+%% Checkboxes
+G_f_k_adjust=1; %Change Line 26 accordingly (L_stiffness)
+G_f_c_adjust=1; %Change Line 27, 28 accordingly (L_damping ratios and G_f_damping)
+
+%% Fixed Parameters Intialization
+
+fk= 1;      %Common factor for L_stiffness
+fm= 1;      %Common factor for L_mass
+fdr=0.05;   % Common factor for L_dampring_ratios
+
+L_mass = fm*[1 1 1 1 1]; % Enter in unit kg
+L_stiffness = fk*[1 1 1 1 1]; % Enter in unit N/m
+L_damping_ratios = fdr*[1 1 1 1 1]; %Specify if classical caughey damping matrix is to be constructed
+
+G_f_damping=[0]; %Specify explicity if required but ensure G_f_c_adjust=0
+
+load 'Cent_acc_00.txt' %Ensure the data starts from "zero".
+load 'Cent_acc_90.txt'
+XG = Cent_acc_00./100; % '/100' used to converted cm/s2 to m/s2
+YG = Cent_acc_90./100; % '/100' used to converted cm/s2 to m/s2
+
+DTN = 0.02; % Time step in seconds
+NDIV = 50;   % Number of intervals the specified time interval is divided
+NIT = 10;     % Number of time gauss siedel method is applied to determine iterative solution for coupled equations
+NST= length(L_mass); % Number of storey
+N = 1; % Number of set of runs for different parameters to be executed
+
+for KN = 1:N
+    
+    %% Superstructure Iterative Paramters Intialization
+    TX1 = 0.5;
+    RTYTX = 1.0;
+    
+    %% Base Isolator Iterative Parameters Initialization
+    RMBM = 1;
+    TBX = 1;
+    TBY = 1;
+    ZETABX = 0.0;
+    ZETABY = 0.0;
+    BM = RMBM*L_mass(end);
+    AMU = 0.1;
+    
+    %% Base Isolator Properties and Other Variables Calculations
+    WBX = 2*pi/TBX;
+    WBY = 2*pi/TBY;
+    TM = BM+sum(L_mass);
+    QX = 9.81*AMU*TM;
+    QY = QX;
+    CKABX = TM*WBX^2;;
+    CKABY = TM*WBY^2;
+    CDABX = 2*ZETABX*WBX*TM;
+    CDABY = 2*ZETABY*WBY*TM;
+    DT = DTN/NDIV;
+    TY1 = RTYTX*TX1;
+    
+    NSTC = 2*NST;
+    NDOF = NST + 1;
+    NDOFC = NSTC + 2;
+    
+    [MSSx, CSSx, KSSx, MSGx] = MCKSS(L_mass, L_damping_ratios, L_stiffness,G_f_k_adjust,TX1,G_f_c_adjust);
+    [MSSy, CSSy, KSSy, MSGy] = MCKSS(L_mass, L_damping_ratios, L_stiffness,G_f_k_adjust,TY1,G_f_c_adjust);
+    [MSS, CSS, KSS, MSG] = MCKXY(MSSx, CSSx, KSSx, MSGx, MSSy, CSSy, KSSy, MSGy);
+    
+    [MSBx, CSBx, KSBx, MSBGx, CNx, KNx] = MCKSB(MSSx, CSSx, KSSx, BM, CDABX, CKABX, NST, NDOF);
+    [MSBy, CSBy, KSBy, MSBGy, CNy, KNy] = MCKSB(MSSy, CSSy, KSSy, BM, CDABY, CKABY, NST, NDOF);
+    [MSB, CSB, KSB, MSBG] = MCKXY(MSBx, CSBx, KSBx, MSBGx, MSBy, CSBy, KSBy, MSBGy)
+end
+
+ht = toc
+avg_time_per_run = ht/N
+%% Newmark Beta Parameters
+
+##### SOURCE END #####
+--></body></html>

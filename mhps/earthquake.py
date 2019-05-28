@@ -359,7 +359,7 @@ def pattern_eq_2_handler(eq_string, ref_count, count_flag):
         yg_filename = filename
     zg_filename = ''
 
-    alhpa1 = 0.0
+    alpha1 = 0.0
     alpha2 = 0.0
     strike = 0.0
     rotx = 0.0

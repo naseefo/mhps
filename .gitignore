@@ -1,3 +1,5 @@
 results/
 accesskeys.csv
 phd.pem
+build/
+dist/
