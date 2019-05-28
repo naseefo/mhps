@@ -234,7 +234,9 @@ def seeq(earthquakes, unit, screen):
 
     for i in range(total_eq):
         ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
-        time = np.arange(0, ndt*dt, dt)
+        time = np.arange(0, (ndt-1)*dt*ndiv+dt, dt)
+        print(ndt, dt, ndt*dt, (ndt-1)*dt*ndiv, ndiv)
+        print(xg.size, yg.size, zg.size, time.size)
 
         plt.figure(i)
 
@@ -326,7 +328,8 @@ def spectral(earthquakes, results_type, folder, damping, screen):
                 smx, skx, cdx, smy, sky, cdy = superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor)
                 p_nst, p_tx1, p_rtytx, p_zeta = nst, tx1, rtytx, zeta
             result, model = fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx[0:nst,0:nst], skx[0:nst,0:nst], cdx[0:nst,0:nst], smy[0:nst,0:nst], sky[0:nst,0:nst], cdy[0:nst,0:nst], screen)
-            analysis_folder = 'results\\' + folder + '\\Time History Response\\' + 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk)
+            # analysis_folder = 'results\\' + folder + '\\Time History Response\\' + 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk)
+            analysis_folder = os.path.join('results', folder, 'Time History Response', 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))
             os.makedirs(analysis_folder)
             peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, analysis_folder)
          
@@ -335,6 +338,7 @@ def spectral(earthquakes, results_type, folder, damping, screen):
                     peakvalues = peakvaluesparam
                 else:
                     peakvalues = np.vstack((peakvalues, peakvaluesparam))
+        print('EQ' + str(ref) + 'Successful!')
 
 
         

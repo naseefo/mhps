@@ -125,6 +125,7 @@ def eq_finder(command):
         len_xg = h1.size
         len_yg = h2.size
         ndt = min(ndt, len_xg, len_yg)
+        # print(ndt)
         if len_xg >= ndt:
             h1 = h1[:ndt]
         if len_yg >= ndt:
@@ -156,11 +157,19 @@ def eq_finder(command):
         len_yg = yg.size
         len_zg = zg.size
         ndt = min(ndt, len_xg, len_yg, len_zg)
+        # print(len_zg)
+        # print(ndt)
         if len_zg >= ndt:
             zg = zg[:ndt]
-        if len_zg < ndt:
+        if len_zg <= ndt:
             xg = xg[:ndt]
             yg = yg[:ndt]
+        # print(xg.size)
+        # print(xg/9.81)
+        # print(yg.size)
+        # print(yg/9.81)
+        # print(zg.size)
+        # print(zg/9.81)
     else:
         zg = np.zeros(xg.size, dtype='float')
     

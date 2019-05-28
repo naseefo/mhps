@@ -167,10 +167,10 @@ def superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor):
 
     return smx, skx, cdx, smy, sky, cdy
 
-
+@profile
 def fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx, skx, cdx, smy, sky, cdy, screen_on):
     
-
+    # print(ndt)
     gamma = 0.5
     beta = 1/6
 
