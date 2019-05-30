@@ -26,6 +26,8 @@ from mhps.awsmanager import upload
 import shutil
 import matplotlib.pyplot as plt
 import time
+import datetime
+from mhps.colorfn import prGreen
 
 
 np.seterr(all='warn')
@@ -156,19 +158,22 @@ def fixed_fn(const_param, var_param, earthquakes, knor, results_type, lxy, folde
     s_rate2 = 0.33
     s_rate = 1.5
     tot_time_eq2 = 0.0
-    lines = []
+    nparam = 1.0
+
     peakvalues = None
     start_t_eq = time.time()
     for i in range(total_eq):
-        eq_dur = 0
         start_t = time.time()
         ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
+
         teq2 = (ndt-1)*dt*ndiv
         tot_time_eq2 = (tot_time_eq2 + teq2)/ref
-        time_current_eq = max(s_rate*total_param, s_rate2*teq2*total_param)
-        time_remaining = (total_eq-ref+1)*max(tot_time_eq2*s_rate2*total_param,total_param*s_rate)
-        print('FACT: Duration of EQ = %8.4fs'%(teq2))
-        print('EXPECTATION: Analysis Duration = %8.4fs | Total Duration Remaining = %8.4fs'%(time_current_eq, time_remaining))
+        coeff1 = (0.0379*pow(ndiv, 1.5073))*pow(teq2, -0.6251*pow(ndiv, 0.125))
+        time_current_eq = nparam*teq2*coeff1    #max(s_rate*total_param, s_rate2*teq2*total_param)
+        time_remaining = (total_eq-ref+1)*(tot_time_eq2*coeff1*nparam)
+        print('FACT: Duration of EQ = %8.4fs'%(teq2) + " | Start Time: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        print('EXPECTATION: Analysis Duration = %8.2fs (%8.2f m) | Total Duration Remaining = %8.2fs (%6.2f m, %5.2fh)'%(time_current_eq, time_current_eq/60, time_remaining, time_remaining/60, time_remaining/60/60) + prGreen(' | Estimated Completion Time: ') + (datetime.datetime.now()+datetime.timedelta(seconds = time_current_eq)).strftime("%Y-%m-%d %H:%M:%S"))
+
         # SUPERSTRUCTURE VARIABLE PARAMETER SETUP
         superstructure_param_generator = read_ss_var_param(var_param)
         for j in range(total_param):
@@ -207,22 +212,16 @@ def fixed_fn(const_param, var_param, earthquakes, knor, results_type, lxy, folde
                 peakmat.columns = peakmathead
                 peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
                 # peakmat.to_csv('results\\' + folder + "\\Peak.csv", mode='w', sep=',', index=False)
+        
         end_t = time.time()
         eq_dur = end_t - start_t
         s_rate = eq_dur/total_param
         s_rate2 = eq_dur/teq2/total_param
-        lines.append('%d, %8.4f, %8.4f, %8.4f\n'%(ndiv, teq2, s_rate, s_rate2))
-
+        nparam = eq_dur/(teq2*coeff1)
         print("REALIZATION: Analysis Duration = %8.4fs | Parameter Speed Rate = %8.4fs | EQ Speed Rate = %8.4fs | Total Time Elapsed = %8.4f"%(eq_dur, s_rate, s_rate2, (end_t - start_t_eq)))
-        print('STATUS: Earthquake #%d completed successfully!\n\n'%(ref))
-
+        print('STATUS: Earthquake #%d completed successfully!'%(ref) + " | End Time: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n\n")
     end_t_eq = time.time()
     print('STATUS OVERALL: Complete Duration = %8.4f'%(end_t_eq - start_t_eq))
-
-    with open(os.path.join('timer90.csv'), 'w') as f:
-            for line in lines:
-                f.write(line)
-    f.close()
 
     try:
         if upload_preference == 'y':
@@ -345,9 +344,24 @@ def spectral(earthquakes, results_type, folder, damping, screen):
     # CONSTANT PARAMETER SETUP
     maxnst, am, ak = read_const_param(const_param)
 
+    s_rate2 = 0.33
+    s_rate = 1.5
+    tot_time_eq2 = 0.0
+    nparam = 1.0
+
     peakvalues = None
     for i in range(total_eq):
+        start_t = time.time()
         ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
+
+        teq2 = (ndt-1)*dt*ndiv
+        tot_time_eq2 = (tot_time_eq2 + teq2)/ref
+        coeff1 = (0.0379*pow(ndiv, 1.5073))*pow(teq2, -0.6251*pow(ndiv, 0.125))
+        time_current_eq = nparam*teq2*coeff1    #max(s_rate*total_param, s_rate2*teq2*total_param)
+        time_remaining = (total_eq-ref+1)*(tot_time_eq2*coeff1*nparam)
+        print('FACT: Duration of EQ = %8.4fs'%(teq2) + " | Start Time: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        print('EXPECTATION: Analysis Duration = %8.2fs (%8.2f m) | Total Duration Remaining = %8.2fs (%6.2f m, %5.2fh)'%(time_current_eq, time_current_eq/60, time_remaining, time_remaining/60, time_remaining/60/60) + ' | Estimated Completion Time: ' + (datetime.datetime.now()+datetime.timedelta(seconds = time_current_eq)).strftime("%Y-%m-%d %H:%M:%S"))
+        
         # SUPERSTRUCTURE VARIABLE PARAMETER SETUP
         superstructure_param_generator = read_ss_var_param(var_param)
         for j in range(total_param):
@@ -395,6 +409,15 @@ def spectral(earthquakes, results_type, folder, damping, screen):
                 peakmat.columns = peakmathead
                 # peakmat.to_csv('results\\' + folder + "\\Peak.csv", mode='w', sep=',', index=False)
                 peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
+        end_t = time.time()
+        eq_dur = end_t - start_t
+        s_rate = eq_dur/total_param
+        s_rate2 = eq_dur/teq2/total_param
+        nparam = eq_dur/(teq2*coeff1)
+        print("REALIZATION: Analysis Duration = %8.4fs | Parameter Speed Rate = %8.4fs | EQ Speed Rate = %8.4fs | Total Time Elapsed = %8.4f"%(eq_dur, s_rate, s_rate2, (end_t - start_t_eq)))
+        print('STATUS: Earthquake #%d completed successfully!'%(ref) + " | End Time: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n\n")
+    end_t_eq = time.time()
+    print('STATUS OVERALL: Complete Duration = %8.4f'%(end_t_eq - start_t_eq))
         
     try:
         if upload_preference == 'y':
@@ -460,9 +483,24 @@ def biso_linear(const_param, var_param, iso_param, earthquakes, knor, results_ty
     # CONSTANT PARAMETER SETUP
     maxnst, am, ak = read_const_param(const_param)
 
+    s_rate2 = 0.33
+    s_rate = 1.5
+    tot_time_eq2 = 0.0
+    nparam = 1.0
+
     peakvalues = None
     for i in range(total_eq):
+        start_t = time.time()
         ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
+
+        teq2 = (ndt-1)*dt*ndiv
+        tot_time_eq2 = (tot_time_eq2 + teq2)/ref
+        coeff1 = (0.0379*pow(ndiv, 1.5073))*pow(teq2, -0.6251*pow(ndiv, 0.125))
+        time_current_eq = nparam*teq2*coeff1    #max(s_rate*total_param, s_rate2*teq2*total_param)
+        time_remaining = (total_eq-ref+1)*(tot_time_eq2*coeff1*nparam)
+        print('FACT: Duration of EQ = %8.4fs'%(teq2) + " | Start Time: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        print('EXPECTATION: Analysis Duration = %8.2fs (%8.2f m) | Total Duration Remaining = %8.2fs (%6.2f m, %5.2fh)'%(time_current_eq, time_current_eq/60, time_remaining, time_remaining/60, time_remaining/60/60) + ' | Estimated Completion Time: ' + (datetime.datetime.now()+datetime.timedelta(seconds = time_current_eq)).strftime("%Y-%m-%d %H:%M:%S"))
+        
         # SUPERSTRUCTURE VARIABLE PARAMETER SETUP
         superstructure_param_generator = read_ss_var_param(var_param)
         
@@ -513,6 +551,15 @@ def biso_linear(const_param, var_param, iso_param, earthquakes, knor, results_ty
                 # print(peakvaluesparamhead)
                 peakmat.columns = peakmathead
                 peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
+        end_t = time.time()
+        eq_dur = end_t - start_t
+        s_rate = eq_dur/total_param
+        s_rate2 = eq_dur/teq2/total_param
+        nparam = eq_dur/(teq2*coeff1)
+        print("REALIZATION: Analysis Duration = %8.4fs | Parameter Speed Rate = %8.4fs | EQ Speed Rate = %8.4fs | Total Time Elapsed = %8.4f"%(eq_dur, s_rate, s_rate2, (end_t - start_t_eq)))
+        print('STATUS: Earthquake #%d completed successfully!'%(ref) + " | End Time: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n\n")
+    end_t_eq = time.time()
+    print('STATUS OVERALL: Complete Duration = %8.4f'%(end_t_eq - start_t_eq))
 
     try:
         if upload_preference == 'y':
@@ -573,9 +620,24 @@ def biso_pf(const_param, var_param, iso_param, earthquakes, knor, results_type, 
     # CONSTANT PARAMETER SETUP
     maxnst, am, ak = read_const_param(const_param)
 
+    s_rate2 = 0.33
+    s_rate = 1.5
+    tot_time_eq2 = 0.0
+    nparam = 1.0
+
     peakvalues = None
     for i in range(total_eq):
+        start_t = time.time()
         ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
+
+        teq2 = (ndt-1)*dt*ndiv
+        tot_time_eq2 = (tot_time_eq2 + teq2)/ref
+        coeff1 = (0.0379*pow(ndiv, 1.5073))*pow(teq2, -0.6251*pow(ndiv, 0.125))
+        time_current_eq = nparam*teq2*coeff1    #max(s_rate*total_param, s_rate2*teq2*total_param)
+        time_remaining = (total_eq-ref+1)*(tot_time_eq2*coeff1*nparam)
+        print('FACT: Duration of EQ = %8.4fs'%(teq2) + " | Start Time: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        print('EXPECTATION: Analysis Duration = %8.2fs (%8.2f m) | Total Duration Remaining = %8.2fs (%6.2f m, %5.2fh)'%(time_current_eq, time_current_eq/60, time_remaining, time_remaining/60, time_remaining/60/60) + ' | Estimated Completion Time: ' + (datetime.datetime.now()+datetime.timedelta(seconds = time_current_eq)).strftime("%Y-%m-%d %H:%M:%S"))
+        
         # SUPERSTRUCTURE VARIABLE PARAMETER SETUP
         superstructure_param_generator = read_ss_var_param(var_param)
         
@@ -614,6 +676,15 @@ def biso_pf(const_param, var_param, iso_param, earthquakes, knor, results_type, 
                 peakmat = pd.DataFrame(peakmat)
                 peakmat.columns = peakmathead
                 peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
+        end_t = time.time()
+        eq_dur = end_t - start_t
+        s_rate = eq_dur/total_param
+        s_rate2 = eq_dur/teq2/total_param
+        nparam = eq_dur/(teq2*coeff1)
+        print("REALIZATION: Analysis Duration = %8.4fs | Parameter Speed Rate = %8.4fs | EQ Speed Rate = %8.4fs | Total Time Elapsed = %8.4f"%(eq_dur, s_rate, s_rate2, (end_t - start_t_eq)))
+        print('STATUS: Earthquake #%d completed successfully!'%(ref) + " | End Time: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n\n")
+    end_t_eq = time.time()
+    print('STATUS OVERALL: Complete Duration = %8.4f'%(end_t_eq - start_t_eq))
 
     try:
         if upload_preference == 'y':
@@ -673,9 +744,24 @@ def biso_osbi(const_param, var_param, iso_param, earthquakes, knor, results_type
     # CONSTANT PARAMETER SETUP
     maxnst, am, ak = read_const_param(const_param)
 
+    s_rate2 = 0.33
+    s_rate = 1.5
+    tot_time_eq2 = 0.0
+    nparam = 1.0
+
     peakvalues = None
     for i in range(total_eq):
+        start_t = time.time()
         ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
+
+        teq2 = (ndt-1)*dt*ndiv
+        tot_time_eq2 = (tot_time_eq2 + teq2)/ref
+        coeff1 = (0.0379*pow(ndiv, 1.5073))*pow(teq2, -0.6251*pow(ndiv, 0.125))
+        time_current_eq = nparam*teq2*coeff1    #max(s_rate*total_param, s_rate2*teq2*total_param)
+        time_remaining = (total_eq-ref+1)*(tot_time_eq2*coeff1*nparam)
+        print('FACT: Duration of EQ = %8.4fs'%(teq2) + " | Start Time: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        print('EXPECTATION: Analysis Duration = %8.2fs (%8.2f m) | Total Duration Remaining = %8.2fs (%6.2f m, %5.2fh)'%(time_current_eq, time_current_eq/60, time_remaining, time_remaining/60, time_remaining/60/60) + ' | Estimated Completion Time: ' + (datetime.datetime.now()+datetime.timedelta(seconds = time_current_eq)).strftime("%Y-%m-%d %H:%M:%S"))
+        
         # SUPERSTRUCTURE VARIABLE PARAMETER SETUP
         superstructure_param_generator = read_ss_var_param(var_param)
         
@@ -723,6 +809,15 @@ def biso_osbi(const_param, var_param, iso_param, earthquakes, knor, results_type
                 peakmat = pd.DataFrame(peakmat)
                 peakmat.columns = peakmathead
                 peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
+        end_t = time.time()
+        eq_dur = end_t - start_t
+        s_rate = eq_dur/total_param
+        s_rate2 = eq_dur/teq2/total_param
+        nparam = eq_dur/(teq2*coeff1)
+        print("REALIZATION: Analysis Duration = %8.4fs | Parameter Speed Rate = %8.4fs | EQ Speed Rate = %8.4fs | Total Time Elapsed = %8.4f"%(eq_dur, s_rate, s_rate2, (end_t - start_t_eq)))
+        print('STATUS: Earthquake #%d completed successfully!'%(ref) + " | End Time: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n\n")
+    end_t_eq = time.time()
+    print('STATUS OVERALL: Complete Duration = %8.4f'%(end_t_eq - start_t_eq))
 
     try:
         if upload_preference == 'y':
@@ -780,9 +875,24 @@ def biso_boucwen(const_param, var_param, iso_param, earthquakes, knor, results_t
     # CONSTANT PARAMETER SETUP
     maxnst, am, ak = read_const_param(const_param)
 
+    s_rate2 = 0.33
+    s_rate = 1.5
+    tot_time_eq2 = 0.0
+    nparam = 1.0
+
     peakvalues = None
     for i in range(total_eq):
+        start_t = time.time()
         ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
+
+        teq2 = (ndt-1)*dt*ndiv
+        tot_time_eq2 = (tot_time_eq2 + teq2)/ref
+        coeff1 = (0.0379*pow(ndiv, 1.5073))*pow(teq2, -0.6251*pow(ndiv, 0.125))
+        time_current_eq = nparam*teq2*coeff1    #max(s_rate*total_param, s_rate2*teq2*total_param)
+        time_remaining = (total_eq-ref+1)*(tot_time_eq2*coeff1*nparam)
+        print('FACT: Duration of EQ = %8.4fs'%(teq2) + " | Start Time: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        print('EXPECTATION: Analysis Duration = %8.2fs (%8.2f m) | Total Duration Remaining = %8.2fs (%6.2f m, %5.2fh)'%(time_current_eq, time_current_eq/60, time_remaining, time_remaining/60, time_remaining/60/60) + ' | Estimated Completion Time: ' + (datetime.datetime.now()+datetime.timedelta(seconds = time_current_eq)).strftime("%Y-%m-%d %H:%M:%S"))
+        
         # SUPERSTRUCTURE VARIABLE PARAMETER SETUP
         superstructure_param_generator = read_ss_var_param(var_param)
         
@@ -821,6 +931,15 @@ def biso_boucwen(const_param, var_param, iso_param, earthquakes, knor, results_t
                 peakmat = pd.DataFrame(peakmat)
                 peakmat.columns = peakmathead
                 peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
+        end_t = time.time()
+        eq_dur = end_t - start_t
+        s_rate = eq_dur/total_param
+        s_rate2 = eq_dur/teq2/total_param
+        nparam = eq_dur/(teq2*coeff1)
+        print("REALIZATION: Analysis Duration = %8.4fs | Parameter Speed Rate = %8.4fs | EQ Speed Rate = %8.4fs | Total Time Elapsed = %8.4f"%(eq_dur, s_rate, s_rate2, (end_t - start_t_eq)))
+        print('STATUS: Earthquake #%d completed successfully!'%(ref) + " | End Time: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n\n")
+    end_t_eq = time.time()
+    print('STATUS OVERALL: Complete Duration = %8.4f'%(end_t_eq - start_t_eq))
 
     try:
         if upload_preference == 'y':
