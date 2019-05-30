@@ -42,8 +42,8 @@ def read_const_param(const_param_file):
     f1  = open(const_param_file, 'r')
     
     maxnst = int(f1.readline().split(':')[1])
-    am = np.array([float(x.strip()) for x in f1.readline().split(':')[1:][0].strip().split(',')])
-    ak = np.array([float(x.strip()) for x in f1.readline().split(':')[1:][0].strip().split(',')])
+    am = np.array([np.double(x.strip()) for x in f1.readline().split(':')[1:][0].strip().split(',')])
+    ak = np.array([np.double(x.strip()) for x in f1.readline().split(':')[1:][0].strip().split(',')])
     
     f1.close()
     
@@ -57,7 +57,7 @@ def read_ss_var_param(var_param_file):
     to increase speed.
     """
     
-    dtype1 = np.dtype([('IJK', 'i4'), ('NST', 'i4'), ('TX1', 'f4'), ('ZETA','f4'), ('RTYTX','f4')])
+    dtype1 = np.dtype([('IJK', 'i4'), ('NST', 'i4'), ('TX1', 'd'), ('ZETA','d'), ('RTYTX','d')])
 
     ijk, nst, tx1, zeta, rtytx = np.loadtxt \
     (var_param_file, delimiter=',', usecols=range(5),\
@@ -78,7 +78,7 @@ def read_ss_var_param(var_param_file):
 
 def get_total_variable_parameter_set(var_param_file):
  
-    dtype1 = np.dtype([('IJK', 'i4'), ('NST', 'i4'), ('TX1', 'f4'), ('ZETA','f4')])
+    dtype1 = np.dtype([('IJK', 'i4'), ('NST', 'i4'), ('TX1', 'd'), ('ZETA','d')])
 
     ijk, nst, tx1, zeta = np.loadtxt(var_param_file, delimiter=',', usecols=range(4), skiprows=1, unpack = True, dtype=dtype1)
     try:
@@ -96,20 +96,20 @@ def superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor):
     zeta = np.ones(nst)*zeta
 
     # Calculation of msss matrix in x-direction
-    smx = np.zeros(shape=(nst+1,nst+1), dtype=np.dtype('d'), order='C')
+    smx = np.zeros(shape=(nst+1,nst+1), dtype=np.dtype('d'), order='F')
     smx[0:nst,0:nst] = np.diag(am[0:nst])   # ------> Mass matrix in x-direction
 
     # Calculation of msss matrix in y-direction
-    smy = np.zeros(shape=(nst+1,nst+1), dtype=np.dtype('d'), order='C')
+    smy = np.zeros(shape=(nst+1,nst+1), dtype=np.dtype('d'), order='F')
     smy = smx                  # ------> Mass matrix in y-direction
 
     # Calculation of stiffness matrix in x- and y-direction
-    temp = np.array([[1.,-1.],[-1.,1.]], dtype=np.dtype('d'))
-    skx = np.zeros(shape=(nst+1,nst+1), dtype=np.dtype('d'), order='C')
+    temp = np.array([[1.,-1.],[-1.,1.]], dtype=np.dtype('d'),order='F')
+    skx = np.zeros(shape=(nst+1,nst+1), dtype=np.dtype('d'), order='F')
     for i in range(nst-1):
         skx[i:i+2,i:i+2] += temp*ak[i]
     skx[-2,-2] += ak[-1]
-    sky = np.zeros(shape=(nst+1,nst+1), dtype=np.dtype('d'), order='C')
+    sky = np.zeros(shape=(nst+1,nst+1), dtype=np.dtype('d'), order='F')
     sky = skx
     del temp
     
@@ -141,7 +141,7 @@ def superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor):
     c_w = (np.ones((nst,nst))*W[None,:]).T
     c_w = np.power(c_w,np.arange(-1,2*nst-2,2))
     a_i = np.dot(np.linalg.inv(c_w),2.0*zeta[0:nst].reshape(nst,1))
-    cdx = np.zeros(shape=(nst+1,nst+1),dtype=np.dtype('d'))
+    cdx = np.zeros(shape=(nst+1,nst+1),dtype=np.dtype('d'), order='F')
     for i in range(nst):
         cdx[0:nst,0:nst] += np.dot(np.linalg.matrix_power(D,i),smx[0:nst,0:nst])*a_i[i]  # Damping matrix in x-direction
     del W, c_w, a_i, D, T
@@ -160,7 +160,7 @@ def superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor):
     c_w = (np.ones((nst,nst))*W[None,:]).T
     c_w = np.power(c_w,np.arange(-1,2*nst-2,2))
     a_i = np.dot(np.linalg.inv(c_w),2.0*zeta[0:nst].reshape(nst,1))
-    cdy = np.zeros(shape=(nst+1,nst+1),dtype=np.dtype('d'))
+    cdy = np.zeros(shape=(nst+1,nst+1),dtype=np.dtype('d'), order='F')
     for i in range(nst):
         cdy[0:nst,0:nst] += np.dot(np.linalg.matrix_power(D,i),smx[0:nst,0:nst])*a_i[i]  # Damping matrix in y-direction
     del W, c_w, a_i, D, T
@@ -169,7 +169,8 @@ def superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor):
 
 # @profile
 def fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx, skx, cdx, smy, sky, cdy, screen_on):
-    
+    # print(skx)
+    # print(smx)
     # print(ndt)
     gamma = 0.5
     beta = 1/6
@@ -181,52 +182,52 @@ def fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx, skx, cdx, sm
     smy_inv = np.linalg.inv(smy)
     smy_diag = np.diag(-1.0*smy).reshape(nst,1)
 
-    time = np.zeros((1, ndt), dtype=float)
+    time = np.zeros((1, ndt), dtype=np.dtype('d'), order='F')
     
-    dx = np.zeros((nst, ndt), dtype=float)
-    vx = np.zeros((nst, ndt), dtype=float)
-    ax = np.zeros((nst, ndt), dtype=float)
-    aax = np.zeros((nst, ndt), dtype=float)
-    gx = np.zeros((1, ndt), dtype=float)
-    dy = np.zeros((nst, ndt), dtype=float)
-    vy = np.zeros((nst, ndt), dtype=float)
-    ay = np.zeros((nst, ndt), dtype=float)
-    aay = np.zeros((nst, ndt), dtype=float)
-    gy = np.zeros((1, ndt), dtype=float)
+    dx = np.zeros((nst, ndt), dtype=np.dtype('d'), order='F')
+    vx = np.zeros((nst, ndt), dtype=np.dtype('d'), order='F')
+    ax = np.zeros((nst, ndt), dtype=np.dtype('d'), order='F')
+    aax = np.zeros((nst, ndt), dtype=np.dtype('d'), order='F')
+    gx = np.zeros((1, ndt), dtype=np.dtype('d'), order='F')
+    dy = np.zeros((nst, ndt), dtype=np.dtype('d'), order='F')
+    vy = np.zeros((nst, ndt), dtype=np.dtype('d'), order='F')
+    ay = np.zeros((nst, ndt), dtype=np.dtype('d'), order='F')
+    aay = np.zeros((nst, ndt), dtype=np.dtype('d'), order='F')
+    gy = np.zeros((1, ndt), dtype=np.dtype('d'), order='F')
 
     gx[0,0] = xg[0]
     gy[0,0] = yg[0]
 
-    fx = np.zeros((ndt, nst), dtype=float)
-    fy = np.zeros((ndt, nst), dtype=float)
-    ek = np.zeros((ndt, 1), dtype=float)
-    ed = np.zeros((ndt, 1), dtype=float)
-    es = np.zeros((ndt, 1), dtype=float)
-    ei = np.zeros((ndt, 1), dtype=float)
-    error = np.zeros((ndt, 1), dtype=float)
+    fx = np.zeros((ndt, nst), dtype=np.dtype('d'), order='F')
+    fy = np.zeros((ndt, nst), dtype=np.dtype('d'), order='F')
+    ek = np.zeros((ndt, 1), dtype=np.dtype('d'), order='F')
+    ed = np.zeros((ndt, 1), dtype=np.dtype('d'), order='F')
+    es = np.zeros((ndt, 1), dtype=np.dtype('d'), order='F')
+    ei = np.zeros((ndt, 1), dtype=np.dtype('d'), order='F')
+    error = np.zeros((ndt, 1), dtype=np.dtype('d'), order='F')
 
 
-    dx1 = np.ones((nst, 1), dtype=float)*0.0
-    vx1 = np.ones((nst, 1), dtype=float)*0.0
-    ax1 = np.ones((nst, 1), dtype=float)*0.0
+    dx1 = np.ones((nst, 1), dtype=np.dtype('d'), order='F')*0.0
+    vx1 = np.ones((nst, 1), dtype=np.dtype('d'), order='F')*0.0
+    ax1 = np.ones((nst, 1), dtype=np.dtype('d'), order='F')*0.0
     px1 = smx_diag*xg[0] # px1 = smx_diag*xg[0] # Initial earthquake acceleration is considered zero
     ax1 = np.dot(smx_inv, px1 - np.dot(cdx, vx1) - np.dot(skx, dx1))
-    dy1 = np.ones((nst, 1), dtype=float)*0.0
-    vy1 = np.ones((nst, 1), dtype=float)*0.0
-    ay1 = np.ones((nst, 1), dtype=float)*0.0
+    dy1 = np.ones((nst, 1), dtype=np.dtype('d'), order='F')*0.0
+    vy1 = np.ones((nst, 1), dtype=np.dtype('d'), order='F')*0.0
+    ay1 = np.ones((nst, 1), dtype=np.dtype('d'), order='F')*0.0
     py1 = smy_diag*yg[0] # px1 = smx_diag*xg[0] # Initial earthquake acceleration is considered zero
     ay1 = np.dot(smy_inv, py1 - np.dot(cdy, vy1) - np.dot(sky, dy1))
 
-    # I = np.ones((nst,1), dtype=float)
+    # I = np.ones((nst,1), dtype=np.dtype('d'))
 
-    dx2 = np.zeros((nst, 1), dtype=float)
-    vx2 = np.zeros((nst, 1), dtype=float)
-    px2 = np.zeros((nst, 1), dtype=float)
-    ax2 = np.zeros((nst, 1), dtype=float)
-    dy2 = np.zeros((nst, 1), dtype=float)
-    vy2 = np.zeros((nst, 1), dtype=float)
-    py2 = np.zeros((nst, 1), dtype=float)
-    ay2 = np.zeros((nst, 1), dtype=float)
+    dx2 = np.zeros((nst, 1), dtype=np.dtype('d'), order='F')
+    vx2 = np.zeros((nst, 1), dtype=np.dtype('d'), order='F')
+    px2 = np.zeros((nst, 1), dtype=np.dtype('d'), order='F')
+    ax2 = np.zeros((nst, 1), dtype=np.dtype('d'), order='F')
+    dy2 = np.zeros((nst, 1), dtype=np.dtype('d'), order='F')
+    vy2 = np.zeros((nst, 1), dtype=np.dtype('d'), order='F')
+    py2 = np.zeros((nst, 1), dtype=np.dtype('d'), order='F')
+    ay2 = np.zeros((nst, 1), dtype=np.dtype('d'), order='F')
     
 
     na1x = (1.0/beta/np.power(dt,2))*smx + (gamma/beta/dt)*cdx
@@ -259,7 +260,7 @@ def fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx, skx, cdx, sm
     esi = 0.0
     eii = 0.0
 
-    r = np.ones((nst, 1), dtype=float)
+    r = np.ones((nst, 1), dtype=np.dtype('d'), order='F')
 
     for i in range(1,len(xg)):
 
@@ -273,6 +274,7 @@ def fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx, skx, cdx, sm
         #     print(pcx1.flags)
 
         dx2 = np.dot(knx_inv, pcx1)
+        # print(dx2)
         vx2 = (gamma/beta/dt)*(dx2 - dx1) + (1.0 - gamma/beta)*vx1 + dt*(1.0 - gamma/2.0/beta)*ax1
         ax2 = np.dot(smx_inv, px2 - np.dot(cdx, vx2) - np.dot(skx, dx2))
         dx1, vx1, px1, ax1 = dx2, vx2, px2, ax2 

@@ -25,6 +25,7 @@ import csv
 from mhps.awsmanager import upload
 import shutil
 import matplotlib.pyplot as plt
+import time
 
 
 np.seterr(all='warn')
@@ -63,7 +64,7 @@ def cli1():
 @click.option('--var_param', '-vp',type=str, default= 'SS_VP.csv', help= 'File name containing variable parameters for the structure')
 @click.option('--earthquakes','-eq', type=(str), default= "Excitations.csv", help= 'Earthquakes')
 @click.option('--knor', '-knor', type=int, default=1, help="Normalizing the superstructure for given time period. 1 for normalized and 0 for un-normalized.")
-@click.option('--results_type', '-r', type=str, default="aa1, paa1", help="Choice to select output results")
+@click.option('--results_type', '-r', type=str, default="g*, aa1, paa1", help="Choice to select output results")
 @click.option('--lxy', '-lxy', type=int, default=0)
 @click.option('--folder', '-f', type=str, default="result", help="Folder name to store result")
 @click.option('--folder', '-f', type=str, default="result", help="Folder name to store result")
@@ -152,9 +153,22 @@ def fixed_fn(const_param, var_param, earthquakes, knor, results_type, lxy, folde
     # CONSTANT PARAMETER SETUP
     maxnst, am, ak = read_const_param(const_param)
 
+    s_rate2 = 0.33
+    s_rate = 1.5
+    tot_time_eq2 = 0.0
+    lines = []
     peakvalues = None
+    start_t_eq = time.time()
     for i in range(total_eq):
+        eq_dur = 0
+        start_t = time.time()
         ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
+        teq2 = (ndt-1)*dt*ndiv
+        tot_time_eq2 = (tot_time_eq2 + teq2)/ref
+        time_current_eq = max(s_rate*total_param, s_rate2*teq2*total_param)
+        time_remaining = (total_eq-ref+1)*max(tot_time_eq2*s_rate2*total_param,total_param*s_rate)
+        print('FACT: Duration of EQ = %8.4fs'%(teq2))
+        print('EXPECTATION: Analysis Duration = %8.4fs | Total Duration Remaining = %8.4fs'%(time_current_eq, time_remaining))
         # SUPERSTRUCTURE VARIABLE PARAMETER SETUP
         superstructure_param_generator = read_ss_var_param(var_param)
         for j in range(total_param):
@@ -165,10 +179,10 @@ def fixed_fn(const_param, var_param, earthquakes, knor, results_type, lxy, folde
                 p_nst, p_tx1, p_rtytx, p_zeta = nst, tx1, rtytx, zeta
                 
             result, model = fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx[0:nst,0:nst], skx[0:nst,0:nst], cdx[0:nst,0:nst], smy[0:nst,0:nst], sky[0:nst,0:nst], cdy[0:nst,0:nst], screen)
-            analysis_folder = os.path.join('results', folder,'Time History Response','ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))
+            
             # analysis_folder = 'results\\' + folder + '\\Time History Response\\' + 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk)
-            os.makedirs(analysis_folder)
-            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, analysis_folder)
+            
+            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, folder)
          
             if peakvaluesparam is not None:
                 if j == 0:
@@ -188,13 +202,27 @@ def fixed_fn(const_param, var_param, earthquakes, knor, results_type, lxy, folde
                 peakmathead += [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
             if i == (total_eq - 1):
                 peakmat = pd.DataFrame(peakmat)
-                print(peakmat)
-                print(peakvaluesparamhead)
+                # print(peakmat)
+                # print(peakvaluesparamhead)
                 peakmat.columns = peakmathead
                 peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
                 # peakmat.to_csv('results\\' + folder + "\\Peak.csv", mode='w', sep=',', index=False)
+        end_t = time.time()
+        eq_dur = end_t - start_t
+        s_rate = eq_dur/total_param
+        s_rate2 = eq_dur/teq2/total_param
+        lines.append('%d, %8.4f, %8.4f, %8.4f\n'%(ndiv, teq2, s_rate, s_rate2))
 
-    
+        print("REALIZATION: Analysis Duration = %8.4fs | Parameter Speed Rate = %8.4fs | EQ Speed Rate = %8.4fs | Total Time Elapsed = %8.4f"%(eq_dur, s_rate, s_rate2, (end_t - start_t_eq)))
+        print('STATUS: Earthquake #%d completed successfully!\n\n'%(ref))
+
+    end_t_eq = time.time()
+    print('STATUS OVERALL: Complete Duration = %8.4f'%(end_t_eq - start_t_eq))
+
+    with open(os.path.join('timer90.csv'), 'w') as f:
+            for line in lines:
+                f.write(line)
+    f.close()
 
     try:
         if upload_preference == 'y':
@@ -210,6 +238,7 @@ def fixed_fn(const_param, var_param, earthquakes, knor, results_type, lxy, folde
             access_id = input('Enter Access ID: ')
             access_secret = input('Enter Access Secret Key: ')
             upload(folder, access_id, access_secret)
+    
     
 
     return None
@@ -235,8 +264,8 @@ def seeq(earthquakes, unit, screen):
     for i in range(total_eq):
         ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
         time = np.arange(0, (ndt-1)*dt*ndiv+dt, dt)
-        print(ndt, dt, ndt*dt, (ndt-1)*dt*ndiv, ndiv)
-        print(xg.size, yg.size, zg.size, time.size)
+        # print(ndt, dt, ndt*dt, (ndt-1)*dt*ndiv, ndiv)
+        # print(xg.size, yg.size, zg.size, time.size)
 
         plt.figure(i)
 
@@ -329,9 +358,9 @@ def spectral(earthquakes, results_type, folder, damping, screen):
                 p_nst, p_tx1, p_rtytx, p_zeta = nst, tx1, rtytx, zeta
             result, model = fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx[0:nst,0:nst], skx[0:nst,0:nst], cdx[0:nst,0:nst], smy[0:nst,0:nst], sky[0:nst,0:nst], cdy[0:nst,0:nst], screen)
             # analysis_folder = 'results\\' + folder + '\\Time History Response\\' + 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk)
-            analysis_folder = os.path.join('results', folder, 'Time History Response', 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))
-            os.makedirs(analysis_folder)
-            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, analysis_folder)
+            # analysis_folder = os.path.join('results', folder, 'Time History Response', 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))
+            # os.makedirs(analysis_folder)
+            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, folder)
          
             if peakvaluesparam is not None:
                 if j == 0:
@@ -399,15 +428,21 @@ def fft():
 @click.option('--folder', '-f', type=str, default="Result", help="Folder name to store result")
 @click.option('--outputunits', type=list, default=['m/s2', 'cm/s', 'cm', 'kn', 'j'])
 @click.option('--lxy', '-lxy', type=int, default=0)
-def biso_linear(const_param, var_param, iso_param, earthquakes, knor, results_type, folder, outputunits, lxy):
+@click.option('--screen/--no-screen', default=False)
+def biso_linear(const_param, var_param, iso_param, earthquakes, knor, results_type, folder, outputunits, lxy, screen):
     print("I am in linear isolator module")
+
+    upload_preference = input('Do you wish to upload (default: no) ? [y/n] : ')
+
     # RESULT FOLDER SETUP
     folder = createfolder(folder)
-    os.makedirs('results\\' + folder + '\\Time History Response')
+    os.makedirs(os.path.join('results', folder, 'Time History Response'))
+    # os.makedirs('results\\' + folder + '\\Time History Response')
     simulationdesc = input('Enter simulation description [None] : ')
     if simulationdesc:
-        Path('results\\' + folder + "\\SimulationInfo.csv").touch()
-        with open('results\\' + folder + "\\SimulationInfo.csv", 'w') as f:
+        Path(os.path.join('results', folder, "SimulationInfo.csv")).touch()
+        # Path('results\\' + folder + "\\SimulationInfo.csv").touch()
+        with open(os.path.join('results', folder, "SimulationInfo.csv"), 'w') as f:
             for line in simulationdesc:
                 f.write(line)
         f.close()
@@ -427,7 +462,7 @@ def biso_linear(const_param, var_param, iso_param, earthquakes, knor, results_ty
 
     peakvalues = None
     for i in range(total_eq):
-        ref, xg, yg, dt, ndiv, ndt = next(earthquake_generator)
+        ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
         # SUPERSTRUCTURE VARIABLE PARAMETER SETUP
         superstructure_param_generator = read_ss_var_param(var_param)
         
@@ -450,11 +485,11 @@ def biso_linear(const_param, var_param, iso_param, earthquakes, knor, results_ty
                 ##? 
                 p_nst, p_tx1, p_rtytx, p_zeta, p_rmbm, p_tbx, p_zetabx, p_rtytxb, p_rzxzyb  = nst, tx1, rtytx, zeta, rmbm, tbx, zetabx, rtytxb, rzxzyb
             
-            result, model = simulator_linear(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy)    
+            result, model = simulator_linear(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, screen)    
             #result, model = fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx[0:nst,0:nst], skx[0:nst,0:nst], cdx[0:nst,0:nst], smy[0:nst,0:nst], sky[0:nst,0:nst], cdy[0:nst,0:nst])
-            analysis_folder = 'results\\' + folder + '\\Time History Response\\' + 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk)
-            os.makedirs(analysis_folder)
-            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, analysis_folder)
+            # analysis_folder = 'results\\' + folder + '\\Time History Response\\' + 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk)
+            # os.makedirs(analysis_folder)
+            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, folder)
          
             if peakvaluesparam is not None:
                 if j == 0:
@@ -477,8 +512,22 @@ def biso_linear(const_param, var_param, iso_param, earthquakes, knor, results_ty
                 # print(peakmat)
                 # print(peakvaluesparamhead)
                 peakmat.columns = peakmathead
-                peakmat.to_csv('results\\' + folder + "\\Peak.csv", mode='w', sep=',', index=False)
+                peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
 
+    try:
+        if upload_preference == 'y':
+            data = pd.read_csv("accesskeys.csv")
+            access_id = data['Access key ID'][0]
+            access_secret = data['Secret access key'][0]
+            upload(folder, access_id, access_secret)
+            shutil.rmtree(os.path.join('results',folder))
+    except:
+        print('Result stored locally')
+        chk = input('Do you wish to upload? (y/n) :')
+        if chk == 'y':
+            access_id = input('Enter Access ID: ')
+            access_secret = input('Enter Access Secret Key: ')
+            upload(folder, access_id, access_secret)
     
     return None
 
@@ -493,15 +542,20 @@ def biso_linear(const_param, var_param, iso_param, earthquakes, knor, results_ty
 @click.option('--folder', '-f', type=str, default="Result", help="Folder name to store result")
 @click.option('--outputunits', type=list, default=['m/s2', 'cm/s', 'cm', 'kn', 'j'])
 @click.option('--lxy', '-lxy', type=int, default=0)
-def biso_pf(const_param, var_param, iso_param, earthquakes, knor, results_type, folder, outputunits, lxy):
+@click.option('--screen/--no-screen', default=False)
+def biso_pf(const_param, var_param, iso_param, earthquakes, knor, results_type, folder, outputunits, lxy, screen):
+
+    upload_preference = input('Do you wish to upload (default: no) ? [y/n] : ')
 
     # RESULT FOLDER SETUP
     folder = createfolder(folder)
-    os.makedirs('results\\' + folder + '\\Time History Response')
+    os.makedirs(os.path.join('results', folder, 'Time History Response'))
+    # os.makedirs('results\\' + folder + '\\Time History Response')
     simulationdesc = input('Enter simulation description [None] : ')
     if simulationdesc:
-        Path('results\\' + folder + "\\SimulationInfo.csv").touch()
-        with open('results\\' + folder + "\\SimulationInfo.csv", 'w') as f:
+        Path(os.path.join('results', folder, "SimulationInfo.csv")).touch()
+        # Path('results\\' + folder + "\\SimulationInfo.csv").touch()
+        with open(os.path.join('results', folder, "SimulationInfo.csv"), 'w') as f:
             for line in simulationdesc:
                 f.write(line)
         f.close()
@@ -521,7 +575,7 @@ def biso_pf(const_param, var_param, iso_param, earthquakes, knor, results_type, 
 
     peakvalues = None
     for i in range(total_eq):
-        ref, xg, yg, dt, ndiv, ndt = next(earthquake_generator)
+        ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
         # SUPERSTRUCTURE VARIABLE PARAMETER SETUP
         superstructure_param_generator = read_ss_var_param(var_param)
         
@@ -538,10 +592,10 @@ def biso_pf(const_param, var_param, iso_param, earthquakes, knor, results_type, 
                 p_nst, p_tx1, p_rtytx, p_zeta  = nst, tx1, rtytx, zeta
                 p_iso = iso
             
-            result, model = simulator_pf(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso)    
-            analysis_folder = 'results\\' + folder + '\\Time History Response\\' + 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk)
-            os.makedirs(analysis_folder)
-            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, analysis_folder)
+            result, model = simulator_pf(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso, screen)    
+            # analysis_folder = 'results\\' + folder + '\\Time History Response\\' + 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk)
+            # os.makedirs(analysis_folder)
+            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, folder)
          
             if peakvaluesparam is not None:
                 if j == 0:
@@ -559,8 +613,23 @@ def biso_pf(const_param, var_param, iso_param, earthquakes, knor, results_type, 
             if i == (total_eq - 1):
                 peakmat = pd.DataFrame(peakmat)
                 peakmat.columns = peakmathead
-                peakmat.to_csv('results\\' + folder + "\\Peak.csv", mode='w', sep=',', index=False)
+                peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
 
+    try:
+        if upload_preference == 'y':
+            data = pd.read_csv("accesskeys.csv")
+            access_id = data['Access key ID'][0]
+            access_secret = data['Secret access key'][0]
+            upload(folder, access_id, access_secret)
+            shutil.rmtree(os.path.join('results',folder))
+    except:
+        print('Result stored locally')
+        chk = input('Do you wish to upload? (y/n) :')
+        if chk == 'y':
+            access_id = input('Enter Access ID: ')
+            access_secret = input('Enter Access Secret Key: ')
+            upload(folder, access_id, access_secret)
+    
     return None
 
 
@@ -574,7 +643,10 @@ def biso_pf(const_param, var_param, iso_param, earthquakes, knor, results_type, 
 @click.option('--folder', '-f', type=str, default="Result", help="Folder name to store result")
 @click.option('--outputunits', type=list, default=['m/s2', 'cm/s', 'cm', 'kn', 'j'])
 @click.option('--lxy', '-lxy', type=int, default=0)
-def biso_osbi(const_param, var_param, iso_param, earthquakes, knor, results_type, folder, outputunits, lxy):
+@click.option('--screen/--no-screen', default=False)
+def biso_osbi(const_param, var_param, iso_param, earthquakes, knor, results_type, folder, outputunits, lxy, screen):
+
+    upload_preference = input('Do you wish to upload (default: no) ? [y/n] : ')
 
     # RESULT FOLDER SETUP
     folder = createfolder(folder)
@@ -620,10 +692,10 @@ def biso_osbi(const_param, var_param, iso_param, earthquakes, knor, results_type
                 p_nst, p_tx1, p_rtytx, p_zeta  = nst, tx1, rtytx, zeta
                 p_iso = iso
             
-            result, model = simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso)    
-            analysis_folder = os.path.join('results', folder, 'Time History Response', 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))
-            os.makedirs(analysis_folder)
-            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, analysis_folder)
+            result, model = simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso, screen)    
+            # analysis_folder = os.path.join('results', folder, 'Time History Response', 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))
+            # os.makedirs(analysis_folder)
+            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, folder)
          
             if peakvaluesparam is not None:
                 if j == 0:
@@ -652,27 +724,45 @@ def biso_osbi(const_param, var_param, iso_param, earthquakes, knor, results_type
                 peakmat.columns = peakmathead
                 peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
 
+    try:
+        if upload_preference == 'y':
+            data = pd.read_csv("accesskeys.csv")
+            access_id = data['Access key ID'][0]
+            access_secret = data['Secret access key'][0]
+            upload(folder, access_id, access_secret)
+            shutil.rmtree(os.path.join('results',folder))
+    except:
+        print('Result stored locally')
+        chk = input('Do you wish to upload? (y/n) :')
+        if chk == 'y':
+            access_id = input('Enter Access ID: ')
+            access_secret = input('Enter Access Secret Key: ')
+            upload(folder, access_id, access_secret)
+    
     return None
 
 @cli1.command()
 @click.option('--const_param', '-cp',type=str, default= 'ConstantParameters.txt', help= 'File name containing constant parameters for the structure')
 @click.option('--var_param', '-vp',type=str, default= 'SS_VP.csv', help= 'File name containing variable parameters for the structure')
-@click.option('--iso_param', '-vp',type=str, default= 'BW_VP.csv', help= 'File name containing variable parameters for linear base isolator')
+@click.option('--iso_param', '-vp',type=str, default= 'OSBI_VP.csv', help= 'File name containing variable parameters for linear base isolator')
 @click.option('--earthquakes','-eq', type=(str), default= "Excitations.csv", help= 'Earthquakes')
 @click.option('--knor', '-knor', type=int, default=1, help="Normalizing the superstructure for given time period. 1 for normalized and 0 for un-normalized.")
 @click.option('--results_type', '-r', type=str, default="g*, aa1, db, f*, paa1, pdb", help="Choice to select output results")
 @click.option('--folder', '-f', type=str, default="Result", help="Folder name to store result")
 @click.option('--outputunits', type=list, default=['m/s2', 'cm/s', 'cm', 'kn', 'j'])
 @click.option('--lxy', '-lxy', type=int, default=0)
-def biso_simulator_boucwen(const_param, var_param, iso_param, earthquakes, knor, results_type, folder, outputunits, lxy):
+@click.option('--screen/--no-screen', default=False)
+def biso_boucwen(const_param, var_param, iso_param, earthquakes, knor, results_type, folder, outputunits, lxy, screen):
+
+    upload_preference = input('Do you wish to upload (default: no) ? [y/n] : ')
 
     # RESULT FOLDER SETUP
     folder = createfolder(folder)
-    os.makedirs('results\\' + folder + '\\Time History Response')
+    os.makedirs(os.path.join('results', folder, 'Time History Response'))
     simulationdesc = input('Enter simulation description [None] : ')
     if simulationdesc:
-        Path('results\\' + folder + "\\SimulationInfo.csv").touch()
-        with open('results\\' + folder + "\\SimulationInfo.csv", 'w') as f:
+        Path(os.path.join('results', folder, "SimulationInfo.csv")).touch()
+        with open(os.path.join('results', folder, "SimulationInfo.csv"), 'w') as f:
             for line in simulationdesc:
                 f.write(line)
         f.close()
@@ -692,7 +782,7 @@ def biso_simulator_boucwen(const_param, var_param, iso_param, earthquakes, knor,
 
     peakvalues = None
     for i in range(total_eq):
-        ref, xg, yg, dt, ndiv, ndt = next(earthquake_generator)
+        ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
         # SUPERSTRUCTURE VARIABLE PARAMETER SETUP
         superstructure_param_generator = read_ss_var_param(var_param)
         
@@ -709,10 +799,10 @@ def biso_simulator_boucwen(const_param, var_param, iso_param, earthquakes, knor,
                 p_nst, p_tx1, p_rtytx, p_zeta  = nst, tx1, rtytx, zeta
                 p_iso = iso
             
-            result, model = simulator_boucwen(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso)    
-            analysis_folder = 'results\\' + folder + '\\Time History Response\\' + 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk)
-            os.makedirs(analysis_folder)
-            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, analysis_folder)
+            result, model = simulator_boucwen(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso, screen)    
+            # analysis_folder = 'results\\' + folder + '\\Time History Response\\' + 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk)
+            # os.makedirs(analysis_folder)
+            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, folder)
          
             if peakvaluesparam is not None:
                 if j == 0:
@@ -730,8 +820,23 @@ def biso_simulator_boucwen(const_param, var_param, iso_param, earthquakes, knor,
             if i == (total_eq - 1):
                 peakmat = pd.DataFrame(peakmat)
                 peakmat.columns = peakmathead
-                peakmat.to_csv('results\\' + folder + "\\Peak.csv", mode='w', sep=',', index=False)
+                peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
 
+    try:
+        if upload_preference == 'y':
+            data = pd.read_csv("accesskeys.csv")
+            access_id = data['Access key ID'][0]
+            access_secret = data['Secret access key'][0]
+            upload(folder, access_id, access_secret)
+            shutil.rmtree(os.path.join('results',folder))
+    except:
+        print('Result stored locally')
+        chk = input('Do you wish to upload? (y/n) :')
+        if chk == 'y':
+            access_id = input('Enter Access ID: ')
+            access_secret = input('Enter Access Secret Key: ')
+            upload(folder, access_id, access_secret)
+    
     return None
 
 
@@ -741,85 +846,6 @@ def biso_simulator_boucwen(const_param, var_param, iso_param, earthquakes, knor,
 #                                                                                        #
 ##########################################################################################
 
-@cli1.command()
-@click.option('--const_param', '-cp',type=str, default= 'TorsionStructure_FP.txt', help= 'File name containing constant parameters for the structure')
-@click.option('--var_param', '-vp',type=str, default= 'SS_T_VP.csv', help= 'File name containing variable parameters for the structure')
-@click.option('--iso_param', '-vp',type=str, default= 'BW_T_VP.csv', help= 'File name containing variable parameters for linear base isolator')
-@click.option('--earthquakes','-eq', type=(str), default= "Excitations.csv", help= 'Earthquakes')
-@click.option('--knor', '-knor', type=int, default=1, help="Normalizing the superstructure for given time period. 1 for normalized and 0 for un-normalized.")
-@click.option('--results_type', '-r', type=str, default="g*, aa1, db, f*, paa1, pdb", help="Choice to select output results")
-@click.option('--folder', '-f', type=str, default="Result", help="Folder name to store result")
-@click.option('--outputunits', type=list, default=['m/s2', 'cm/s', 'cm', 'kn', 'j'])
-@click.option('--lxy', '-lxy', type=int, default=0)
-def bisot_simulator_boucwen(const_param, var_param, iso_param, earthquakes, knor, results_type, folder, outputunits, lxy):
-
-    # RESULT FOLDER SETUP
-    folder = createfolder(folder)
-    os.makedirs('results\\' + folder + '\\Time History Response')
-    simulationdesc = input('Enter simulation description [None] : ')
-    if simulationdesc:
-        Path('results\\' + folder + "\\SimulationInfo.csv").touch()
-        with open('results\\' + folder + "\\SimulationInfo.csv", 'w') as f:
-            for line in simulationdesc:
-                f.write(line)
-        f.close()
-
-    # EARTHQUAKE GENERATOR SETUP
-    if earthquakes:
-        total_eq = get_total_excitations(earthquakes)
-        earthquake_generator = get_earthquake_list(earthquakes)
-    else:
-        earthquake_generator = get_earthquake_list('db elc')
-
-    total_param = get_total_variable_parameter_set_torsion(var_param)
-    print("Total Parameters: " + str(total_param))
-    
-    # CONSTANT PARAMETER SETUP
-    fm, x, y, xb, yb = read_const_param_torsion(const_param)
-
-    peakvalues = None
-    for i in range(total_eq):
-        ref, xg, yg, dt, ndiv, ndt = next(earthquake_generator)
-        # SUPERSTRUCTURE VARIABLE PARAMETER SETUP
-        superstructure_param_generator = read_ss_torsion_var_param(var_param)
-        
-        # ISOLATOR VARIABLE PARAMETER SETUP
-        isolator_param_generator = read_iso_boucwen_var_param(iso_param)
-
-        for j in range(total_param):
-            ijk, tx1, zeta, exd, wrwx = next(superstructure_param_generator)
-            iso = next(isolator_param_generator)
-
-            if ((i == 0) and (j==0)) or ((p_tx1, p_zeta, p_exd, p_wrwx, p_iso != tx1, zeta, exd, wrwx, iso)):
-                sm, sk, cd = superstructure_torsion_propxy(nst, tx1, zeta, exd, wrwx)
-                sm, sk, cd = addlinear_iso(smx, skx, cdx, smy, sky, cdy, nst, iso.rmbm, iso.tbx, iso.zetabx, iso.rtytxb, iso.rzxzyb)
-                p_tx1, p_zeta, p_exd, p_wrwx = tx1, zeta, exd, wrwx
-                p_iso = iso
-            
-            result, model = simulator_boucwen(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso)    
-            analysis_folder = 'results\\' + folder + '\\Time History Response\\' + 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk)
-            os.makedirs(analysis_folder)
-            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, analysis_folder)
-         
-            if peakvaluesparam is not None:
-                if j == 0:
-                    peakvalues = peakvaluesparam
-                else:
-                    peakvalues = np.vstack((peakvalues, peakvaluesparam))
-
-        if peakvalues is not None:
-            if i == 0:
-                peakmat = peakvalues
-                peakmathead = [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
-            else:
-                peakmat = np.hstack((peakmat, peakvalues))
-                peakmathead += [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
-            if i == (total_eq - 1):
-                peakmat = pd.DataFrame(peakmat)
-                peakmat.columns = peakmathead
-                peakmat.to_csv('results\\' + folder + "\\Peak.csv", mode='w', sep=',', index=False)
-
-    return None
 
 
 

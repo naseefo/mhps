@@ -68,7 +68,7 @@ def read_iso_boucwen_var_param(var_param_file):
     to increase speed.
     """
     print(var_param_file)
-    dtype1 = np.dtype([('IJK', 'i4'), ('RMBM', 'f4'), ('TBX', 'f4'), ('ZETABX','f4'), ('RTYTXB','f4'), ('RZXZYB', 'f4'), ('BT', 'f4'), ('G2', 'f4'), ('A', 'f4'), ('NT', 'f4'), ('F0', 'f4'), ('G1', 'f4'), ('KG', 'f4'), ('CG', 'f4'), ('DG', 'f4')])
+    dtype1 = np.dtype([('IJK', 'i4'), ('RMBM', 'd'), ('TBX', 'd'), ('ZETABX','d'), ('RTYTXB','d'), ('RZXZYB', 'd'), ('BT', 'd'), ('G2', 'd'), ('A', 'd'), ('NT', 'd'), ('F0', 'd'), ('G1', 'd'), ('KG', 'd'), ('CG', 'd'), ('DG', 'd')])
     
     ijk, rmbm, tbx, zetabx, rtytxb, rzyzxb, bt, g2, a, nt, f0, g1, kg, cg, dg = np.loadtxt \
     (var_param_file, delimiter=',', usecols=range(15), skiprows=1, unpack = True, dtype=dtype1)
@@ -166,7 +166,7 @@ def wen(iso, vx, vy, zx, zy, dt, alpx, alpy, kbx, kby, fyx, fyy):
     return dpzx, dpzy, dzx, dzy
 
 #@profile 
-def simulator_boucwen(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, smy, sky, cdy, iso):
+def simulator_boucwen(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, smy, sky, cdy, iso, screen_on):
     
     nit = 3
     nst = ndof - 1
@@ -184,58 +184,58 @@ def simulator_boucwen(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx,
     fyx = iso.f0*tm*9.81
     fyy = iso.f0*tm*9.81
 
-    time = np.zeros((1, ndt), dtype=float)
+    time = np.zeros((1, ndt), dtype=np.dtype('d'), order ='F')
     
-    dx = np.zeros((ndof, ndt), dtype=float)
-    vx = np.zeros((ndof, ndt), dtype=float)
-    ax = np.zeros((ndof, ndt), dtype=float)
-    aax = np.zeros((ndof, ndt), dtype=float)
-    gx = np.zeros((1, ndt), dtype=float)
-    ddx = np.zeros((ndof, 1), dtype=float)
-    dvx = np.zeros((ndof, 1), dtype=float)
+    dx = np.zeros((ndof, ndt), dtype=np.dtype('d'), order ='F')
+    vx = np.zeros((ndof, ndt), dtype=np.dtype('d'), order ='F')
+    ax = np.zeros((ndof, ndt), dtype=np.dtype('d'), order ='F')
+    aax = np.zeros((ndof, ndt), dtype=np.dtype('d'), order ='F')
+    gx = np.zeros((1, ndt), dtype=np.dtype('d'), order ='F')
+    ddx = np.zeros((ndof, 1), dtype=np.dtype('d'), order ='F')
+    dvx = np.zeros((ndof, 1), dtype=np.dtype('d'), order ='F')
 
-    dy = np.zeros((ndof, ndt), dtype=float)
-    vy = np.zeros((ndof, ndt), dtype=float)
-    ay = np.zeros((ndof, ndt), dtype=float)
-    aay = np.zeros((ndof, ndt), dtype=float)
-    gy = np.zeros((1, ndt), dtype=float)
-    ddy = np.zeros((ndof, 1), dtype=float)
-    dvy = np.zeros((ndof, 1), dtype=float)
+    dy = np.zeros((ndof, ndt), dtype=np.dtype('d'), order ='F')
+    vy = np.zeros((ndof, ndt), dtype=np.dtype('d'), order ='F')
+    ay = np.zeros((ndof, ndt), dtype=np.dtype('d'), order ='F')
+    aay = np.zeros((ndof, ndt), dtype=np.dtype('d'), order ='F')
+    gy = np.zeros((1, ndt), dtype=np.dtype('d'), order ='F')
+    ddy = np.zeros((ndof, 1), dtype=np.dtype('d'), order ='F')
+    dvy = np.zeros((ndof, 1), dtype=np.dtype('d'), order ='F')
 
     gx[0,0] = xg[0]
     gy[0,0] = yg[0]
 
-    fx = np.zeros((ndt, ndof), dtype=float)
-    fy = np.zeros((ndt, ndof), dtype=float)
-    ek = np.zeros((ndt, 1), dtype=float)
-    ed = np.zeros((ndt, 1), dtype=float)
-    es = np.zeros((ndt, 1), dtype=float)
-    ei = np.zeros((ndt, 1), dtype=float)
-    error = np.zeros((ndt, 1), dtype=float)
+    fx = np.zeros((ndt, ndof), dtype=np.dtype('d'), order ='F')
+    fy = np.zeros((ndt, ndof), dtype=np.dtype('d'), order ='F')
+    ek = np.zeros((ndt, 1), dtype=np.dtype('d'), order ='F')
+    ed = np.zeros((ndt, 1), dtype=np.dtype('d'), order ='F')
+    es = np.zeros((ndt, 1), dtype=np.dtype('d'), order ='F')
+    ei = np.zeros((ndt, 1), dtype=np.dtype('d'), order ='F')
+    error = np.zeros((ndt, 1), dtype=np.dtype('d'), order ='F')
 
-    dx1 = np.ones((ndof, 1), dtype=float)*0.0
-    vx1 = np.ones((ndof, 1), dtype=float)*0.0   # Check how we can tackle sign value when it's zero
-    ax1 = np.ones((ndof, 1), dtype=float)*0.0
+    dx1 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0
+    vx1 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0   # Check how we can tackle sign value when it's zero
+    ax1 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0
     px1 = smx_diag*xg[0] # px1 = smx_diag*xg[0] # Initial earthquake acceleration is considered zero
     ax1[0:ndof, 0] = np.dot(smx_inv, px1[0:ndof, 0] - np.dot(cdx[0:ndof, 0:ndof], vx1[0:ndof, 0]) - np.dot(skx[0:ndof, 0:ndof], dx1[0:ndof, 0]))
     ax1[ndof-1, 0] = 0.0
-    dy1 = np.ones((ndof, 1), dtype=float)*0.0
-    vy1 = np.ones((ndof, 1), dtype=float)*0.0   # Check how we can tackle sign value when it's zero
-    ay1 = np.ones((ndof, 1), dtype=float)*0.0
+    dy1 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0
+    vy1 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0   # Check how we can tackle sign value when it's zero
+    ay1 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0
     py1 = smy_diag*yg[0] # px1 = smx_diag*xg[0] # Initial earthquake acceleration is considered zero
     ay1[0:ndof, 0] = np.dot(smy_inv, py1[0:ndof, 0] - np.dot(cdy[0:ndof, 0:ndof], vy1[0:ndof,0]) - np.dot(sky[0:ndof, 0:ndof], dy1[0:ndof,0]))
     ay1[ndof-1, 0] = 0.0
     
 
-    # I = np.ones((ndof,1), dtype=float)
-    dx2 = np.ones((ndof, 1), dtype=float)*0.0
-    vx2 = np.ones((ndof, 1), dtype=float)*0.0   # Check how we can tackle sign value when it's zero
-    px2 = np.ones((ndof, 1), dtype=float)*0.0
-    ax2 = np.ones((ndof, 1), dtype=float)*0.0
-    dy2 = np.ones((ndof, 1), dtype=float)*0.0
-    vy2 = np.ones((ndof, 1), dtype=float)*0.0   # Check how we can tackle sign value when it's zero
-    py2 = np.ones((ndof, 1), dtype=float)*0.0
-    ay2 = np.ones((ndof, 1), dtype=float)*0.0
+    # I = np.ones((ndof,1), dtype=np.dtype('d'), order ='F')
+    dx2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0
+    vx2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0   # Check how we can tackle sign value when it's zero
+    px2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0
+    ax2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0
+    dy2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0
+    vy2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0   # Check how we can tackle sign value when it's zero
+    py2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0
+    ay2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0
     
     na1x = (1.0/beta/np.power(dt,2))*smx + (gamma/beta/dt)*cdx
     na2x = (1.0/beta/dt)*smx + gamma/beta*cdx
@@ -280,7 +280,7 @@ def simulator_boucwen(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx,
     # print('alpha')
     # print(alpx)
 
-    r = np.ones((ndof, 1), dtype=float)
+    r = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')
     pzx = 0.0
     pzy = 0.0
     zx = 0.0
@@ -397,17 +397,17 @@ def simulator_boucwen(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx,
     peakbasedispx = max(abs(dx[ndof-1,:]))
     peakbasedispy = max(abs(dy[ndof-1,:]))
 
-
-    print(" ")
-    print("Simulation" + "\033[91m" + " SET%d-%d" %(ref, ijk) + "\033[0m" + ": Earthquake #: %d, Parameter #: %d" %(ref, ijk))
-    print("Peak Error: % 8.6f" %(peakerror))
-    print("Absolute Sum of Errors: % 8.6f" %(sumerror))
-    print("Peak Top Floor Absolute Acceleration in X-Direction: % 8.6f m/s2" %(peaktopaccx))
-    print("Peak Top Floor Absolute Acceleration in Y-Direction: % 8.6f m/s2" %(peaktopaccy))
-    print("Peak Top Floor Relative Displacement in X-Direction: % 8.6f cm" %(peaktopdispx*100.0))
-    print("Peak Top Floor Relative Displacement in Y-Direction: % 8.6f cm" %(peaktopdispy*100.0))
-    print("Peak Isolator Displacement in X-Direction: % 8.6f cm" %(peakbasedispx*100.0))
-    print("Peak Isolator Displacement in Y-Direction: % 8.6f cm" %(peakbasedispy*100.0))
+    if screen_on == True:
+        print(" ")
+        print("Simulation" + "\033[91m" + " SET%d-%d" %(ref, ijk) + "\033[0m" + ": Earthquake #: %d, Parameter #: %d" %(ref, ijk))
+        print("Peak Error: % 8.6f" %(peakerror))
+        print("Absolute Sum of Errors: % 8.6f" %(sumerror))
+        print("Peak Top Floor Absolute Acceleration in X-Direction: % 8.6f m/s2" %(peaktopaccx))
+        print("Peak Top Floor Absolute Acceleration in Y-Direction: % 8.6f m/s2" %(peaktopaccy))
+        print("Peak Top Floor Relative Displacement in X-Direction: % 8.6f cm" %(peaktopdispx*100.0))
+        print("Peak Top Floor Relative Displacement in Y-Direction: % 8.6f cm" %(peaktopdispy*100.0))
+        print("Peak Isolator Displacement in X-Direction: % 8.6f cm" %(peakbasedispx*100.0))
+        print("Peak Isolator Displacement in Y-Direction: % 8.6f cm" %(peakbasedispy*100.0))
     
     result = ResultFixedXY(ref, ijk, time.T, gx.T, dx.T, vx.T, ax.T, aax.T, gy.T, dy.T, vy.T, ay.T, aay.T, fx, fy, ek, ed, es, ei, error, smx, skx, cdx, smy, sky, cdy)
     model = ModelInfo(ndof)

@@ -123,7 +123,7 @@ def get_result(result, responsevariable, floorstart, floorend, peaktype, dirn):
     return responsevalues, vectorhead
 
 
-def result_viewer(result, model, results_type, analysis_folder):
+def result_viewer(result, model, results_type, folder):
     results_type = results_type.split(',')
     i, j = 0, 0
     peakvalues = None
@@ -150,6 +150,9 @@ def result_viewer(result, model, results_type, analysis_folder):
                 timeresponsehead += vectorhead
     
     if timeresponses is not None:
+        analysis_folder = os.path.join('results', folder,'Time History Response','ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))
+        if not os.path.isdir(analysis_folder):
+            os.makedirs(analysis_folder)
         timeresponses = pd.DataFrame(timeresponses)
         timeresponses.columns = timeresponsehead
         superstructure = pd.DataFrame(result.skx)
