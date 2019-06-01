@@ -10,6 +10,8 @@ import pandas as pd
 from mhps.postprocessor import ResultFixedXY, ModelInfo
 from math import sin, cos, tan, atan, pow, exp, sqrt, pi
 import scipy.integrate as integrate
+import warnings
+from mhps.colorfn import *
 
 from data.defaults.param_manager import *
 
@@ -48,8 +50,15 @@ class IsoOSBIModel:
             i += 1
         ttab = np.arange(0.0,89.9999*pi/180,89.9999*pi/180/tdiv, dtype=np.dtype('d'))
         return xbtab, ttab
+    def u_max(self):
+        umax = 2.0*pi/4.0*(3.0*(self.a0 + self.b0) - sqrt((3.0*self.a0 + self.b0)*(self.a0 + 3*self.b0)))
+        if umax < self.umax:
+            print(prRed('ATTENTION: ') + prCyan('Permissible max. displacement = %8.4f m | Provided max. displacement = %8.4f m'%(umax, self.umax)))
+            print('Changing OSBI_VP input file with umax = %8.4f m...'%(umax))
+            return umax
+        return self.umax
 
-    def __init__(self, rmbm, tbx, zetabx, rtytxb, rzyzxb, typevf, mu0, alpha0, alpha1, nu, umax, D, ecc, rmrm, kg, cg, dg):
+    def __init__(self, rmbm, tbx, zetabx, rtytxb, rzyzxb, typevf, mu0, alpha0, alpha1, nu, umax, D, ecc, rmrm, kg, cg, dg, am, niso):
         self.rmbm = rmbm
         self.tbx = tbx
         self.zetabx = zetabx
@@ -61,17 +70,64 @@ class IsoOSBIModel:
         self.alpha1 = alpha1
         self.nu = nu
         self.umax = umax
-        self.a0 = D/2.0
+        self.D = D
         self.ecc = ecc
         self.rmrm = rmrm
         self.kg = kg
         self.cg = cg
-        self.dg = dg
-        print(D, ecc)
-        print(sqrt((D/2.0)**2.0 - (ecc*D/2.0)**2.0))
-        # self.b0 = sqrt(pow(D/2.0, 2.0) - pow(ecc*D/2.0, 2.0))
+        self.fos_ud = dg
+
+        self.a0 = D/2.0
         self.b0 = sqrt((D/2.0)**2.0 - (ecc*D/2.0)**2.0)
+        self.Mr = am*rmrm
+        self.mr = self.Mr/niso
+        self.Jr = (self.Mr/4.0)*(pow(self.a0, 2.0) + pow(self.b0, 2.0))
+        # self.Jr = (self.Mr/5.0)*(pow(self.a0, 2.0) + pow(self.b0, 2.0))
+        self.jr = self.Jr/niso
+        self.umax = self.u_max()
+        self.ud = self.fos_ud*self.umax
         self.xbtab, self.ttab = self.osbt2x()
+
+        theta_d0 = np.interp(self.ud, self.xbtab, self.ttab)
+        self.theta_r_max_lower = atan((self.b0/self.a0)*tan(theta_d0))
+        p_d0 = self.a0*sin(theta_d0)*sin(self.theta_r_max_lower) + self.b0*cos(theta_d0)*cos(self.theta_r_max_lower)
+        self.Lc0 = sqrt(pow(self.ud, 2.0) + pow(2.0*p_d0, 2.0))
+
+        theta_d0 = np.interp(self.umax, self.xbtab, self.ttab)
+        self.theta_r_max_upper = atan((self.b0/self.a0)*tan(theta_d0))
+        p_d0 = self.a0*sin(theta_d0)*sin(self.theta_r_max_upper) + self.b0*cos(theta_d0)*cos(self.theta_r_max_upper)
+        self.Lcf = sqrt(pow(self.umax, 2.0) + pow(2.0*p_d0, 2.0))
+        self.maxstrain = (self.Lcf - self.Lc0)/self.Lcf
+    
+    def __str__(self):
+        line = '\nPlan diameter of OSBI (D) = %8.4f cm'%(self.D*100.0)
+        line += '\nMajor radius of OSBI (a0) = %8.4f cm'%(self.a0*100.0)
+        line += '\nMinor radius of OSBI (b0) = %8.4f cm'%(self.b0*100.0)
+        line += '\nEccentricity of OSBI (ecc) = %8.4f'%(self.ecc)
+        line += '\nRatio of mass of all OSBI to floor mass (rmrm) = %8.4f'%(self.rmrm)
+        line += '\nTotal mass of all OSBI (Mr) = %8.4f kg'%(self.Mr)
+        line += '\nMass of single OSBI (mr) = %8.4f kg'%(self.mr)
+        line += '\nMass Moment of inertia of all OSBI (Jr) = %8.4f kg-m2'%(self.Jr)
+        line += '\nMass Moment of inertia inertia of single OSBI (jr) = %8.4f kg-m2'%(self.jr)
+        line += '\nMaximum displacement of OSBI (umax) = %8.4f cm'%(self.umax*100.0)
+        line += '\nType of friction profile (typevf) = %d | alpha0 = %8.4f | alpha1 = %8.4f | nu = %8.4f '%(self.typevf, self.alpha0, self.alpha1, self.nu)
+        line += '\nRolling friction coefficient (mu0) = %8.4f'%(self.mu0)
+        # line += '\nInitial time period of OSBI (Tb0) = %8.4f'%(self.Tb0)
+        line += '\n\nTime period of linear spring in X-direction (tbx) = %8.4f sec'%(self.tbx)
+        line += '\nTime period of linear spring in Y-direction (tby) = %8.4f sec'%(self.tbx*self.rtytxb)
+        line += '\nCritical viscous damping ratio in X-direction (zetabx) = %8.4f p.c.'%(self.zetabx)
+        line += '\nCritical viscous damping ratio in Y-direction (zetaby) = %8.4f p.c.'%(self.zetabx*self.rzyzxb)
+        line += '\n\nFactor of safety for maximum displacement (fos_ud)  = %8.4f '%(self.fos_ud)
+        line += '\nLower maximum design displacement of OSBI (ud)  = %8.4f cm'%(self.ud*100)
+        line += '\nLower maximum design rotation of OSBI (theta_r_max_lower)  = %8.4f deg'%(self.theta_r_max_lower*180.0/pi)
+        line += '\nUpper maximum design displacement of OSBI (umax)  = %8.4f cm'%(self.umax*100)
+        line += '\nUpper maximum design rotation of OSBI (theta_r_max_upper)  = %8.4f deg'%(self.theta_r_max_upper*180.0/pi)
+        line += '\nLength of cable at lower maximum design displacement (Lc0) = %8.4f cm'%(self.Lc0*100.0)
+        line += '\nLength of cable at upper maximum design displacement (Lcf)  = %8.4f p.c.'%(self.Lcf*100.0)
+        line += '\nStrain in cable at maximum design displacement (maxstrain) = %8.4f'%(self.maxstrain)
+        line += '\nRatio of all cable stiffness to floor  = %8.4f p.c.'%(self.zetabx*self.rzyzxb)
+        line += '\n'
+        return line
 
     
     def __eq__(self, other):
@@ -83,14 +139,14 @@ class IsoOSBIModel:
                             self.D == other.D and self.ecc == ecc and self.rmrm == other.rmrm
         return False
 
-def read_iso_osbi_var_param(var_param_file):
+def read_iso_osbi_var_param(var_param_file, am, niso):
 
     """
     This function reads all the set of parameters for the parametric
     studies and stores it in an array. It will be a one-time allocation
     to increase speed.
     """
-    print(var_param_file)
+    # print(var_param_file)
     dtype1 = np.dtype([('IJK', 'i4'), ('RMBM', 'd'), ('TBX', 'd'), ('ZETABX','d'), ('RTYTXB','d'), ('RZYZXB', 'd'), ('TYPEVF', 'i4'), ('MU0', 'd'), ('ALPHA0', 'd'), ('ALPHA1', 'd'), ('NU', 'd'), ('UMAX', 'd'), ('D', 'd'), ('ECC', 'd'), ('RMRM', 'd'), ('KG', 'd'), ('CG', 'd'), ('DG', 'd')])
     
     ijk, rmbm, tbx, zetabx, rtytxb, rzyzxb, typevf, mu0, alpha0, alpha1, nu, umax, D, ecc, rmrm, kg, cg, dg = np.loadtxt \
@@ -104,54 +160,98 @@ def read_iso_osbi_var_param(var_param_file):
 
     for i in range(0, total_param):
         try:
-            yield IsoOSBIModel(rmbm[i], tbx[i], zetabx[i], rtytxb[i], rzyzxb[i], typevf[i], mu0[i], alpha0[i], alpha1[i], nu[i], umax[i], D[i], ecc[i], rmrm[i], kg[i], cg[i], dg[i])
+            yield IsoOSBIModel(rmbm[i], tbx[i], zetabx[i], rtytxb[i], rzyzxb[i], typevf[i], mu0[i], alpha0[i], alpha1[i], nu[i], umax[i], D[i], ecc[i], rmrm[i], kg[i], cg[i], dg[i], am, niso)
         except:
-            yield IsoOSBIModel(rmbm, tbx, zetabx, rtytxb, rzyzxb, typevf, mu0, alpha0, alpha1, nu, umax, D, ecc, rmrm, kg, cg, dg)
+            yield IsoOSBIModel(rmbm, tbx, zetabx, rtytxb, rzyzxb, typevf, mu0, alpha0, alpha1, nu, umax, D, ecc, rmrm, kg, cg, dg, am, niso)
 
 
-def fs1(M, mr, y_b_d2, c_d0, p_d0, phi_drb):
+def fs1(M, mr, y_b_d2, c_d0, p_d0, drb, dyb, dxb):
 
     g = 9.81 # in %m/s2
 
     fs1r = ((2*M + mr)*g + (2*M + 0.5*mr)*y_b_d2)*(c_d0/2.0/p_d0)
 
-    fs1x = fs1r*cos(phi_drb)
-
-    fs1y = fs1r*sin(phi_drb)
+    if drb == 0:
+        fs1x = 0.0
+        fs1y = 0.0
+    else:
+        fs1x = fs1r*dxb/drb
+        fs1y = fs1r*dyb/drb
 
     return fs1x, fs1y
 
-def fs1fixed(M, mr, c_d0, p_d0, phi_drb):
+def fs1fixed(M, mr, c_d0, p_d0, drb, dyb, dxb):
 
-    fs1r = (2*M + mr)*9.81*(c_d0/2.0/p_d0)
 
-    fs1x = fs1r*cos(phi_drb)
+    g= 9.91
+    fs1r = (2*M + mr)*g*(c_d0/2.0/p_d0)
+    # fs1r = (2*M + 0.0)*9.81*(c_d0/2.0/p_d0)
     
-    fs1y = fs1r*sin(phi_drb)
+    if drb == 0:
+        fs1x = 0.0
+        fs1y = 0.0
+    else:
+        fs1x = fs1r*dxb/drb
+        fs1y = fs1r*dyb/drb
 
     return fs1x, fs1y
 
-def fb(J, mr, arg, arb, phi_thetadot2, phi_arg, phi_arb, p_d0, theta_r_dot2):
+def fb(i, p_index, J, mr, drb, dyb, dxb, vrb, vyb, vxb, arg, ayg, axg, arb, ayb, axb, p_d0, theta_r_dot2):
 
-    fbr1 = (1/2.0/p_d0)*(J*theta_r_dot2) 
+    if arb == 0:     # Don't forget to change here!!!
+        fbr1x = 0.0
+        fbr1y = 0.0
+    else:
+        if i == p_index:
+            print('Resultant base acceleration %8.4f | theta_r_dot_2 = %8.4f'%(arb, theta_r_dot2))
+            print('I am calculating fbr1')
+        fbr1 = (1/2.0/p_d0)*(J*theta_r_dot2)
+        # fbr1x = fbr1*vxb/vrb 
+        # fbr1y = fbr1*vyb/vrb
 
-    fbr2 = 0.5*mr*arg 
+        # fbr1x = fbr1*dxb/drb 
+        # fbr1y = fbr1*dyb/drb
 
-    fbr3 =  0.5*mr*0.5*arb
+        fbr1x = fbr1*axb/arb 
+        fbr1y = fbr1*ayb/arb
 
-    fbx = fbr1*cos(phi_thetadot2) + fbr2*cos(phi_arg) + fbr3*cos(phi_arb)
+    if arg == 0:
+        fbr2x = 0.0
+        fbr2y = 0.0
+    else:
+        if i == p_index:
+            print('Resultant ground acceleration %8.4f'%(arg))
+            print('I am calculating fbr1')
+        fbr2 = 0.5*mr*arg
+        fbr2x = fbr2*axg/arg 
+        fbr2y = fbr2*ayg/arg
 
-    fby = fbr1*sin(phi_thetadot2) + fbr2*sin(phi_arg) + fbr3*sin(phi_arb)
+    if arb == 0:
+        fbr3x = 0.0
+        fbr3y = 0.0
+    else:
+        if i == p_index:
+            print('I am calculating fbr1')
+        fbr3 =  0.5*mr*0.5*arb
+        fbr3x = fbr3*axb/arb 
+        fbr3y = fbr3*ayb/arb
+
+    fbx = fbr1x + fbr2x + fbr3x
+
+    fby = fbr1y + fbr2y + fbr3y
 
     return fbx, fby
 
-def fbfixed(mr, arg, phi_arg):
+def fbfixed(mr, arg, ayg, axg):
 
     fbr = 0.5*mr*arg
 
-    fbx = fbr*cos(phi_arg)
-
-    fby = fbr*sin(phi_arg)
+    if fbr == 0:
+        fbx = 0.0
+        fby = 0.0
+    else:
+        fbx = fbr*axg/arg
+        fby = fbr*ayg/arg
 
     return fbx, fby
 
@@ -212,10 +312,10 @@ def mu_val(iso, ub):
     else:
         mu = iso.mu0
 
-    if abs(ub) > iso.umax and abs(ub) < iso.dg:
+    if abs(ub) > iso.umax and abs(ub) < iso.dos_ud*iso.umax:
         mu = iso.alpha1*iso.mu0
 
-    if abs(ub) > iso.dg and iso.typevf != 0:
+    if abs(ub) > iso.fos_ud*iso.umax and iso.typevf != 0:
         mu = 100
     return mu
 
@@ -267,26 +367,26 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
     ei = np.zeros((ndt, 1), dtype=np.dtype('d'), order ='F') #C
     error = np.zeros((ndt, 1), dtype=np.dtype('d'), order ='F') #C
 
-    dx1 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')**0.0000000001 #C
+    dx1 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0 #C
     vx1 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0000000001 #C
-    ax1 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')**0.0000000001 #C
+    ax1 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0 #C
     px1 = smx_diag*xg[0] # px1 = smx_diag*xg[0] # Initial earthquake acceleration is considered zero
     ax1[0:nst, 0] = np.dot(smx_inv_fixed, px1[0:nst, 0] - np.dot(cdx[0:nst, 0:nst], vx1[0:nst, 0]) - np.dot(skx[0:nst, 0:nst], dx1[0:nst, 0]))
-    dy1 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')**0.0000000001 #C
+    dy1 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0 #C
     vy1 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0000000001 #C
-    ay1 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0000000001 #C
+    ay1 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0 #C
     py1 = smy_diag*yg[0] # px1 = smx_diag*xg[0] # Initial earthquake acceleration is considered zero
     ay1[0:nst, 0] = np.dot(smy_inv_fixed, py1[0:nst, 0] - np.dot(cdy[0:nst, 0:nst], vy1[0:nst,0]) - np.dot(sky[0:nst, 0:nst], dy1[0:nst,0]))
 
     # I = np.ones((ndof,1), dtype=np.dtype('d'), order ='F')
-    dx2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0000000001 #C
+    dx2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0 #C
     vx2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0000000001 #C
-    px2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0000000001 #C
-    ax2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0000000001 #C
-    dy2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0000000001 #C
+    px2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0 #C
+    ax2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0 #C
+    dy2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0 #C
     vy2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0000000001 #C
-    py2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0000000001 #C
-    ay2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0000000001 #C
+    py2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0 #C
+    ay2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0 #C
     
     na1x = (1.0/beta/np.power(dt,2))*smx + (gamma/beta/dt)*cdx
     na2x = (1.0/beta/dt)*smx + gamma/beta*cdx
@@ -333,12 +433,17 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
     mr = iso.rmrm*smx[0,0]      # Here mr is sum of masses of all OSBI
     J = (mr/4.0)*(pow(iso.a0, 2.0) + pow(iso.b0, 2.0))
 
+    print(mr)
+
     fs1x = fs1y = 0.0
     fs2x = fs2y = 0.0
     fbx = fbx = 0.0
     ub = 0.0
 
-    for i in range(1,len(xg)):
+    p_index = 29465
+    for i in range(1, len(xg)):
+        
+        # for i in range(1,20):
 
         t += dt
 
@@ -362,22 +467,26 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
             vy2[0:nst, 0] = vy1[0:nst, 0] + dvy[0:nst, 0]
             
             drb = sqrt(pow(dy2[ndof-1, 0], 2.0) + pow(dx2[ndof-1, 0], 2.0))
+            # if drb > iso.umax:
+            #     print(prRed('WARNING: ') + prCyan('Isolator has crossed maximum displacement.'))
             # print(dy2[ndof-1, 0], dx2[ndof-1, 0])
-            phi_drb = atan(dy2[ndof-1, 0]/dx2[ndof-1, 0])
             theta_d0 = np.interp(drb, iso.xbtab, iso.ttab)
             theta_r_d0 = atan((iso.b0/iso.a0)*tan(theta_d0))
             c_d0 = iso.a0*sin(theta_d0)*cos(theta_r_d0) - iso.b0*cos(theta_d0)*sin(theta_r_d0)
             p_d0 = iso.a0*sin(theta_d0)*sin(theta_r_d0) + iso.b0*cos(theta_d0)*cos(theta_r_d0) 
-
-            fs1x, fs1y = fs1fixed(tm, mr, c_d0, p_d0, phi_drb)
+            fs1x, fs1y = fs1fixed(tm, mr, c_d0, p_d0, drb, dy2[ndof-1, 0], dx2[ndof-1, 0])
 
             arg = sqrt(pow(xg[i], 2.0) + pow(yg[i], 2.0))
-            phi_arg = atan(yg[i]/xg[i])
-            fbx, fby = fbfixed(mr, arg, phi_arg)
+
+            fbx, fby = fbfixed(mr, arg, yg[i], xg[i])
 
             fs2x = (-1.0*cdx[nst, nst-1])*vx2[nst-1,0] + (-1.0*skx[nst, nst-1])*dx2[nst-1,0] - cdx[ndof-1, ndof-1]*vx2[ndof-1,0] - skx[ndof-1, ndof-1]*dx2[ndof-1,0] + px2[ndof-1] - fs1x - fbx
-
+           
             fs2y = (-1.0*cdy[nst, nst-1])*vy2[nst-1,0] + (-1.0*sky[nst, nst-1])*dy2[nst-1,0] - cdy[ndof-1, ndof-1]*vy2[ndof-1,0] - sky[ndof-1, ndof-1]*dy2[ndof-1,0] + py2[ndof-1] - fs1y - fby
+           
+
+            if i == p_index:
+                print(i, rolling_state, fbx, fby, fs1x, fs1y, fs2x, fs2y)
 
             mu = mu_val(iso, drb)
             qr = fs2fixed(mu, tm, mr)
@@ -435,16 +544,17 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
                 ay2 = np.dot(smy_inv, epy)
 
                 drb = sqrt(pow(dx2[ndof-1, 0], 2) + pow(dy2[ndof-1, 0], 2))
-                phi_drb = atan(dy2[ndof-1, 0]/dx2[ndof-1, 0])
+                # if drb > iso.umax:
+                #     print(prRed('WARNING: ') + prCyan('Isolator has crossed maximum displacement.'))
+                # phi_drb = atan(dy2[ndof-1, 0]/dx2[ndof-1, 0])
                 vrb = sqrt(pow(vx2[ndof-1, 0], 2) + pow(vy2[ndof-1, 0], 2))
-                phi_vrb = atan(vy2[ndof-1, 0]/vx2[ndof-1, 0])
+                # phi_vrb = atan(vy2[ndof-1, 0]/vx2[ndof-1, 0])
 
                 ##? Check if "absolute" resultant acceleration needs to be passed ????
                 arb = sqrt(pow(ax2[ndof-1, 0], 2) + pow(ay2[ndof-1, 0], 2))
-                phi_arb = atan(ay2[ndof-1, 0]/ax2[ndof-1, 0])
+                # phi_arb = atan(ay2[ndof-1, 0]/ax2[ndof-1, 0])
 
                 arg = sqrt(pow(xg[i], 2.0) + pow(yg[i], 2.0))
-                phi_arg = atan(yg[i]/xg[i])
 
                 if vrb > 1.0e-5:
                     
@@ -467,19 +577,24 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
                     y_r_d2 = pow(theta_dot1, 2.0)*p_d2 + p_d1*theta_dot2
                     y_b_d2 = 2*y_r_d2
 
-                    fbx2, fby2 = fb(J, mr, arg, arb, phi_vrb, phi_arg, phi_arb, p_d0, theta_r_dot2)  ##?
+                    fbx2, fby2 = fb(i, p_index, J, mr, drb, dy2[ndof-1, 0], dx2[ndof-1, 0], vrb, vy2[ndof-1, 0], vx2[ndof-1, 0], arg, yg[i], xg[i], arb, ay2[ndof-1, 0], ax2[ndof-1, 0], p_d0, theta_r_dot2)  ##?
                     dfbx = fbx2 - fbx
                     dfby = fby2 - fby
                     
-                    fs1x2, fs1y2 = fs1(tm, mr, y_b_d2, c_d0, p_d0, phi_drb) ##?
+                    fs1x2, fs1y2 = fs1(tm, mr, y_b_d2, c_d0, p_d0, drb, dy2[ndof-1, 0], dx2[ndof-1, 0]) ##?
                     dfs1x = fs1x2 - fs1x
                     dfs1y = fs1y2 - fs1y
                     
                     mu = mu_val(iso, drb)    ##?
 
                     qr = fs2(tm, mr, mu, y_b_d2)   ##?
-                    fs2x2 = qr*cos(phi_vrb)
-                    fs2y2 = qr*cos(phi_vrb)
+
+                    if vrb == 0:
+                        fs2x2 = 0.0
+                        fs2y2 = 0.0
+                    else:
+                        fs2x2 = qr*vx2[ndof-1, 0]/vrb
+                        fs2y2 = qr*vy2[ndof-1, 0]/vrb
 
                     dfs2x = fs2x2 - fs2x
                     dfs2y = fs2y2 - fs2y
@@ -494,13 +609,16 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
 
                 fs2x = fs2x + dfs2x
                 fs2y = fs2y + dfs2y
+
+                if i == p_index:
+                    print(i, rolling_state, fbx, fby, fs1x, fs1y, fs2x, fs2y)
             
             rolling_state = stat0(ddx[ndof-1], ddy[ndof-1], fs2x, fs2y)
 
             if rolling_state == False:
-                vx2[ndof-1, 0] = 1e-10
+                vx2[ndof-1, 0] = 0.0 # 1e-10
                 ax2[ndof-1, 0] = 0.0
-                vy2[ndof-1, 0] = 1e-10
+                vy2[ndof-1, 0] = 0.0 # 1e-10
                 ay2[ndof-1, 0] = 0.0
 
                 ax2[0:nst, 0] = np.dot(smx_inv_fixed, px2[0:nst, 0] - np.dot(cdx[0:nst, 0:nst], vx2[0:nst, 0]) - np.dot(skx[0:nst, 0:nst], dx2[0:nst, 0]))
@@ -547,14 +665,15 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
             for j in range(nst):
                 fx[index, j] = 1.0*np.dot(smx_diag[0:j+1].T, aax[0:j+1,index])   
                 fy[index, j] = 1.0*np.dot(smy_diag[0:j+1].T, aay[0:j+1,index])    
-            fx[index, ndof-1] = fs1x
-            fy[index, ndof-1] = fs1y
+            fx[index, ndof-1] = fs2x
+            fy[index, ndof-1] = fs2y
             ek[index, 0] = eki
             ed[index, 0] = edi
             es[index, 0] = esi
             ei[index, 0] = eii
 
             error[index, 0] = (edi + esi + eki - eii)/(abs(edi + esi) + eki + abs(eii))
+            # print(rolling_state)
    
     peakerror = max(abs(error))
     sumerror = sum(abs(error))

@@ -27,7 +27,7 @@ import shutil
 import matplotlib.pyplot as plt
 import time
 import datetime
-from mhps.colorfn import prGreen
+from mhps.colorfn import prGreen, prCyan
 
 
 np.seterr(all='warn')
@@ -172,7 +172,7 @@ def fixed_fn(const_param, var_param, earthquakes, knor, results_type, lxy, folde
         time_current_eq = nparam*teq2*coeff1    #max(s_rate*total_param, s_rate2*teq2*total_param)
         time_remaining = (total_eq-ref+1)*(tot_time_eq2*coeff1*nparam)
         print('FACT: Duration of EQ = %8.4fs'%(teq2) + " | Start Time: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        print('EXPECTATION: Analysis Duration = %8.2fs (%8.2f m) | Total Duration Remaining = %8.2fs (%6.2f m, %5.2fh)'%(time_current_eq, time_current_eq/60, time_remaining, time_remaining/60, time_remaining/60/60) + prGreen(' | Estimated Completion Time: ') + (datetime.datetime.now()+datetime.timedelta(seconds = time_current_eq)).strftime("%Y-%m-%d %H:%M:%S"))
+        print('EXPECTATION: Analysis Duration = %8.2fs (%8.2f m) | Total Duration Remaining = %8.2fs (%6.2f m, %5.2fh)'%(time_current_eq, time_current_eq/60, time_remaining, time_remaining/60, time_remaining/60/60) + ' | ' +prGreen('Estimated Completion Time: ') + (datetime.datetime.now()+datetime.timedelta(seconds = time_current_eq)).strftime("%Y-%m-%d %H:%M:%S"))
 
         # SUPERSTRUCTURE VARIABLE PARAMETER SETUP
         superstructure_param_generator = read_ss_var_param(var_param)
@@ -348,6 +348,7 @@ def spectral(earthquakes, results_type, folder, damping, screen):
     s_rate = 1.5
     tot_time_eq2 = 0.0
     nparam = 1.0
+    start_t_eq = time.time()
 
     peakvalues = None
     for i in range(total_eq):
@@ -487,6 +488,7 @@ def biso_linear(const_param, var_param, iso_param, earthquakes, knor, results_ty
     s_rate = 1.5
     tot_time_eq2 = 0.0
     nparam = 1.0
+    start_t_eq = time.time()
 
     peakvalues = None
     for i in range(total_eq):
@@ -624,6 +626,7 @@ def biso_pf(const_param, var_param, iso_param, earthquakes, knor, results_type, 
     s_rate = 1.5
     tot_time_eq2 = 0.0
     nparam = 1.0
+    start_t_eq = time.time()
 
     peakvalues = None
     for i in range(total_eq):
@@ -738,8 +741,8 @@ def biso_osbi(const_param, var_param, iso_param, earthquakes, knor, results_type
         earthquake_generator = get_earthquake_list('db elc')
 
     total_param = get_total_variable_parameter_set(var_param)
-    print("Total Parameters: " + str(total_param))
-    print("Total EQs: " + str(total_eq))
+    print("\nTotal Parameters: " + str(total_param))
+    print("Total EQs: " + str(total_eq) +'\n\n')
     
     # CONSTANT PARAMETER SETUP
     maxnst, am, ak = read_const_param(const_param)
@@ -748,6 +751,7 @@ def biso_osbi(const_param, var_param, iso_param, earthquakes, knor, results_type
     s_rate = 1.5
     tot_time_eq2 = 0.0
     nparam = 1.0
+    start_t_eq = time.time()
 
     peakvalues = None
     for i in range(total_eq):
@@ -759,18 +763,20 @@ def biso_osbi(const_param, var_param, iso_param, earthquakes, knor, results_type
         coeff1 = (0.0379*pow(ndiv, 1.5073))*pow(teq2, -0.6251*pow(ndiv, 0.125))
         time_current_eq = nparam*teq2*coeff1    #max(s_rate*total_param, s_rate2*teq2*total_param)
         time_remaining = (total_eq-ref+1)*(tot_time_eq2*coeff1*nparam)
-        print('FACT: Duration of EQ = %8.4fs'%(teq2) + " | Start Time: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        print('FACT: Duration of EQ = %8.4fs'%(teq2) + " | Start Time: " + prCyan(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
         print('EXPECTATION: Analysis Duration = %8.2fs (%8.2f m) | Total Duration Remaining = %8.2fs (%6.2f m, %5.2fh)'%(time_current_eq, time_current_eq/60, time_remaining, time_remaining/60, time_remaining/60/60) + ' | Estimated Completion Time: ' + (datetime.datetime.now()+datetime.timedelta(seconds = time_current_eq)).strftime("%Y-%m-%d %H:%M:%S"))
         
         # SUPERSTRUCTURE VARIABLE PARAMETER SETUP
         superstructure_param_generator = read_ss_var_param(var_param)
         
         # ISOLATOR VARIABLE PARAMETER SETUP
-        isolator_param_generator = read_iso_osbi_var_param(iso_param)
+        isolator_param_generator = read_iso_osbi_var_param(iso_param, am[0], 1.0)
 
         for j in range(total_param):
             ijk, nst, tx1, zeta, rtytx = next(superstructure_param_generator)
             iso = next(isolator_param_generator)
+            if screen == True:
+                print(iso)
 
             if ((i == 0) and (j==0)) or ((p_nst, p_tx1, p_rtytx, p_zeta, p_iso != nst, tx1, rtytx, zeta, iso)):
                 smx, skx, cdx, smy, sky, cdy = superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor)
@@ -788,8 +794,6 @@ def biso_osbi(const_param, var_param, iso_param, earthquakes, knor, results_type
                     peakvalues = peakvaluesparam
                 else:
                     peakvalues = np.vstack((peakvalues, peakvaluesparam))
-        
-        print('EQ' + str(ref) + 'Successful!')
 
         if peakvalues is not None:
             if i == 0:
@@ -879,6 +883,7 @@ def biso_boucwen(const_param, var_param, iso_param, earthquakes, knor, results_t
     s_rate = 1.5
     tot_time_eq2 = 0.0
     nparam = 1.0
+    start_t_eq = time.time()
 
     peakvalues = None
     for i in range(total_eq):

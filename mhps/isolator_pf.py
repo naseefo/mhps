@@ -235,7 +235,9 @@ def simulator_pf(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, smy,
     qx = 9.81*tm*iso.mu0
     qy = 9.81*tm*iso.mu0
 
-    for i in range(1,len(xg)):
+    p_index = 1000
+    for i in range(1, len(xg)):
+        
 
         t += dt
 
@@ -259,8 +261,14 @@ def simulator_pf(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, smy,
             vy2[0:nst, 0] = vy1[0:nst, 0] + dvy[0:nst, 0]
 
             fabx = (-1.0*cdx[nst, nst-1])*vx2[nst-1,0] + (-1.0*skx[nst, nst-1])*dx2[nst-1,0] - cdx[ndof-1, ndof-1]*vx2[ndof-1,0] - skx[ndof-1, ndof-1]*dx2[ndof-1,0] + px2[ndof-1]
+            
 
             faby = (-1.0*cdy[nst, nst-1])*vy2[nst-1,0] + (-1.0*sky[nst, nst-1])*dy2[nst-1,0] - cdy[ndof-1, ndof-1]*vy2[ndof-1,0] - sky[ndof-1, ndof-1]*dy2[ndof-1,0] + py2[ndof-1]
+        
+            if i == p_index:
+                print(i, sliding_state)
+                print(fabx)
+                print(faby)
 
             ub = math.sqrt(math.pow(dx2[ndof-1,0], 2) + math.pow(dy2[ndof-1,0], 2))
             mu = mu_val(iso, ub)
