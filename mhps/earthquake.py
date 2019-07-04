@@ -139,8 +139,8 @@ def eq_finder(command):
             beta2 = (strike - alpha2 - roty)*math.pi/180.0
             # print(beta1)
             # print(beta2)
-            yg = h1*math.sin(beta1) + h2*math.sin(beta2)  # Fault-normal component
-            xg = h1*math.cos(beta1) + h2*math.cos(beta2)  # Fault-parallel component
+            yg = h1*math.cos(beta1) - h2*math.sin(beta2)  # Fault-Parallel component
+            xg = h1*math.sin(beta1) + h2*math.cos(beta2)  # Fault-Narallel component
         elif rot_flag == False:
             xg = h1
             yg = h2

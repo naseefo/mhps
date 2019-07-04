@@ -34,8 +34,8 @@ def profile(fnc):
 
     return inner
 
-class IsoOSBIModel:   
-
+class IsoOSBIModel:    
+    
     def osbt2x(self): 
         default_values = get_default_param_values()
         tdiv = default_values['TDIV']
@@ -194,9 +194,10 @@ def fs1(M, rMrM, y_b_d2, c_d0, p_d0, drb, dyb, dxb):
         fs1y = 0.0
     else:
         fs1x = fs1r*dxb/drb
-        fs1y = fs1r*dyb/drb
+        fs1y = 0.0
 
     return fs1x, fs1y
+
 
 def fs1fixed(M, rMrM, c_d0, p_d0, drb, dyb, dxb):
 
@@ -207,8 +208,8 @@ def fs1fixed(M, rMrM, c_d0, p_d0, drb, dyb, dxb):
         fs1x = 0.0
         fs1y = 0.0
     else:
-        fs1x = fs1r*dxb/drb
-        fs1y = fs1r*dyb/drb
+        fs1x = fs1r
+        fs1y = 0.0
 
     return fs1x, fs1y
 
@@ -219,32 +220,32 @@ def fb(J, mr, drb, dyb, dxb, vrb, vyb, vxb, arg, ayg, axg, arb, ayb, axb, p_d0, 
         fbr1y = 0.0
     else:
         fbr1 = (1/2.0/p_d0)*(J*theta_r_dot2)
-        fbr1x = fbr1*axb/arb 
-        fbr1y = fbr1*ayb/arb
+        fbr1x = fbr1
+        fbr1y = 0.0
 
     if arg == 0:
         fbr2x = 0.0
         fbr2y = 0.0
     else:
         fbr2 = 0.5*mr*arg
-        fbr2x = fbr2*axg/arg 
-        fbr2y = fbr2*ayg/arg
+        fbr2x = fbr2
+        fbr2y = 0.0
 
     if arb == 0:
         fbr3x = 0.0
         fbr3y = 0.0
     else:
         fbr3 =  0.5*mr*0.5*arb
-        fbr3x = fbr3*axb/arb 
-        fbr3y = fbr3*ayb/arb
+        fbr3x = fbr3 
+        fbr3y = 0.0
     
     if drb == 0:
         fbr4x = 0.0
         fbr4y = 0.0
     else:
         fbr4 = mr*y_b_d2*c_d0/4.0*p_d0
-        fbr4x = fbr4*dxb/drb
-        fbr4y = fbr4*dyb/drb
+        fbr4x = fbr4
+        fbr4y = 0.0
 
     fbx = fbr1x + fbr2x + fbr3x + fbr4x
 
@@ -257,12 +258,12 @@ def fbfixed(mr, ayg, axg):
     arg = sqrt(pow(axg, 2.0) + pow(ayg, 2.0)) #CB
     fbr = 0.5*mr*arg
 
-    if arg == 0:
+    if fbr == 0:
         fbx = 0.0
         fby = 0.0
     else:
-        fbx = fbr*axg/arg
-        fby = fbr*ayg/arg
+        fbx = fbr
+        fby = 0.0
 
     return fbx, fby
 
@@ -301,7 +302,6 @@ def stat1(fabx, faby, fs2x, fs2y):
         rolling_state = True
     return rolling_state, fabx, faby
 
-
 def stat0(ddxb, ddyb, fs2x, fs2y):
     wd = fs2x*ddxb + fs2y*ddyb
     if wd >= 0:
@@ -309,7 +309,6 @@ def stat0(ddxb, ddyb, fs2x, fs2y):
     else:
         rolling_state = False
     return rolling_state
-
 
 def mu_val(iso, ub):
     L0 = iso.alpha0*iso.mu0
@@ -326,14 +325,14 @@ def mu_val(iso, ub):
         mu = iso.alpha1*iso.mu0
 
     if abs(ub) >= iso.umax and iso.typevf != 0:
-        mu = 100
+        mu = 100.0
     return mu
 
 #@profile 
-def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, smy, sky, cdy, iso, screen_on):
-  
+def simulator_osbix(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, smy, sky, cdy, iso, screen_on):
+    
     # INITIALIZATION OF PRIMARY INPUT VARIABLES
-    nit = 10
+    nit = 5
     nst = ndof - 1
     gamma = 0.5
     beta = 1/6
@@ -373,18 +372,7 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
     es = np.zeros((ndt, 1), dtype=np.dtype('d'), order ='F') #C
     ei = np.zeros((ndt, 1), dtype=np.dtype('d'), order ='F') #C
 
-    roll = np.zeros((ndt, 1), dtype=np.dtype('d'), order ='F') #C
-    theta_0 = np.zeros((ndt, 1), dtype=np.dtype('d'), order ='F') #C
-    theta_r = np.zeros((ndt, 1), dtype=np.dtype('d'), order ='F') #C
-    theta_r_dot2 = np.zeros((ndt, 1), dtype=np.dtype('d'), order ='F') #C
-    zbd = np.zeros((ndt, 1), dtype=np.dtype('d'), order ='F') #C
-    zbd_dot2 = np.zeros((ndt, 1), dtype=np.dtype('d'), order ='F') #C
-    Fs1x = np.zeros((ndt, 1), dtype=np.dtype('d'), order ='F') #C
-    Fs1y = np.zeros((ndt, 1), dtype=np.dtype('d'), order ='F') #C
-    Fs2x = np.zeros((ndt, 1), dtype=np.dtype('d'), order ='F') #C
-    Fs2y = np.zeros((ndt, 1), dtype=np.dtype('d'), order ='F') #C
-    Fbx = np.zeros((ndt, 1), dtype=np.dtype('d'), order ='F') #C
-    Fby = np.zeros((ndt, 1), dtype=np.dtype('d'), order ='F') #C
+    roll = np.zeros((ndt, 1), dtype=np.dtype('d'), order ='F') #C #del
 
     error = np.zeros((ndt, 1), dtype=np.dtype('d'), order ='F') #C
 
@@ -488,7 +476,6 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
 
     rolling_state = False # INITIAL ROLLING STATE
 
-    
     for i in range(1, len(xg)):
 
         t += dt
@@ -511,25 +498,26 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
             dy2[0:nst, 0] = dy1[0:nst, 0] + ddy[0:nst, 0]
             dvy[0:nst, 0] = (gamma/beta/dt)*ddy[0:nst, 0] - gamma/beta*vy1[0:nst, 0] + dt*(1.0 - gamma/2.0/beta)*ay1[0:nst, 0]
             vy2[0:nst, 0] = vy1[0:nst, 0] + dvy[0:nst, 0]
-            
-            drb = sqrt(pow(dy2[ndof-1, 0], 2.0) + pow(dx2[ndof-1, 0], 2.0))
-            if drb > iso.umax:
-                print(prRed('WARNING: ') + prCyan('Isolator has crossed maximum displacement.'))
-                print(drb, dy2[ndof-1, 0], dx2[ndof-1, 0])
-            
-            theta_d02 = np.interp(drb, iso.xbtab, iso.ttab)
+                     
+            theta_d02 = np.interp(abs(dx2[ndof-1, 0]), iso.xbtab, iso.ttab)
+
+            if dx2[ndof-1, 0] == 0.0:
+                theta_d02 = 0.0
+            else:
+                theta_d02 = dx2[ndof-1, 0]/abs(dx2[ndof-1, 0])*theta_d02
+                
             theta_r_d02 = atan((iso.b0/iso.a0)*tan(theta_d02))
             c_d02 = iso.a0*sin(theta_d02)*cos(theta_r_d02) - iso.b0*cos(theta_d02)*sin(theta_r_d02)
             p_d02 = iso.a0*sin(theta_d02)*sin(theta_r_d02) + iso.b0*cos(theta_d02)*cos(theta_r_d02) 
             
-            fs1x, fs1y = fs1fixed(tm, rMrM, c_d02, p_d02, drb, dy2[ndof-1, 0], dx2[ndof-1, 0]) #CB
-
-            fbx, fby = fbfixed(iso.Mr, yg[i], xg[i]) #CB
+            fs1x, fs1y = fs1fixed(tm, rMrM, c_d02, p_d02, dx2[ndof-1, 0], dy2[ndof-1, 0], dx2[ndof-1, 0])
+    
+            fbx, fby = fbfixed(iso.Mr, yg[i], xg[i])
 
             fabx = (-1.0*cdx[nst, nst-1])*vx2[nst-1,0] + (-1.0*skx[nst, nst-1])*dx2[nst-1,0] - skx[ndof-1, ndof-1]*dx2[ndof-1,0] + px2[ndof-1] - fs1x - fbx
             faby = (-1.0*cdy[nst, nst-1])*vy2[nst-1,0] + (-1.0*sky[nst, nst-1])*dy2[nst-1,0] - sky[ndof-1, ndof-1]*dy2[ndof-1,0] + py2[ndof-1] - fs1y - fby
 
-            mu = mu_val(iso, drb)  #CB
+            mu = mu_val(iso, abs(dx2[ndof-1, 0]))
 
             fs2x, fs2y = fs2fixed(mu, tm, rMrM) #CB
 
@@ -544,8 +532,8 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
                 epx = px2 - np.dot(cdx, vx2) - np.dot(skx, dx2)
                 epy = py2 - np.dot(cdy, vy2) - np.dot(sky, dy2)
 
-                epx[ndof-1,0] = epx[ndof-1,0] - fabx - fs1x - fbx    
-                epy[ndof-1,0] = epy[ndof-1,0] - faby - fs1y - fby  
+                epx[ndof-1,0] = epx[ndof-1,0] - fs2x - fs1x - fbx    
+                epy[ndof-1,0] = epy[ndof-1,0] - fs2y - fs1y - fby  
 
                 ax2 = np.dot(smx_inv, epx)
                 ay2 = np.dot(smy_inv, epy)
@@ -553,10 +541,10 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
             dx1, vx1, px1, ax1 = dx2, vx2, px2, ax2 
             dy1, vy1, py1, ay1 = dy2, vy2, py2, ay2
             yd1, yv1, ya1 = yd2, yv2, ya2
-            theta_r_d01, theta_r_dot11, theta_r_dot21 = theta_r_d02, theta_r_dot12, theta_r_dot22
+            theta_r_d01, theta_r_dot11, theta_r_dot21 = theta_r_d02, theta_r_dot12, theta_r_dot22 
 
         else:
-            
+
             dfbx = 0.0
             dfby = 0.0
 
@@ -596,48 +584,39 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
                     arb = sqrt(pow(ax2[ndof-1, 0], 2.0) + pow(ay2[ndof-1, 0], 2.0))
                     arg = sqrt(pow(xg[i], 2.0) + pow(yg[i], 2.0))
 
-                    theta_d02 = np.interp(drb, iso.xbtab, iso.ttab)
+                    theta_d02 = np.interp(dx2[ndof-1, 0], iso.xbtab, iso.ttab)
                     theta_r_d02 = atan((iso.b0/iso.a0)*tan(theta_d02))
-                    c_d02 = iso.a0*sin(theta_d02)*cos(theta_r_d02) - iso.b0*cos(theta_d02)*sin(theta_r_d02)
-                    p_d02 = iso.a0*sin(theta_d02)*sin(theta_r_d02) + iso.b0*cos(theta_d02)*cos(theta_r_d02)
+                    c_d0 = iso.a0*sin(theta_d02)*cos(theta_r_d02) - iso.b0*cos(theta_d02)*sin(theta_r_d02)
+                    p_d0 = iso.a0*sin(theta_d02)*sin(theta_r_d02) + iso.b0*cos(theta_d02)*cos(theta_r_d02)
                     
-                    # dyb_dt0 = 2.0*(p_d02 - iso.b0) - yd1
-                    # dyb_dt1 = (gamma/beta/dt)*dyb_dt0 - gamma/beta*yv1 + dt*(1.0 - gamma/2.0/beta)*ya1
-                    # dyb_dt2 = (1.0/beta/pow(dt, 2.0))*dyb_dt0 - (1.0/beta/dt)*yv1 - (1.0/2.0/beta)*ya1
-                    # yd2 = yd1 + dyb_dt0
-                    # yv2 = yv1 + dyb_dt1
-                    # ya2 = ya1 + dyb_dt2
-
-                    dyb_dt0 = 2.0*(p_d02 - iso.b0) - yd1
+                    dyb_dt0 = 2.0*(p_d0 - iso.b0) - yd1
+                    dyb_dt1 = (gamma/beta/dt)*dyb_dt0 - gamma/beta*yv1 + dt*(1.0 - gamma/2.0/beta)*ya1
+                    dyb_dt2 = (1.0/beta/pow(dt, 2.0))*dyb_dt0 - (1.0/beta/dt)*yv1 - (1.0/2.0/beta)*ya1
                     yd2 = yd1 + dyb_dt0
-                    yv2 = (yd2 - yd1)/dt
-                    ya2 = (yv2 - yv1)/dt
-
-                    # dtheta_r_d0_dt0 = theta_r_d02 - theta_r_d01
-                    # dtheta_r_d0_dt1 = (gamma/beta/dt)*dtheta_r_d0_dt0 - gamma/beta*theta_r_dot11 + dt*(1.0 - gamma/2.0/beta)*theta_r_dot21
-                    # dtheta_r_d0_dt2 = (1.0/beta/pow(dt, 2.0))*dtheta_r_d0_dt0 - (1.0/beta/dt)*theta_r_dot11 - (1.0/2.0/beta)*theta_r_dot21
-                    # theta_r_d02 = theta_r_d01 + dtheta_r_d0_dt0
-                    # theta_r_dot12 = theta_r_dot11 + dtheta_r_d0_dt1
-                    # theta_r_dot22 = theta_r_dot21 + dtheta_r_d0_dt2
-
-                    theta_r_dot12 = (theta_r_d02 - theta_r_d01)/dt
-                    theta_r_dot22 = (theta_r_dot12 - theta_r_dot11)/dt
+                    yv2 = yv1 + dyb_dt1
+                    ya2 = ya1 + dyb_dt2
                     
-                    fs1x2, fs1y2 = fs1(tm, rMrM, ya2, c_d02, p_d02, drb, dy2[ndof-1, 0], dx2[ndof-1, 0])
+                    dtheta_r_d0_dt0 = theta_r_d02 - theta_r_d01
+                    dtheta_r_d0_dt1 = (gamma/beta/dt)*dtheta_r_d0_dt0 - gamma/beta*theta_r_dot11 + dt*(1.0 - gamma/2.0/beta)*theta_r_dot21
+                    dtheta_r_d0_dt2 = (1.0/beta/pow(dt, 2.0))*dtheta_r_d0_dt0 - (1.0/beta/dt)*theta_r_dot11 - (1.0/2.0/beta)*theta_r_dot21
+                    theta_r_d02 = theta_r_d01 + dtheta_r_d0_dt0
+                    theta_r_dot12 = theta_r_dot11 + dtheta_r_d0_dt1
+                    theta_r_dot22 = theta_r_dot21 + dtheta_r_d0_dt2
                     
+                    fs1x2, fs1y2 = fs1(tm, rMrM, ya2, c_d0, p_d0, drb, dy2[ndof-1, 0], dx2[ndof-1, 0])
                     mu = mu_val(iso, drb)
                     fs2x2, fs2y2 = fs2(tm, rMrM, mu, ya2)
-                    fbx2, fby2 = fb(iso.Jr, iso.Mr, drb, dy2[ndof-1, 0], dx2[ndof-1, 0], vrb, vy2[ndof-1, 0], vx2[ndof-1, 0], arg, yg[i], xg[i], arb, ay2[ndof-1, 0], ax2[ndof-1, 0], p_d02, theta_r_dot22, c_d02, ya2)
+                    fbx2, fby2 = fb(iso.Jr, iso.Mr, drb, dy2[ndof-1, 0], dx2[ndof-1, 0], vrb, vy2[ndof-1, 0], vx2[ndof-1, 0], arg, yg[i], xg[i], arb, ay2[ndof-1, 0], ax2[ndof-1, 0], p_d0, theta_r_dot22, c_d0, ya2)
 
                     dfs1x = fs1x2 - fs1x
-                    dfabx = fs2x2*vx2[ndof-1, 0]/vrb - fabx
+                    dfabx = fs2x2*vx[ndof-1, 0]/vrb - fabx
                     dfbx = fbx2 - fbx
 
                     dfs1y = fs1y2 - fs1y
-                    dfaby = abs(fs2y2)*vy2[ndof-1, 0]/vrb - faby
+                    dfaby = fs2y2*vy[ndof-1, 0]/vrb - faby
                     dfby = fby2 - fby
-            
-            # print('\n')
+
+                
             if nit > 1:
 
                 fbx = fbx + dfbx
@@ -649,7 +628,7 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
                 fabx = fabx + dfabx
                 faby = faby + dfaby
             
-            rolling_state = stat0(ddx[ndof-1], ddy[ndof-1], fabx, faby)
+            rolling_state = stat0(ddx[ndof-1], ddy[ndof-1], fs2x, fs2y)
 
             if rolling_state == False:
                 idx = 21 # del
@@ -710,25 +689,14 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
             for j in range(nst):
                 fx[index, j] = 1.0*np.dot(smx_diag[0:j+1].T, aax[0:j+1,index])   
                 fy[index, j] = 1.0*np.dot(smy_diag[0:j+1].T, aay[0:j+1,index])    
-            fx[index, ndof-1] = fabx
-            fy[index, ndof-1] = faby
+            fx[index, ndof-1] = fs2x/(tm*9.81)# + fs1x + fbx
+            fy[index, ndof-1] = fs2y/(tm*9.81)# + fs1y + fby
             ek[index, 0] = eki
             ed[index, 0] = edi
             es[index, 0] = esi
             ei[index, 0] = eii
 
             roll[index, 0] = idx # del
-            theta_0[index, 0] = theta_d02
-            theta_r[index, 0] = theta_r_d02
-            theta_r_dot2[index, 0] = theta_r_dot22
-            zbd[index, 0] = yd2
-            zbd_dot2[index, 0] = ya2
-            Fs1x[index, 0] = fs1x
-            Fs1y[index, 0] = fs1y
-            Fs2x[index, 0] = fs2x 
-            Fs2y[index, 0] = fs2y 
-            Fbx[index, 0] = fbx 
-            Fby[index, 0] = fby 
 
             error[index, 0] = (edi + esi + eki - eii)/(abs(edi + esi) + eki + abs(eii))
             # print(rolling_state)
@@ -754,7 +722,7 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
         print("Peak Isolator Displacement in X-Direction: % 8.6f cm" %(peakbasedispx*100.0))
         print("Peak Isolator Displacement in Y-Direction: % 8.6f cm" %(peakbasedispy*100.0))
     
-    result = ResultFixedXY(ref, ijk, time.T, gx.T, dx.T, vx.T, ax.T, aax.T, gy.T, dy.T, vy.T, ay.T, aay.T, fx, fy, ek, ed, es, ei, error, smx, skx, cdx, smy, sky, cdy, roll, theta_0, theta_r, theta_r_dot2, zbd, zbd_dot2, Fs1x, Fs1y, Fs2x, Fs2y, Fbx, Fby)
+    result = ResultFixedXY(ref, ijk, time.T, gx.T, dx.T, vx.T, ax.T, aax.T, gy.T, dy.T, vy.T, ay.T, aay.T, fx, fy, ek, ed, es, ei, error, smx, skx, cdx, smy, sky, cdy, roll)
     model = ModelInfo(ndof)
 
     return result, model

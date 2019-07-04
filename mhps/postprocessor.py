@@ -30,7 +30,7 @@ def profile(fnc):
 
 
 class ResultFixedXY:
-    def __init__(self, eq_refi, ijki, timei, gxi, dxi, vxi, axi, aaxi, gyi, dyi, vyi, ayi, aayi, fxi, fyi, eki, edi, esi, eii, errori, smxi, skxi, cdxi, smyi, skyi, cdyi):
+    def __init__(self, eq_refi, ijki, timei, gxi, dxi, vxi, axi, aaxi, gyi, dyi, vyi, ayi, aayi, fxi, fyi, eki, edi, esi, eii, errori, smxi, skxi, cdxi, smyi, skyi, cdyi, roll = 0, theta_0 = 0.0, theta_r= 0.0, theta_r_dot2= 0.0, zbd= 0.0, zbd_dot2= 0.0, Fs1x= 0.0, Fs1y= 0.0, Fs2x= 0.0, Fs2y= 0.0, Fbx= 0.0, Fby= 0.0): # del
         self.eq_ref = eq_refi
         self.ijk = ijki
         self.time = timei
@@ -57,6 +57,18 @@ class ResultFixedXY:
         self.smy = smyi
         self.sky = skyi
         self.cdy = cdyi
+        self.roll = roll
+        self.theta_0 = theta_0
+        self.theta_r = theta_r
+        self.theta_r_dot2 = theta_r_dot2
+        self.zbd = zbd
+        self.zbd_dot2 = zbd_dot2
+        self.Fs1x = Fs1x
+        self.Fs1y = Fs1y
+        self.Fs2x = Fs2x
+        self.Fs2y = Fs2y
+        self.Fbx = Fbx
+        self.Fby = Fby
 
 class ModelInfo:
     def __init__(self, nsti):
@@ -115,6 +127,24 @@ def get_result(result, responsevariable, floorstart, floorend, peaktype, dirn):
     elif responsevariable == 'er':
         vector = result.error
         vectorhead = ['Relative Error']
+    elif responsevariable == 'ro':
+        vector = result.roll
+        vectorhead = ['ROLL']
+    elif responsevariable == 'sm':
+        vector1 = result.theta_0
+        vector2 = result.theta_r
+        vector3 = result.theta_r_dot2
+        vector4 = result.zbd
+        vector5 = result.zbd_dot2
+        vector6 = result.Fs1x
+        vector7 = result.Fs1y
+        vector8 = result.Fs2x
+        vector9 = result.Fs2y
+        vector10 = result.Fbx
+        vector11 = result.Fby
+        vector = np.hstack((vector1, vector2, vector3, vector4, vector5, vector6, vector7, vector8, vector9, vector10, vector11))
+        vectorhead = ['theta_0', 'theta_r', 'theta_r_dot2', 'zbd', 'zbd_dot2', 'Fs1x', 'Fs1y', 'Fs2x', 'Fs2y', 'Fbx', 'Fby']
+
 
     if peaktype == 1:
         responsevalues = np.absolute(vector).max(axis=0)

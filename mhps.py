@@ -16,6 +16,7 @@ from mhps.isolator_l import addlinear_iso, simulator_linear, read_iso_l_var_para
 from mhps.isolator_pf import simulator_pf, read_iso_pf_var_param, IsoPFModel
 from mhps.isolator_boucwen import simulator_boucwen, read_iso_boucwen_var_param, IsoBoucWenModel, addboucwen_iso
 from mhps.isolator_osbi import simulator_osbi, read_iso_osbi_var_param, IsoOSBIModel
+from mhps.isolator_osbix import simulator_osbix
 from progressbar import progressbar
 from mhps.postprocessor import result_viewer, createfolder
 from pathlib import Path
@@ -181,6 +182,8 @@ def fixed_fn(const_param, var_param, earthquakes, knor, results_type, lxy, folde
 
             if ((i == 0) and (j==0)) or ((p_nst, p_tx1, p_rtytx, p_zeta != nst, tx1, rtytx, zeta)):
                 smx, skx, cdx, smy, sky, cdy = superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor)
+                print(smx)
+                print(skx)
                 p_nst, p_tx1, p_rtytx, p_zeta = nst, tx1, rtytx, zeta
                 
             result, model = fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx[0:nst,0:nst], skx[0:nst,0:nst], cdx[0:nst,0:nst], smy[0:nst,0:nst], sky[0:nst,0:nst], cdy[0:nst,0:nst], screen)
@@ -206,7 +209,10 @@ def fixed_fn(const_param, var_param, earthquakes, knor, results_type, lxy, folde
                 peakmat = np.hstack((peakmat, peakvalues))
                 peakmathead += [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
             if i == (total_eq - 1):
-                peakmat = pd.DataFrame(peakmat)
+                if total_param == 1:
+                    peakmat = pd.DataFrame(peakmat.reshape(-1, len(peakmat)))
+                else:
+                    peakmat = pd.DataFrame(peakmat)
                 # print(peakmat)
                 # print(peakvaluesparamhead)
                 peakmat.columns = peakmathead
@@ -404,7 +410,10 @@ def spectral(earthquakes, results_type, folder, damping, screen):
                 peakmat = np.hstack((peakmat, peakvalues))
                 peakmathead += [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
             if i == (total_eq - 1):
-                peakmat = pd.DataFrame(peakmat)
+                if total_param == 1:
+                    peakmat = pd.DataFrame(peakmat.reshape(-1, len(peakmat)))
+                else:
+                    peakmat = pd.DataFrame(peakmat)
                 # print(peakmat)
                 # print(peakvaluesparamhead)
                 peakmat.columns = peakmathead
@@ -548,7 +557,10 @@ def biso_linear(const_param, var_param, iso_param, earthquakes, knor, results_ty
                 peakmat = np.hstack((peakmat, peakvalues))
                 peakmathead += [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
             if i == (total_eq - 1):
-                peakmat = pd.DataFrame(peakmat)
+                if total_param == 1:
+                    peakmat = pd.DataFrame(peakmat.reshape(-1, len(peakmat)))
+                else:
+                    peakmat = pd.DataFrame(peakmat)
                 # print(peakmat)
                 # print(peakvaluesparamhead)
                 peakmat.columns = peakmathead
@@ -670,7 +682,10 @@ def biso_pf(const_param, var_param, iso_param, earthquakes, knor, results_type, 
 
         if peakvalues is not None:
             if i == 0:
-                peakmat = peakvalues
+                if total_param == 1:
+                    peakmat = pd.DataFrame(peakmat.reshape(-1, len(peakmat)))
+                else:
+                    peakmat = pd.DataFrame(peakmat)
                 peakmathead = [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
             else:
                 peakmat = np.hstack((peakmat, peakvalues))
@@ -713,8 +728,8 @@ def biso_pf(const_param, var_param, iso_param, earthquakes, knor, results_type, 
 @click.option('--iso_param', '-vp',type=str, default= 'OSBI_VP.csv', help= 'File name containing variable parameters for linear base isolator')
 @click.option('--earthquakes','-eq', type=(str), default= "Excitations.csv", help= 'Earthquakes')
 @click.option('--knor', '-knor', type=int, default=1, help="Normalizing the superstructure for given time period. 1 for normalized and 0 for un-normalized.")
-@click.option('--results_type', '-r', type=str, default="g*, aa1, db, f*, paa1, pdb", help="Choice to select output results")
-@click.option('--folder', '-f', type=str, default="Result", help="Folder name to store result")
+@click.option('--results_type', '-r', type=str, default="g*, aa1, db, f*, ro*, sm*, paa1, pdb", help="Choice to select output results")
+@click.option('--folder', '-f', type=str, default="result", help="Folder name to store result")
 @click.option('--outputunits', type=list, default=['m/s2', 'cm/s', 'cm', 'kn', 'j'])
 @click.option('--lxy', '-lxy', type=int, default=0)
 @click.option('--screen/--no-screen', default=False)
@@ -770,7 +785,7 @@ def biso_osbi(const_param, var_param, iso_param, earthquakes, knor, results_type
         superstructure_param_generator = read_ss_var_param(var_param)
         
         # ISOLATOR VARIABLE PARAMETER SETUP
-        isolator_param_generator = read_iso_osbi_var_param(iso_param, am[0], 1.0)
+        isolator_param_generator = read_iso_osbi_var_param(iso_param, am[0], 4)
 
         for j in range(total_param):
             ijk, nst, tx1, zeta, rtytx = next(superstructure_param_generator)
@@ -795,6 +810,7 @@ def biso_osbi(const_param, var_param, iso_param, earthquakes, knor, results_type
                 else:
                     peakvalues = np.vstack((peakvalues, peakvaluesparam))
 
+
         if peakvalues is not None:
             if i == 0:
 
@@ -803,14 +819,16 @@ def biso_osbi(const_param, var_param, iso_param, earthquakes, knor, results_type
                 # This place is dedicated to add model info in peak results as in spectral
 
                 # 
-
                 peakmat = peakvalues
                 peakmathead = [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
             else:
                 peakmat = np.hstack((peakmat, peakvalues))
                 peakmathead += [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
             if i == (total_eq - 1):
-                peakmat = pd.DataFrame(peakmat)
+                if total_param == 1:
+                    peakmat = pd.DataFrame(peakmat.reshape(-1, len(peakmat)))
+                else:
+                    peakmat = pd.DataFrame(peakmat)
                 peakmat.columns = peakmathead
                 peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
         end_t = time.time()
@@ -933,7 +951,10 @@ def biso_boucwen(const_param, var_param, iso_param, earthquakes, knor, results_t
                 peakmat = np.hstack((peakmat, peakvalues))
                 peakmathead += [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
             if i == (total_eq - 1):
-                peakmat = pd.DataFrame(peakmat)
+                if total_param == 1:
+                    peakmat = pd.DataFrame(peakmat.reshape(-1, len(peakmat)))
+                else:
+                    peakmat = pd.DataFrame(peakmat)
                 peakmat.columns = peakmathead
                 peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
         end_t = time.time()
