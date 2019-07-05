@@ -30,7 +30,7 @@ def profile(fnc):
 
 
 class ResultFixedXY:
-    def __init__(self, eq_refi, ijki, timei, gxi, dxi, vxi, axi, aaxi, gyi, dyi, vyi, ayi, aayi, fxi, fyi, eki, edi, esi, eii, errori, smxi, skxi, cdxi, smyi, skyi, cdyi, roll = 0, theta_0 = 0.0, theta_r= 0.0, theta_r_dot2= 0.0, zbd= 0.0, zbd_dot2= 0.0, Fs1x= 0.0, Fs1y= 0.0, Fs2x= 0.0, Fs2y= 0.0, Fbx= 0.0, Fby= 0.0): # del
+    def __init__(self, eq_refi, ijki, timei, gxi, dxi, vxi, axi, aaxi, gyi, dyi, vyi, ayi, aayi, fxi, fyi, eki, edi, esi, eii, errori, smxi, skxi, cdxi, smyi, skyi, cdyi, roll = 0, theta_0 = 0.0, theta_r= 0.0, theta_r_dot2= 0.0, zbd= 0.0, zbd_dot2= 0.0, Fs1x= 0.0, Fs1y= 0.0, Fs2x= 0.0, Fs2y= 0.0, Fbx= 0.0, Fby= 0.0, F_axial= 0.0, Dc_axial= 0.0, Strain_axial=0.0): # del
         self.eq_ref = eq_refi
         self.ijk = ijki
         self.time = timei
@@ -69,6 +69,9 @@ class ResultFixedXY:
         self.Fs2y = Fs2y
         self.Fbx = Fbx
         self.Fby = Fby
+        self.F_axial = F_axial
+        self.Dc_axial = Dc_axial
+        self.Strain_axial = Strain_axial
 
 class ModelInfo:
     def __init__(self, nsti):
@@ -142,8 +145,12 @@ def get_result(result, responsevariable, floorstart, floorend, peaktype, dirn):
         vector9 = result.Fs2y
         vector10 = result.Fbx
         vector11 = result.Fby
-        vector = np.hstack((vector1, vector2, vector3, vector4, vector5, vector6, vector7, vector8, vector9, vector10, vector11))
-        vectorhead = ['theta_0', 'theta_r', 'theta_r_dot2', 'zbd', 'zbd_dot2', 'Fs1x', 'Fs1y', 'Fs2x', 'Fs2y', 'Fbx', 'Fby']
+        vector12 = result.F_axial
+        vector13 = result.Dc_axial
+        vector14 = result.Strain_axial
+        
+        vector = np.hstack((vector1, vector2, vector3, vector4, vector5, vector6, vector7, vector8, vector9, vector10, vector11, vector12, vector13, vector14))
+        vectorhead = ['theta_0', 'theta_r', 'theta_r_dot2', 'zbd', 'zbd_dot2', 'Fs1x', 'Fs1y', 'Fs2x', 'Fs2y', 'Fbx', 'Fby', 'F_Axial', 'Dc_Axial', 'Strain_Axial']
 
 
     if peaktype == 1:
