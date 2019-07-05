@@ -245,7 +245,7 @@ def fc(iso, dt, dyb, dxb, drb, dc1, p_d0, tm):
         fcz = fc_axial*2*p_d0/lc
         fcx = fcr*dxb/drb
         fcy = fcr*dyb/drb
-        e_axial = (lc - iso.Lc0)/Lc0
+        e_axial = (lc - iso.Lc0)/iso.Lc0
     else:
         f_axial = 0.0
         fcz = 0.0
