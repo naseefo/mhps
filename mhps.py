@@ -11,7 +11,10 @@ from data.defaults.param_manager import *
 from data.defaults.param_manager import default
 from mhps.earthquake import get_earthquake_list, get_total_excitations
 from mhps.fixed import read_const_param, read_ss_var_param, get_total_variable_parameter_set, superstructure_propxy, fixed_simulator
-from mhps.fixedtorsion import read_const_param_torsion, read_ss_torsion_var_param, get_total_variable_parameter_set_torsion, superstructure_torsion_propxy
+from mhps.fixedtorsion import read_const_param_torsion, read_ss_torsion_var_param, get_total_variable_parameter_set_torsion, superstructure_propxy_t, fixed_simulator_tor
+from mhps.isolator_tor_lin import addlinear_iso_tor, simulator_linear_tor
+from mhps.isolator_tor_parkwen import simulator_parkwen_tor
+from mhps.isolator_osbi_t import read_iso_osbi_torsion_var_param
 from mhps.isolator_l import addlinear_iso, simulator_linear, read_iso_l_var_param
 from mhps.isolator_pf import simulator_pf, read_iso_pf_var_param, IsoPFModel
 from mhps.isolator_boucwen import simulator_boucwen, read_iso_boucwen_var_param, IsoBoucWenModel, addboucwen_iso
@@ -454,7 +457,7 @@ def fft():
 @cli1.command()
 @click.option('--const_param', '-cp',type=str, default= 'ConstantParameters.txt', help= 'File name containing constant parameters for the structure')
 @click.option('--var_param', '-vp',type=str, default= 'SS_VP.csv', help= 'File name containing variable parameters for the structure')
-@click.option('--iso_param', '-vp',type=str, default= 'L_VP.csv', help= 'File name containing variable parameters for linear base isolator')
+@click.option('--iso_param', '-vip',type=str, default= 'L_VP.csv', help= 'File name containing variable parameters for linear base isolator')
 @click.option('--earthquakes','-eq', type=(str), default= "Excitations.csv", help= 'Earthquakes')
 @click.option('--knor', '-knor', type=int, default=1, help="Normalizing the superstructure for given time period. 1 for normalized and 0 for un-normalized.")
 @click.option('--results_type', '-r', type=str, default="g*, aa1, db, fb, paa1, pdb", help="Choice to select output results")
@@ -596,7 +599,7 @@ def biso_linear(const_param, var_param, iso_param, earthquakes, knor, results_ty
 @cli1.command()
 @click.option('--const_param', '-cp',type=str, default= 'ConstantParameters.txt', help= 'File name containing constant parameters for the structure')
 @click.option('--var_param', '-vp',type=str, default= 'SS_VP.csv', help= 'File name containing variable parameters for the structure')
-@click.option('--iso_param', '-vp',type=str, default= 'PF_VP.csv', help= 'File name containing variable parameters for linear base isolator')
+@click.option('--iso_param', '-vip',type=str, default= 'PF_VP.csv', help= 'File name containing variable parameters for linear base isolator')
 @click.option('--earthquakes','-eq', type=(str), default= "Excitations.csv", help= 'Earthquakes')
 @click.option('--knor', '-knor', type=int, default=1, help="Normalizing the superstructure for given time period. 1 for normalized and 0 for un-normalized.")
 @click.option('--results_type', '-r', type=str, default="g*, aa1, db, f*, paa1, pdb", help="Choice to select output results")
@@ -725,10 +728,10 @@ def biso_pf(const_param, var_param, iso_param, earthquakes, knor, results_type, 
 @cli1.command()
 @click.option('--const_param', '-cp',type=str, default= 'ConstantParameters.txt', help= 'File name containing constant parameters for the structure')
 @click.option('--var_param', '-vp',type=str, default= 'SS_VP.csv', help= 'File name containing variable parameters for the structure')
-@click.option('--iso_param', '-vp',type=str, default= 'OSBI_VP.csv', help= 'File name containing variable parameters for linear base isolator')
+@click.option('--iso_param', '-vip',type=str, default= 'OSBI_VP.csv', help= 'File name containing variable parameters for linear base isolator')
 @click.option('--earthquakes','-eq', type=(str), default= "Excitations.csv", help= 'Earthquakes')
 @click.option('--knor', '-knor', type=int, default=1, help="Normalizing the superstructure for given time period. 1 for normalized and 0 for un-normalized.")
-@click.option('--results_type', '-r', type=str, default="g*, aa1, db, f*, ro*, sm*, paa1, pdb", help="Choice to select output results")
+@click.option('--results_type', '-r', type=str, default="g*, aa1, vb, db, f*, ro*, sm*, paa1, pdb", help="Choice to select output results")
 @click.option('--folder', '-f', type=str, default="result", help="Folder name to store result")
 @click.option('--outputunits', type=list, default=['m/s2', 'cm/s', 'cm', 'kn', 'j'])
 @click.option('--lxy', '-lxy', type=int, default=0)
@@ -857,6 +860,657 @@ def biso_osbi(const_param, var_param, iso_param, earthquakes, knor, results_type
             upload(folder, access_id, access_secret)
     
     return None
+
+@cli1.command()
+@click.option('--const_param', '-cp',type=str, default= 'ConstantParameters_T.txt', help= 'File name containing constant parameters for the structure')
+@click.option('--var_param', '-vp',type=str, default= 'SS_T_VP.csv', help= 'File name containing variable parameters for the structure')
+@click.option('--iso_param', '-vip',type=str, default= 'OSBI_T_VP.csv', help= 'File name containing variable parameters for linear base isolator')
+@click.option('--earthquakes','-eq', type=(str), default= "Excitations.csv", help= 'Earthquakes')
+@click.option('--knor', '-knor', type=int, default=1, help="Normalizing the superstructure for given time period. 1 for normalized and 0 for un-normalized.")
+@click.option('--results_type', '-r', type=str, default="tsd2, ptsd2", help="Choice to select output results")
+@click.option('--folder', '-f', type=str, default="result", help="Folder name to store result")
+@click.option('--outputunits', type=list, default=['m/s2', 'cm/s', 'cm', 'kn', 'j'])
+@click.option('--lxy', '-lxy', type=int, default=0)
+@click.option('--screen/--no-screen', default=False)
+def biso_osbi_tor(const_param, var_param, iso_param, earthquakes, knor, results_type, folder, outputunits, lxy, screen):
+
+    upload_preference = input('Do you wish to upload (default: no) ? [y/n] : ')
+
+    # RESULT FOLDER SETUP
+    folder = createfolder(folder)
+    os.makedirs(os.path.join('results', folder, 'Time History Response'))
+    simulationdesc = input('Enter simulation description [None] : ')
+    if simulationdesc:
+        Path(os.path.join('results', folder, "SimulationInfo.csv")).touch()
+        with open(os.path.join('results', folder, "SimulationInfo.csv"), 'w') as f:
+            for line in simulationdesc:
+                f.write(line)
+        f.close()
+
+    # EARTHQUAKE GENERATOR SETUP
+    if earthquakes:
+        total_eq = get_total_excitations(earthquakes)
+        earthquake_generator = get_earthquake_list(earthquakes)
+    else:
+        earthquake_generator = get_earthquake_list('db elc')
+
+    total_param = get_total_variable_parameter_set_torsion(var_param)
+    print("\nTotal Parameters: " + str(total_param))
+    print("Total EQs: " + str(total_eq) +'\n\n')
+    
+    # CONSTANT PARAMETER SETUP
+    fm, nb, x, y, xb, yb = read_const_param_torsion(const_param)
+    print('Number of bearings = %d'%(nb))
+    
+    s_rate2 = 0.33
+    s_rate = 1.5
+    tot_time_eq2 = 0.0
+    nparam = 1.0
+    start_t_eq = time.time()
+
+    peakvalues = None
+    for i in range(total_eq):
+        
+        start_t = time.time()
+        ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
+
+        teq2 = (ndt-1)*dt*ndiv
+        tot_time_eq2 = (tot_time_eq2 + teq2)/ref
+        coeff1 = (0.0379*pow(ndiv, 1.5073))*pow(teq2, -0.6251*pow(ndiv, 0.125))
+        time_current_eq = nparam*teq2*coeff1    #max(s_rate*total_param, s_rate2*teq2*total_param)
+        time_remaining = (total_eq-ref+1)*(tot_time_eq2*coeff1*nparam)
+        print('FACT: Duration of EQ = %8.4fs'%(teq2) + " | Start Time: " + prCyan(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+        print('EXPECTATION: Analysis Duration = %8.2fs (%8.2f m) | Total Duration Remaining = %8.2fs (%6.2f m, %5.2fh)'%(time_current_eq, time_current_eq/60, time_remaining, time_remaining/60, time_remaining/60/60) + ' | Estimated Completion Time: ' + (datetime.datetime.now()+datetime.timedelta(seconds = time_current_eq)).strftime("%Y-%m-%d %H:%M:%S"))
+        
+        # SUPERSTRUCTURE VARIABLE PARAMETER SETUP
+        superstructure_param_generator = read_ss_torsion_var_param(var_param)
+        
+        # ISOLATOR VARIABLE PARAMETER SETUP
+        isolator_param_generator = read_iso_osbi_torsion_var_param(iso_param, fm, nb)
+
+        
+        for j in range(total_param):
+            
+            
+            ijk, tx1, zeta, exd, wrwx = next(superstructure_param_generator)
+            iso = next(isolator_param_generator)
+            if screen == True:
+                print(iso)
+            
+            if ((i == 0) and (j==0)) or ((p_tx1, p_zeta, p_exd, p_wrwx, p_iso != tx1, zeta, exd, wrwx, iso)):
+                sm, sk, cd = superstructure_propxy_t(tx1, zeta, exd, wrwx, fm, nb, x, y, xb, yb)
+                print(sm)
+                print(sk)
+                print(cd)
+                
+                # sm, sk, cd = addlinear_iso_t(sm, sk, cd, iso.rmbm, iso.tbx, iso.zetabx, iso.rtytxb, iso.rzyzxb)
+                p_tx1, p_zeta, p_exd, p_wrwx  = tx1, zeta, exd, wrwx
+                p_iso = iso
+                
+            result, model = fixed_simulator_t(ref, xg, yg, dt, ndiv, ndt, ijk, 3, sm, sk, cd, x, y, nb)
+            
+            # result, model = simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso, screen)    
+            analysis_folder = os.path.join('results', folder, 'Time History Response', 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))
+            os.makedirs(analysis_folder)
+            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, folder)
+         
+            if peakvaluesparam is not None:
+                if j == 0:
+                    peakvalues = peakvaluesparam
+                else:
+                    peakvalues = np.vstack((peakvalues, peakvaluesparam))
+            
+
+        
+        if peakvalues is not None:
+            if i == 0:
+
+                #
+
+                # This place is dedicated to add model info in peak results as in spectral
+
+                # 
+                peakmat = peakvalues
+                peakmathead = [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
+            else:
+                peakmat = np.hstack((peakmat, peakvalues))
+                peakmathead += [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
+            if i == (total_eq - 1):
+                if total_param == 1:
+                    peakmat = pd.DataFrame(peakmat.reshape(-1, len(peakmat)))
+                else:
+                    peakmat = pd.DataFrame(peakmat)
+                peakmat.columns = peakmathead
+                peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
+        
+        
+        end_t = time.time()
+        eq_dur = end_t - start_t
+        s_rate = eq_dur/total_param
+        s_rate2 = eq_dur/teq2/total_param
+        nparam = eq_dur/(teq2*coeff1)
+        print("REALIZATION: Analysis Duration = %8.4fs | Parameter Speed Rate = %8.4fs | EQ Speed Rate = %8.4fs | Total Time Elapsed = %8.4f"%(eq_dur, s_rate, s_rate2, (end_t - start_t_eq)))
+        print('STATUS: Earthquake #%d completed successfully!'%(ref) + " | End Time: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n\n")
+        
+    
+    end_t_eq = time.time()
+    print('STATUS OVERALL: Complete Duration = %8.4f'%(end_t_eq - start_t_eq))
+    
+    
+    try:
+        if upload_preference == 'y':
+            data = pd.read_csv("accesskeys.csv")
+            access_id = data['Access key ID'][0]
+            access_secret = data['Secret access key'][0]
+            upload(folder, access_id, access_secret)
+            shutil.rmtree(os.path.join('results',folder))
+    except:
+        print('Result stored locally')
+        chk = input('Do you wish to upload? (y/n) :')
+        if chk == 'y':
+            access_id = input('Enter Access ID: ')
+            access_secret = input('Enter Access Secret Key: ')
+            upload(folder, access_id, access_secret)
+    return None
+
+'''
+RESULT CODE DOCUMENTATION
+
+tsd*, tsd1 : Torsion slab central displacement, Torsion slab central displacement in (1: X-dirn, 2: Y-dirn, 3: Rotation)
+tsv*, tsv1
+tsa*, tsa1
+tsaa*, tsaa1
+
+tscd*, tscd1
+tscv*, tscv1
+tsca*, tsca1
+tscaa*, tscaa1
+
+
+tbd*, tbd1 : Torsion bearing central displacement, Torsion slab central displacement in (1: X-dirn, 2: Y-dirn, 3: Rotation)
+tbv*, tbv1
+tba*, tba1
+tbaa*, tbaa1
+
+tbcd*, tbcd1
+tbcv*, tbcv1
+tbca*, tbca1
+tbcaa*, tbcaa1
+
+tf*, tf1 : Base shear in 1,2,3 Direction
+tfc*, tfc1
+
+'''
+
+
+
+@cli1.command()
+@click.option('--const_param', '-cp',type=str, default= 'ConstantParameters_T.txt', help= 'File name containing constant parameters for the structure')
+@click.option('--var_param', '-vp',type=str, default= 'SS_T_VP.csv', help= 'File name containing variable parameters for the structure')
+@click.option('--iso_param', '-vip',type=str, default= 'OSBI_T_VP.csv', help= 'File name containing variable parameters for linear base isolator')
+@click.option('--earthquakes','-eq', type=(str), default= "Excitations.csv", help= 'Earthquakes')
+@click.option('--knor', '-knor', type=int, default=1, help="Normalizing the superstructure for given time period. 1 for normalized and 0 for un-normalized.")
+@click.option('--results_type', '-r', type=str, default="tsd*", help="Choice to select output results")
+@click.option('--folder', '-f', type=str, default="result", help="Folder name to store result")
+@click.option('--outputunits', type=list, default=['m/s2', 'cm/s', 'cm', 'kn', 'j'])
+@click.option('--lxy', '-lxy', type=int, default=0)
+@click.option('--screen/--no-screen', default=False)
+def fixed_tor(const_param, var_param, iso_param, earthquakes, knor, results_type, folder, outputunits, lxy, screen):
+
+    upload_preference = input('Do you wish to upload (default: no) ? [y/n] : ')
+
+    # RESULT FOLDER SETUP
+    folder = createfolder(folder)
+    os.makedirs(os.path.join('results', folder, 'Time History Response'))
+    simulationdesc = input('Enter simulation description [None] : ')
+    if simulationdesc:
+        Path(os.path.join('results', folder, "SimulationInfo.csv")).touch()
+        with open(os.path.join('results', folder, "SimulationInfo.csv"), 'w') as f:
+            for line in simulationdesc:
+                f.write(line)
+        f.close()
+
+    # EARTHQUAKE GENERATOR SETUP
+    if earthquakes:
+        total_eq = get_total_excitations(earthquakes)
+        earthquake_generator = get_earthquake_list(earthquakes)
+    else:
+        earthquake_generator = get_earthquake_list('db elc')
+
+    total_param = get_total_variable_parameter_set_torsion(var_param)
+    print("\nTotal Parameters: " + str(total_param))
+    print("Total EQs: " + str(total_eq) +'\n\n')
+    
+    # CONSTANT PARAMETER SETUP
+    fm, nb, x, y, xb, yb = read_const_param_torsion(const_param)
+    print('Number of bearings = %d'%(nb))
+    
+    s_rate2 = 0.33
+    s_rate = 1.5
+    tot_time_eq2 = 0.0
+    nparam = 1.0
+    start_t_eq = time.time()
+
+    peakvalues = None
+    for i in range(total_eq):
+        
+        start_t = time.time()
+        ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
+
+        teq2 = (ndt-1)*dt*ndiv
+        tot_time_eq2 = (tot_time_eq2 + teq2)/ref
+        coeff1 = (0.0379*pow(ndiv, 1.5073))*pow(teq2, -0.6251*pow(ndiv, 0.125))
+        time_current_eq = nparam*teq2*coeff1    #max(s_rate*total_param, s_rate2*teq2*total_param)
+        time_remaining = (total_eq-ref+1)*(tot_time_eq2*coeff1*nparam)
+        print('FACT: Duration of EQ = %8.4fs'%(teq2) + " | Start Time: " + prCyan(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+        print('EXPECTATION: Analysis Duration = %8.2fs (%8.2f m) | Total Duration Remaining = %8.2fs (%6.2f m, %5.2fh)'%(time_current_eq, time_current_eq/60, time_remaining, time_remaining/60, time_remaining/60/60) + ' | Estimated Completion Time: ' + (datetime.datetime.now()+datetime.timedelta(seconds = time_current_eq)).strftime("%Y-%m-%d %H:%M:%S"))
+        
+        # SUPERSTRUCTURE VARIABLE PARAMETER SETUP
+        superstructure_param_generator = read_ss_torsion_var_param(var_param)
+        
+        # ISOLATOR VARIABLE PARAMETER SETUP
+        # isolator_param_generator = read_iso_osbi_torsion_var_param(iso_param, fm, nb)
+
+        
+        for j in range(total_param):
+            
+            
+            ijk, tx1, zeta, exd, wrwx = next(superstructure_param_generator)
+            # iso = next(isolator_param_generator)
+            if screen == True:
+                print(iso)
+            
+            # if ((i == 0) and (j==0)) or ((p_tx1, p_zeta, p_exd, p_wrwx, p_iso != tx1, zeta, exd, wrwx, iso)):
+            if ((i == 0) and (j==0)) or ((p_tx1, p_zeta, p_exd, p_wrwx != tx1, zeta, exd, wrwx)):
+                sm, sk, cd = superstructure_propxy_t(tx1, zeta, exd, wrwx, fm, nb, x, y, xb, yb)
+                print(sm)
+                print(sk)
+                print(cd)
+                
+                # sm, sk, cd = addlinear_iso_t(sm, sk, cd, iso.rmbm, iso.tbx, iso.zetabx, iso.rtytxb, iso.rzyzxb)
+                p_tx1, p_zeta, p_exd, p_wrwx  = tx1, zeta, exd, wrwx
+                # p_iso = iso
+                
+            result, model = fixed_simulator_tor(ref, xg, yg, dt, ndiv, ndt, ijk, 3, sm, sk, cd, x, y, nb)
+            
+            # result, model = simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso, screen)    
+            analysis_folder = os.path.join('results', folder, 'Time History Response', 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))
+            os.makedirs(analysis_folder)
+            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, folder)
+         
+            if peakvaluesparam is not None:
+                if j == 0:
+                    peakvalues = peakvaluesparam
+                else:
+                    peakvalues = np.vstack((peakvalues, peakvaluesparam))
+            
+
+        
+        if peakvalues is not None:
+            if i == 0:
+
+                #
+
+                # This place is dedicated to add model info in peak results as in spectral
+
+                # 
+                peakmat = peakvalues
+                peakmathead = [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
+            else:
+                peakmat = np.hstack((peakmat, peakvalues))
+                peakmathead += [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
+            if i == (total_eq - 1):
+                if total_param == 1:
+                    peakmat = pd.DataFrame(peakmat.reshape(-1, len(peakmat)))
+                else:
+                    peakmat = pd.DataFrame(peakmat)
+                peakmat.columns = peakmathead
+                peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
+        
+        
+        end_t = time.time()
+        eq_dur = end_t - start_t
+        s_rate = eq_dur/total_param
+        s_rate2 = eq_dur/teq2/total_param
+        nparam = eq_dur/(teq2*coeff1)
+        print("REALIZATION: Analysis Duration = %8.4fs | Parameter Speed Rate = %8.4fs | EQ Speed Rate = %8.4fs | Total Time Elapsed = %8.4f"%(eq_dur, s_rate, s_rate2, (end_t - start_t_eq)))
+        print('STATUS: Earthquake #%d completed successfully!'%(ref) + " | End Time: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n\n")
+        
+    
+    end_t_eq = time.time()
+    print('STATUS OVERALL: Complete Duration = %8.4f'%(end_t_eq - start_t_eq))
+    
+    
+    try:
+        if upload_preference == 'y':
+            data = pd.read_csv("accesskeys.csv")
+            access_id = data['Access key ID'][0]
+            access_secret = data['Secret access key'][0]
+            upload(folder, access_id, access_secret)
+            shutil.rmtree(os.path.join('results',folder))
+    except:
+        print('Result stored locally')
+        chk = input('Do you wish to upload? (y/n) :')
+        if chk == 'y':
+            access_id = input('Enter Access ID: ')
+            access_secret = input('Enter Access Secret Key: ')
+            upload(folder, access_id, access_secret)
+    
+    
+    return None
+
+@cli1.command()
+@click.option('--const_param', '-cp',type=str, default= 'ConstantParameters_T.txt', help= 'File name containing constant parameters for the structure')
+@click.option('--var_param', '-vp',type=str, default= 'SS_T_VP.csv', help= 'File name containing variable parameters for the structure')
+@click.option('--iso_param', '-vip',type=str, default= 'OSBI_T_VP.csv', help= 'File name containing variable parameters for linear base isolator')
+@click.option('--earthquakes','-eq', type=(str), default= "Excitations.csv", help= 'Earthquakes')
+@click.option('--knor', '-knor', type=int, default=1, help="Normalizing the superstructure for given time period. 1 for normalized and 0 for un-normalized.")
+@click.option('--results_type', '-r', type=str, default="tsd*", help="Choice to select output results")
+@click.option('--folder', '-f', type=str, default="result", help="Folder name to store result")
+@click.option('--outputunits', type=list, default=['m/s2', 'cm/s', 'cm', 'kn', 'j'])
+@click.option('--lxy', '-lxy', type=int, default=0)
+@click.option('--screen/--no-screen', default=False)
+def biso_linear_tor(const_param, var_param, iso_param, earthquakes, knor, results_type, folder, outputunits, lxy, screen):
+
+    upload_preference = input('Do you wish to upload (default: no) ? [y/n] : ')
+
+    # RESULT FOLDER SETUP
+    folder = createfolder(folder)
+    os.makedirs(os.path.join('results', folder, 'Time History Response'))
+    simulationdesc = input('Enter simulation description [None] : ')
+    if simulationdesc:
+        Path(os.path.join('results', folder, "SimulationInfo.csv")).touch()
+        with open(os.path.join('results', folder, "SimulationInfo.csv"), 'w') as f:
+            for line in simulationdesc:
+                f.write(line)
+        f.close()
+
+    # EARTHQUAKE GENERATOR SETUP
+    if earthquakes:
+        total_eq = get_total_excitations(earthquakes)
+        earthquake_generator = get_earthquake_list(earthquakes)
+    else:
+        earthquake_generator = get_earthquake_list('db elc')
+
+    total_param = get_total_variable_parameter_set_torsion(var_param)
+    print("\nTotal Parameters: " + str(total_param))
+    print("Total EQs: " + str(total_eq) +'\n\n')
+    
+    # CONSTANT PARAMETER SETUP
+    fm, nb, x, y, xb, yb = read_const_param_torsion(const_param)
+    print('Number of bearings = %d'%(nb))
+    
+    s_rate2 = 0.33
+    s_rate = 1.5
+    tot_time_eq2 = 0.0
+    nparam = 1.0
+    start_t_eq = time.time()
+
+    peakvalues = None
+    for i in range(total_eq):
+        
+        start_t = time.time()
+        ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
+
+        teq2 = (ndt-1)*dt*ndiv
+        tot_time_eq2 = (tot_time_eq2 + teq2)/ref
+        coeff1 = (0.0379*pow(ndiv, 1.5073))*pow(teq2, -0.6251*pow(ndiv, 0.125))
+        time_current_eq = nparam*teq2*coeff1    #max(s_rate*total_param, s_rate2*teq2*total_param)
+        time_remaining = (total_eq-ref+1)*(tot_time_eq2*coeff1*nparam)
+        print('FACT: Duration of EQ = %8.4fs'%(teq2) + " | Start Time: " + prCyan(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+        print('EXPECTATION: Analysis Duration = %8.2fs (%8.2f m) | Total Duration Remaining = %8.2fs (%6.2f m, %5.2fh)'%(time_current_eq, time_current_eq/60, time_remaining, time_remaining/60, time_remaining/60/60) + ' | Estimated Completion Time: ' + (datetime.datetime.now()+datetime.timedelta(seconds = time_current_eq)).strftime("%Y-%m-%d %H:%M:%S"))
+        
+        # SUPERSTRUCTURE VARIABLE PARAMETER SETUP
+        superstructure_param_generator = read_ss_torsion_var_param(var_param)
+        
+        # ISOLATOR VARIABLE PARAMETER SETUP
+        isolator_param_generator = read_iso_osbi_torsion_var_param(iso_param, fm, nb)
+
+        
+        for j in range(total_param):
+            
+            
+            ijk, tx1, zeta, exd, wrwx = next(superstructure_param_generator)
+            iso = next(isolator_param_generator)
+            if screen == True:
+                print(iso)
+            
+            if ((i == 0) and (j==0)) or ((p_tx1, p_zeta, p_exd, p_wrwx, p_iso != tx1, zeta, exd, wrwx, iso)):
+                sm, sk, cd = superstructure_propxy_t(tx1, zeta, exd, wrwx, fm, nb, x, y, xb, yb)
+               
+                
+                sm, sk, cd = addlinear_iso_tor(sm, sk, cd, iso.rmbm, iso.tbx, iso.zetabx, iso.ebxd, iso.wrwxb, xb, yb, nb)
+              
+                p_tx1, p_zeta, p_exd, p_wrwx  = tx1, zeta, exd, wrwx
+                p_iso = iso
+               
+            result, model = simulator_linear_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb, nb)
+            
+            # result, model = simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso, screen)    
+            analysis_folder = os.path.join('results', folder, 'Time History Response', 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))
+            os.makedirs(analysis_folder)
+            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, folder)
+         
+            if peakvaluesparam is not None:
+                if j == 0:
+                    peakvalues = peakvaluesparam
+                else:
+                    peakvalues = np.vstack((peakvalues, peakvaluesparam))
+            
+            
+        
+        
+        if peakvalues is not None:
+            if i == 0:
+
+                #
+
+                # This place is dedicated to add model info in peak results as in spectral
+
+                # 
+                peakmat = peakvalues
+                peakmathead = [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
+            else:
+                peakmat = np.hstack((peakmat, peakvalues))
+                peakmathead += [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
+            if i == (total_eq - 1):
+                if total_param == 1:
+                    peakmat = pd.DataFrame(peakmat.reshape(-1, len(peakmat)))
+                else:
+                    peakmat = pd.DataFrame(peakmat)
+                peakmat.columns = peakmathead
+                peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
+        
+        
+        end_t = time.time()
+        eq_dur = end_t - start_t
+        s_rate = eq_dur/total_param
+        s_rate2 = eq_dur/teq2/total_param
+        nparam = eq_dur/(teq2*coeff1)
+        print("REALIZATION: Analysis Duration = %8.4fs | Parameter Speed Rate = %8.4fs | EQ Speed Rate = %8.4fs | Total Time Elapsed = %8.4f"%(eq_dur, s_rate, s_rate2, (end_t - start_t_eq)))
+        print('STATUS: Earthquake #%d completed successfully!'%(ref) + " | End Time: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n\n")
+        
+        
+    
+    end_t_eq = time.time()
+    print('STATUS OVERALL: Complete Duration = %8.4f'%(end_t_eq - start_t_eq))
+    
+    
+    
+    try:
+        if upload_preference == 'y':
+            data = pd.read_csv("accesskeys.csv")
+            access_id = data['Access key ID'][0]
+            access_secret = data['Secret access key'][0]
+            upload(folder, access_id, access_secret)
+            shutil.rmtree(os.path.join('results',folder))
+    except:
+        print('Result stored locally')
+        chk = input('Do you wish to upload? (y/n) :')
+        if chk == 'y':
+            access_id = input('Enter Access ID: ')
+            access_secret = input('Enter Access Secret Key: ')
+            upload(folder, access_id, access_secret)
+    
+
+    return None
+
+@cli1.command()
+@click.option('--const_param', '-cp',type=str, default= 'ConstantParameters_T.txt', help= 'File name containing constant parameters for the structure')
+@click.option('--var_param', '-vp',type=str, default= 'SS_T_VP.csv', help= 'File name containing variable parameters for the structure')
+@click.option('--iso_param', '-vip',type=str, default= 'OSBI_T_VP.csv', help= 'File name containing variable parameters for linear base isolator')
+@click.option('--earthquakes','-eq', type=(str), default= "Excitations.csv", help= 'Earthquakes')
+@click.option('--knor', '-knor', type=int, default=1, help="Normalizing the superstructure for given time period. 1 for normalized and 0 for un-normalized.")
+@click.option('--results_type', '-r', type=str, default="tsd*", help="Choice to select output results")
+@click.option('--folder', '-f', type=str, default="result", help="Folder name to store result")
+@click.option('--outputunits', type=list, default=['m/s2', 'cm/s', 'cm', 'kn', 'j'])
+@click.option('--lxy', '-lxy', type=int, default=0)
+@click.option('--screen/--no-screen', default=False)
+def biso_parkwen_tor(const_param, var_param, iso_param, earthquakes, knor, results_type, folder, outputunits, lxy, screen):
+
+    upload_preference = input('Do you wish to upload (default: no) ? [y/n] : ')
+
+    # RESULT FOLDER SETUP
+    folder = createfolder(folder)
+    os.makedirs(os.path.join('results', folder, 'Time History Response'))
+    simulationdesc = input('Enter simulation description [None] : ')
+    if simulationdesc:
+        Path(os.path.join('results', folder, "SimulationInfo.csv")).touch()
+        with open(os.path.join('results', folder, "SimulationInfo.csv"), 'w') as f:
+            for line in simulationdesc:
+                f.write(line)
+        f.close()
+
+    # EARTHQUAKE GENERATOR SETUP
+    if earthquakes:
+        total_eq = get_total_excitations(earthquakes)
+        earthquake_generator = get_earthquake_list(earthquakes)
+    else:
+        earthquake_generator = get_earthquake_list('db elc')
+
+    total_param = get_total_variable_parameter_set_torsion(var_param)
+    print("\nTotal Parameters: " + str(total_param))
+    print("Total EQs: " + str(total_eq) +'\n\n')
+    
+    # CONSTANT PARAMETER SETUP
+    fm, nb, x, y, xb, yb = read_const_param_torsion(const_param)
+    print('Number of bearings = %d'%(nb))
+    
+    s_rate2 = 0.33
+    s_rate = 1.5
+    tot_time_eq2 = 0.0
+    nparam = 1.0
+    start_t_eq = time.time()
+
+    peakvalues = None
+    for i in range(total_eq):
+        
+        start_t = time.time()
+        ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
+
+        teq2 = (ndt-1)*dt*ndiv
+        tot_time_eq2 = (tot_time_eq2 + teq2)/ref
+        coeff1 = (0.0379*pow(ndiv, 1.5073))*pow(teq2, -0.6251*pow(ndiv, 0.125))
+        time_current_eq = nparam*teq2*coeff1    #max(s_rate*total_param, s_rate2*teq2*total_param)
+        time_remaining = (total_eq-ref+1)*(tot_time_eq2*coeff1*nparam)
+        print('FACT: Duration of EQ = %8.4fs'%(teq2) + " | Start Time: " + prCyan(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+        print('EXPECTATION: Analysis Duration = %8.2fs (%8.2f m) | Total Duration Remaining = %8.2fs (%6.2f m, %5.2fh)'%(time_current_eq, time_current_eq/60, time_remaining, time_remaining/60, time_remaining/60/60) + ' | Estimated Completion Time: ' + (datetime.datetime.now()+datetime.timedelta(seconds = time_current_eq)).strftime("%Y-%m-%d %H:%M:%S"))
+        
+        # SUPERSTRUCTURE VARIABLE PARAMETER SETUP
+        superstructure_param_generator = read_ss_torsion_var_param(var_param)
+        
+        # ISOLATOR VARIABLE PARAMETER SETUP
+        isolator_param_generator = read_iso_osbi_torsion_var_param(iso_param, fm, nb)
+
+        
+        for j in range(total_param):
+            
+            
+            ijk, tx1, zeta, exd, wrwx = next(superstructure_param_generator)
+            iso = next(isolator_param_generator)
+            if screen == True:
+                print(iso)
+            
+            if ((i == 0) and (j==0)) or ((p_tx1, p_zeta, p_exd, p_wrwx, p_iso != tx1, zeta, exd, wrwx, iso)):
+                sm, sk, cd = superstructure_propxy_t(tx1, zeta, exd, wrwx, fm, nb, x, y, xb, yb)
+               
+                
+                sm, sk, cd = addlinear_iso_tor(sm, sk, cd, iso.rmbm, iso.tbx, iso.zetabx, iso.ebxd, iso.wrwxb, xb, yb, nb)
+              
+                p_tx1, p_zeta, p_exd, p_wrwx  = tx1, zeta, exd, wrwx
+                p_iso = iso
+               
+            result, model = simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb, nb, iso)
+            
+            # result, model = simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso, screen)    
+            analysis_folder = os.path.join('results', folder, 'Time History Response', 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))
+            os.makedirs(analysis_folder)
+            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, folder)
+         
+            if peakvaluesparam is not None:
+                if j == 0:
+                    peakvalues = peakvaluesparam
+                else:
+                    peakvalues = np.vstack((peakvalues, peakvaluesparam))
+            
+            
+        
+        
+        if peakvalues is not None:
+            if i == 0:
+
+                #
+
+                # This place is dedicated to add model info in peak results as in spectral
+
+                # 
+                peakmat = peakvalues
+                peakmathead = [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
+            else:
+                peakmat = np.hstack((peakmat, peakvalues))
+                peakmathead += [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
+            if i == (total_eq - 1):
+                if total_param == 1:
+                    peakmat = pd.DataFrame(peakmat.reshape(-1, len(peakmat)))
+                else:
+                    peakmat = pd.DataFrame(peakmat)
+                peakmat.columns = peakmathead
+                peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
+        
+        
+        end_t = time.time()
+        eq_dur = end_t - start_t
+        s_rate = eq_dur/total_param
+        s_rate2 = eq_dur/teq2/total_param
+        nparam = eq_dur/(teq2*coeff1)
+        print("REALIZATION: Analysis Duration = %8.4fs | Parameter Speed Rate = %8.4fs | EQ Speed Rate = %8.4fs | Total Time Elapsed = %8.4f"%(eq_dur, s_rate, s_rate2, (end_t - start_t_eq)))
+        print('STATUS: Earthquake #%d completed successfully!'%(ref) + " | End Time: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n\n")
+        
+        
+    
+    end_t_eq = time.time()
+    print('STATUS OVERALL: Complete Duration = %8.4f'%(end_t_eq - start_t_eq))
+    
+    
+    
+    try:
+        if upload_preference == 'y':
+            data = pd.read_csv("accesskeys.csv")
+            access_id = data['Access key ID'][0]
+            access_secret = data['Secret access key'][0]
+            upload(folder, access_id, access_secret)
+            shutil.rmtree(os.path.join('results',folder))
+    except:
+        print('Result stored locally')
+        chk = input('Do you wish to upload? (y/n) :')
+        if chk == 'y':
+            access_id = input('Enter Access ID: ')
+            access_secret = input('Enter Access Secret Key: ')
+            upload(folder, access_id, access_secret)
+    
+
+    return None
+
 
 @cli1.command()
 @click.option('--const_param', '-cp',type=str, default= 'ConstantParameters.txt', help= 'File name containing constant parameters for the structure')

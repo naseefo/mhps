@@ -69,7 +69,8 @@ class IsoOSBIModel:
             print(prRed('ATTENTION: ') + prCyan('Permissible max. displacement = %8.4f m | Provided max. displacement = %8.4f m'%(umax, self.umax)))
             print('Changing OSBI_VP input file with umax = %8.4f m...'%(umax))
             return umax
-        return self.umax
+        
+        return umax
 
     def __init__(self, rmbm, tbx, zetabx, rtytxb, rzyzxb, typevf, mu0, alpha0, alpha1, nu, umax, D, ecc, rmrm, tc, ecrc, fos_ud, am, niso):
         self.rmbm = rmbm
@@ -381,7 +382,7 @@ def mu_val(iso, ub):
 def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, smy, sky, cdy, iso, screen_on):
   
     # INITIALIZATION OF PRIMARY INPUT VARIABLES
-    nit = 10
+    nit = 5
     nst = ndof - 1
     gamma = 0.5
     beta = 1/6
@@ -516,7 +517,6 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
     knx_inv_fixed = np.linalg.inv(knx_fixed)
     kny_fixed = sky[0:nst, 0:nst] + na1y[0:nst, 0:nst]
     kny_inv_fixed = np.linalg.inv(kny_fixed)
-
 
     # INITIAL TIME STEP CALCULATION FOR ACCELERATION
     px1 = smx_diag*xg[0]
@@ -699,9 +699,11 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
                     dfcx = fcx2 - fcx
 
                     dfs1y = fs1y2 - fs1y
-                    dfaby = abs(fs2y2)*vy2[ndof-1, 0]/vrb - faby
+                    dfaby = fs2y2*vy2[ndof-1, 0]/vrb - faby
                     dfby = fby2 - fby
                     dfcy = fcy2 - fcy
+
+                    # print(fs1x2, fs2x2*vx2[ndof-1, 0]/vrb, fbx2, fcx2)
             
             # print('\n')
             if nit > 1:

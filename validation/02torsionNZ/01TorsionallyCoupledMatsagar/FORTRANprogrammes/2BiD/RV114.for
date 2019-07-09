@@ -32,7 +32,7 @@ C RV114.FOR..............................................31/12/99
         COMMON/RS15/QX,QY,PQX,PQY
         COMMON/RS16/QYF,QYD,ALP,B,T,A,NT,DT
         COMMON/RS17/AA
-        OPEN(1,FILE='RV114.DAT')
+        OPEN(1,FILE='RV1141.DAT')
         OPEN( 2,FILE='Lgpc_acc_00.txt')
         OPEN(21,FILE='Lgpc_acc_90.txt')
         OPEN(3,FILE='RV114.3')
@@ -93,11 +93,13 @@ c       Because isolators are Orthotropic EXD=EYD EBXD=EBYD EFXD=EFYD
         WB=2.0*PI/TB
         FWWRB=FWWB*WRWXB*WRWXB
         CKAB=(FM+BM)*WB*WB
+        write(*,*) CKAB
         QYF=QYF*(FM+BM)*9.81
         ALP=(QYD*CKAB)/QYF
-c        ALP=1.0
+        ALP=1.0
         CDABX=2.0*(FM+BM)*ZETABX*WB
         CDABY=2.0*(FM+BM)*ZETABY*WB
+        
 
         DO 181 I=1,NB
         CKX(I)=0.0
@@ -122,13 +124,17 @@ c       for NB=4 only
         CALL DAMPB(CDABX,CDABY,BCX,BCY,CDB)
         FMR=SK3(3,3)/FWWR
         ANG=ANG*PI/180.0
+        write(*, *) SK3(3,3), FWWR, FMR
 
         CALL BKXY(CKAB,EBX,EBXD,BKX,BKY)
         SKB3=0.0
         DO 152 I=1,NB
         SKB3= SKB3 + BKX(I)*YB(I)*YB(I) + BKY(I)*XB(I)*XB(I)
+        write(*, *) "SKB3"
+        write(*, *) SKB3
   152   CONTINUE
         BMR=(SKB3/FWWRB)-FMR
+        
 
         WRITE(3,1301)TX
         WRITE(3,1320)EXD
@@ -445,7 +451,7 @@ C       WRITE(5,1356) IJK,(PD(I),I=1,6)
 C       CORNER BEARING DISPLACEMENT
         D27=ABS(D2(5))+(10.0/2.0)*ABS(D2(6))
         IF(ABS(PD27).LT.ABS(D27)) PD27=D27
-        WRITE(4,1354) TIME,AA(2)/10.0,D2(5)*100.0
+        WRITE(4,1354) TIME,AA(2), D2(2)*100.0, D2(5)*100.0
 
 c        WRITE(4,1354) TIME,A2(1)/10.0,A2(2)/10.0
 c	1  ,D2(4)*100.0,D2(5)*100.0
@@ -776,9 +782,13 @@ C 1302  FORMAT(5X,3E13.5)
         EBX=EBXD*DB
 c ****        WARNING: for NB=4 only
         BKX(1)=0.25*CKAB*(1.0 + 2.0*EBXD)
+        write(*,*) BKX(1)
         BKX(2)=0.25*CKAB*(1.0 - 2.0*EBXD)
+        write(*,*) BKX(2)
         BKX(3)=0.25*CKAB*(1.0 - 2.0*EBXD)
+        write(*,*) BKX(3)
         BKX(4)=0.25*CKAB*(1.0 + 2.0*EBXD)
+        write(*,*) BKX(4)
         DO 1 I=1,4
 1       BKY(I)=BKX(I)
         RETURN

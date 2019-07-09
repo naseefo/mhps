@@ -291,8 +291,6 @@ def simulator_boucwen(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx,
     dpx = 0.0
     dpy = 0.0
 
-    # print(pzx)
-    # print(ax1)
     for i in range(1,len(xg)):
 
         t += dt
@@ -304,11 +302,6 @@ def simulator_boucwen(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx,
 
         dpzx = 0.0
         dpzy = 0.0
-
-        # if i == 1:
-        #     print(px2)
-        #     print(px1)
-        #     print(dpx)
 
         for i2 in range(nit):
             pcx1 = dpx + np.dot(na2x, vx1) + np.dot(na3x, ax1)
@@ -324,17 +317,8 @@ def simulator_boucwen(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx,
             dy2 = dy1 + ddy
             dvy = (gamma/beta/dt)*ddy - gamma/beta*vy1 + dt*(1.0 - gamma/2.0/beta)*ay1
             vy2 = vy1 + dvy
-            
-            # if i <= 5 and i2 <= nit:
-            #     print(dpzx)
-            #     print(pcx1)
-            #     print(knx)
-            #     print(ddx)
                 
             dpzx, dpzy, dzx, dzy = wen(iso, vx2[ndof-1,0], vy2[ndof-1,0], zx, zy, dt, alpx, alpy, skx[ndof-1, ndof-1], sky[ndof-1, ndof-1], fyx, fyy)
-            # if i <= 5 and i2 <= nit:
-            #     print(i, i2+1, dpzx, dzx)
-            #     print('o-o-o-o-o-o')
 
         zx = zx + dzx
         zy = zy + dzy    

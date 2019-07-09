@@ -30,7 +30,7 @@ def profile(fnc):
 
 
 class ResultFixedXY:
-    def __init__(self, eq_refi, ijki, timei, gxi, dxi, vxi, axi, aaxi, gyi, dyi, vyi, ayi, aayi, fxi, fyi, eki, edi, esi, eii, errori, smxi, skxi, cdxi, smyi, skyi, cdyi, roll = 0, theta_0 = 0.0, theta_r= 0.0, theta_r_dot2= 0.0, zbd= 0.0, zbd_dot2= 0.0, Fs1x= 0.0, Fs1y= 0.0, Fs2x= 0.0, Fs2y= 0.0, Fbx= 0.0, Fby= 0.0, F_axial= 0.0, Dc_axial= 0.0, Strain_axial=0.0): # del
+    def __init__(self, eq_refi= 0.0, ijki= 0.0, timei= 0.0, gxi= 0.0, dxi= 0.0, vxi= 0.0, axi= 0.0, aaxi= 0.0, gyi= 0.0, dyi= 0.0, vyi= 0.0, ayi= 0.0, aayi= 0.0, fxi= 0.0, fyi= 0.0, eki= 0.0, edi= 0.0, esi= 0.0, eii= 0.0, errori= 0.0, smxi= 0.0, skxi= 0.0, cdxi= 0.0, smyi= 0.0, skyi= 0.0, cdyi= 0.0, roll = 0, theta_0 = 0.0, theta_r= 0.0, theta_r_dot2= 0.0, zbd= 0.0, zbd_dot2= 0.0, Fs1x= 0.0, Fs1y= 0.0, Fs2x= 0.0, Fs2y= 0.0, Fbx= 0.0, Fby= 0.0, F_axial= 0.0, Dc_axial= 0.0, Strain_axial=0.0, t_si =0.0, t_bi = 0.0, f_bi =0.0, t_sci =0.0, t_bci = 0.0, f_bci =0.0): # del
         self.eq_ref = eq_refi
         self.ijk = ijki
         self.time = timei
@@ -72,6 +72,14 @@ class ResultFixedXY:
         self.F_axial = F_axial
         self.Dc_axial = Dc_axial
         self.Strain_axial = Strain_axial
+
+        self.t_s = t_si
+        self.t_sc = t_sci
+        self.t_b = t_bi
+        self.t_bc = t_bci
+        self.f_b = f_bi
+        self.f_bc = f_bci
+      
 
 class ModelInfo:
     def __init__(self, nsti):
@@ -115,8 +123,6 @@ def get_result(result, responsevariable, floorstart, floorend, peaktype, dirn):
         vector1 = result.fx[:, floorstart:floorend+1]
         vector2 = result.fy[:, floorstart:floorend+1]
         vector = np.hstack((vector1, vector2))
-        # print(result.fx)
-        # print(result.fy)
         vectorheadx = [("FX-"+str(x+1)) for x in range(floorstart,floorend+1)]
         vectorheady = [("FY-"+str(x+1)) for x in range(floorstart,floorend+1)]
         vectorhead = vectorheadx + vectorheady
@@ -148,10 +154,208 @@ def get_result(result, responsevariable, floorstart, floorend, peaktype, dirn):
         vector12 = result.F_axial
         vector13 = result.Dc_axial
         vector14 = result.Strain_axial
-        
         vector = np.hstack((vector1, vector2, vector3, vector4, vector5, vector6, vector7, vector8, vector9, vector10, vector11, vector12, vector13, vector14))
         vectorhead = ['theta_0', 'theta_r', 'theta_r_dot2', 'zbd', 'zbd_dot2', 'Fs1x', 'Fs1y', 'Fs2x', 'Fs2y', 'Fbx', 'Fby', 'F_Axial', 'Dc_Axial', 'Strain_Axial']
+    
+    elif responsevariable == 'tsd':
+        si = 0
+        floorstart = floorstart + si
+        floorend = floorend + si
+        vector = result.t_s[:, floorstart:floorend+1]
+        vectorhead = [("SLAB-D-"+str(x+1)) for x in range(floorstart,floorend+1)]
+    elif responsevariable == 'tbd':
+        si = 0
+        floorstart = floorstart + si
+        floorend = floorend + si
+        vector = result.t_b[:, floorstart:floorend+1]
+        vectorhead = [("ISO-D-"+str(x+1)) for x in range(floorstart,floorend+1)]
 
+    elif responsevariable == 'tsv':
+        si = 3
+        floorstart = floorstart + si
+        floorend = floorend + si
+        vector = result.t_s[:, floorstart:floorend+1]
+        vectorhead = [("SLAB-V-"+str(x+1)) for x in range(floorstart,floorend+1)]
+    elif responsevariable == 'tbv':
+        si = 3
+        floorstart = floorstart + si
+        floorend = floorend + si
+        vector = result.t_b[:, floorstart:floorend+1]
+        vectorhead = [("ISO-V-"+str(x+1)) for x in range(floorstart,floorend+1)]
+
+    elif responsevariable == 'tsa':
+        si = 6
+        floorstart = floorstart + si
+        floorend = floorend + si
+        vector = result.t_s[:, floorstart:floorend+1]
+        vectorhead = [("SLAB-A-"+str(x+1)) for x in range(floorstart,floorend+1)]
+    elif responsevariable == 'tba':
+        si = 6
+        floorstart = floorstart + si
+        floorend = floorend + si
+        vector = result.t_b[:, floorstart:floorend+1]
+        vectorhead = [("ISO-A-"+str(x+1)) for x in range(floorstart,floorend+1)]
+
+    elif responsevariable == 'tsaa':
+        si = 9
+        floorstart = floorstart + si
+        floorend = floorend + si
+        vector = result.t_s[:, floorstart:floorend+1]
+        vectorhead = [("SLAB-AA-"+str(x+1)) for x in range(floorstart,floorend+1)]
+    elif responsevariable == 'tbaa':
+        si = 9
+        floorstart = floorstart + si
+        floorend = floorend + si
+        vector = result.t_b[:, floorstart:floorend+1]
+        vectorhead = [("ISO-AA-"+str(x+1)) for x in range(floorstart,floorend+1)]
+    
+    elif responsevariable == 'tf':
+        si = 0
+        floorstart = floorstart + si
+        floorend = floorend + si
+        vector = result.f_b[:, floorstart:floorend+1]
+        vectorhead = [("BASESHEAR-"+str(x+1)) for x in range(floorstart,floorend+1)]
+    
+    elif responsevariable == 'tscd':
+        if (floorend - floorstart != 0):
+            floorend = floorend+1
+        si = 0
+        br = si + 3
+        floorstartX = floorstart + si
+        floorendX = floorend + si
+        vector1 = result.t_sc[:, floorstartX:floorendX+1]
+        floorstartY = floorstart + br
+        floorendY = floorend + br
+        vector2 = result.t_sc[:, floorstartY:floorendY+1]
+        vector = np.hstack((vector1, vector2))
+        vectorheadx = [("SLAB-DX-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
+        vectorheady = [("SLAB-DY-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
+        vectorhead = vectorheadx + vectorheady
+    elif responsevariable == 'tbcd':
+        if (floorend - floorstart != 0):
+            floorend = floorend+1
+        si = 0
+        br = si + 3
+        floorstartX = floorstart + si
+        floorendX = floorend + si
+        vector1 = result.t_bc[:, floorstartX:floorendX+1]
+        floorstartY = floorstart + br
+        floorendY = floorend + br
+        vector2 = result.t_bc[:, floorstartY:floorendY+1]
+        vector = np.hstack((vector1, vector2))
+        vectorheadx = [("ISO-DX-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
+        vectorheady = [("ISO-DY-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
+        vectorhead = vectorheadx + vectorheady
+
+    elif responsevariable == 'tscv':
+        if (floorend - floorstart != 0):
+            floorend = floorend+1
+        si = 6
+        br = si + 3
+        floorstartX = floorstart + si
+        floorendX = floorend + si
+        vector1 = result.t_sc[:, floorstartX:floorendX+1]
+        floorstartY = floorstart + br
+        floorendY = floorend + br
+        vector2 = result.t_sc[:, floorstartY:floorendY+1]
+        vector = np.hstack((vector1, vector2))
+        vectorheadx = [("SLAB-VX-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
+        vectorheady = [("SLAB-VY-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
+        vectorhead = vectorheadx + vectorheady
+    elif responsevariable == 'tbcv':
+        if (floorend - floorstart != 0):
+            floorend = floorend+1
+        si = 6
+        br = si + 3
+        floorstartX = floorstart + si
+        floorendX = floorend + si
+        vector1 = result.t_bc[:, floorstartX:floorendX+1]
+        floorstartY = floorstart + br
+        floorendY = floorend + br
+        vector2 = result.t_bc[:, floorstartY:floorendY+1]
+        vector = np.hstack((vector1, vector2))
+        vectorheadx = [("ISO-VX-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
+        vectorheady = [("ISO-VY-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
+        vectorhead = vectorheadx + vectorheady
+    
+    elif responsevariable == 'tsca':
+        if (floorend - floorstart != 0):
+            floorend = floorend+1
+        si = 12
+        br = si + 3
+        floorstartX = floorstart + si
+        floorendX = floorend + si
+        vector1 = result.t_sc[:, floorstartX:floorendX+1]
+        floorstartY = floorstart + br
+        floorendY = floorend + br
+        vector2 = result.t_sc[:, floorstartY:floorendY+1]
+        vector = np.hstack((vector1, vector2))
+        vectorheadx = [("SLAB-AX-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
+        vectorheady = [("SLAB-AY-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
+        vectorhead = vectorheadx + vectorheady
+    elif responsevariable == 'tbca':
+        if (floorend - floorstart != 0):
+            floorend = floorend+1
+        si = 12
+        br = si + 3
+        floorstartX = floorstart + si
+        floorendX = floorend + si
+        vector1 = result.t_bc[:, floorstartX:floorendX+1]
+        floorstartY = floorstart + br
+        floorendY = floorend + br
+        vector2 = result.t_bc[:, floorstartY:floorendY+1]
+        vector = np.hstack((vector1, vector2))
+        vectorheadx = [("ISO-AX-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
+        vectorheady = [("ISO-AY-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
+        vectorhead = vectorheadx + vectorheady
+    
+    elif responsevariable == 'tscaa':
+        if (floorend - floorstart != 0):
+            floorend = floorend+1
+        si = 15
+        br = si + 3
+        floorstartX = floorstart + si
+        floorendX = floorend + si
+        vector1 = result.t_sc[:, floorstartX:floorendX+1]
+        floorstartY = floorstart + br
+        floorendY = floorend + br
+        vector2 = result.t_sc[:, floorstartY:floorendY+1]
+        vector = np.hstack((vector1, vector2))
+        vectorheadx = [("SLAB-AAX-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
+        vectorheady = [("SLAB-AAY-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
+        vectorhead = vectorheadx + vectorheady
+    elif responsevariable == 'tbcaa':
+        if (floorend - floorstart != 0):
+            floorend = floorend+1
+        si = 15
+        br = si + 3
+        floorstartX = floorstart + si
+        floorendX = floorend + si
+        vector1 = result.t_bc[:, floorstartX:floorendX+1]
+        floorstartY = floorstart + br
+        floorendY = floorend + br
+        vector2 = result.t_bc[:, floorstartY:floorendY+1]
+        vector = np.hstack((vector1, vector2))
+        vectorheadx = [("ISO-AAX-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
+        vectorheady = [("ISO-AAY-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
+        vectorhead = vectorheadx + vectorheady
+
+    elif responsevariable == 'tfc':
+        if (floorend - floorstart != 0):
+            floorend = floorend+1
+        si = 0
+        br = si + 4
+        floorstartX = floorstart + si
+        floorendX = floorend + si
+        vector1 = result.f_bc[:, floorstartX:floorendX+1]
+        floorstartY = floorstart + br
+        floorendY = floorend + br
+        vector2 = result.f_bc[:, floorstartY:floorendY+1]
+        vector = np.hstack((vector1, vector2))
+        vectorheadx = [("BASESHEAR-X-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
+        vectorheady = [("BASESHEAR-Y-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
+        vectorhead = vectorheadx + vectorheady
+    
 
     if peaktype == 1:
         responsevalues = np.absolute(vector).max(axis=0)
@@ -168,6 +372,7 @@ def result_viewer(result, model, results_type, folder):
     peakhead = None
     for rpattern in results_type:
         responsevariable, floorstart, floorend, peaktype, dirn = pattern_reader(rpattern.strip(), model.nst)
+        # print(responsevariable, floorstart, floorend, peaktype, dirn)
         responsevalues, vectorhead = get_result(result, responsevariable, floorstart, floorend, peaktype, dirn)
         if peaktype == 1:
             if i == 0:

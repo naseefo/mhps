@@ -291,7 +291,7 @@ def fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx, skx, cdx, sm
         # eii = eii - 0.5*dt*(np.dot(np.dot(vx2.T, smx),np.dot(r, xg[i])) + np.dot(np.dot(vx1.T, smx),np.dot(r, xg[i-1]))) - 0.5*dt*(np.dot(np.dot(vy2.T, smy),np.dot(r, yg[i])) + np.dot(np.dot(vy1.T, smy),np.dot(r, yg[i-1])))
         eii = eii - 0.5*dt*(np.dot(np.dot(vx2.T, smx),r*xg[i]) + np.dot(np.dot(vx1.T, smx),r*xg[i-1])) - 0.5*dt*(np.dot(np.dot(vy2.T, smy), r*yg[i]) + np.dot(np.dot(vy1.T, smy), r*yg[i-1]))
         
-
+        dx1, vx1, px1, ax1 = dx2, vx2, px2, ax2 
         dy1, vy1, py1, ay1 = dy2, vy2, py2, ay2
 
 

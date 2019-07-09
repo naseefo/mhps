@@ -17,7 +17,7 @@
 #                                                                       #
 #########################################################################
 
-# EARTHQUAKE EXCITATIONS - RANDOM (FROM MY STANDARD TABLE)
+# CODE001: EARTHQUAKE EXCITATIONS - RANDOM (FROM MY STANDARD TABLE)
 # Cent_acc_00.txt, Cent_acc_90.txt, 0.02, cm/s2, 1.0, 20.0, 1, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # Cent_acc_00.txt, Cent_acc_90.txt, 0.02, cm/s2, 1.0, 20, 100, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # Cent_acc_00.txt, 0.02, cm/s2, 1.0, 30.0, x, 100;
@@ -59,7 +59,7 @@
 
 
 # EARTHQUAKE EXCITATIONS - SAC PROJECT
-# (LOS ANGELES - 2% IN 50 YEARS)
+# CODE 002: (LOS ANGELES - 2% IN 50 YEARS)
 # r_la21, r_la22, 0.02, cm/s2, 1.0, 59.98, 10, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # r_la23, r_la24, 0.01, cm/s2, 1.0, 24.99, 10, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # r_la25, r_la26, 0.005, cm/s2, 1.0, 14.945, 10, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
@@ -71,7 +71,7 @@
 # r_la37, r_la38, 0.02, cm/s2, 1.0, 59.98, 10, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # r_la39, r_la40, 0.02, cm/s2, 1.0, 59.98, 10, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 
-# (LOS ANGELES - 10% IN 50 YEARS)
+# CODE 003: (LOS ANGELES - 10% IN 50 YEARS)
 # r_la01, r_la02, 0.02, cm/s2, 1.0, 39.38, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # r_la03, r_la04, 0.01, cm/s2, 1.0, 39.38, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # r_la05, r_la06, 0.01, cm/s2, 1.0, 39.08, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
@@ -83,7 +83,7 @@
 # r_la17, r_la18, 0.02, cm/s2, 1.0, 59.98, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # r_la19, r_la20, 0.02, cm/s2, 1.0, 59.98, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 
-# (LOS ANGELES - 50% IN 50 YEARS)
+# CODE 004: (LOS ANGELES - 50% IN 50 YEARS)
 # r_la41, r_la42, 0.01, cm/s2, 1.0, 39.38, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # r_la43, r_la44, 0.01, cm/s2, 1.0, 39.08, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # r_la45, r_la46, 0.02, cm/s2, 1.0, 78.60, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
@@ -97,7 +97,7 @@
 
 
 
-# (BOSTON - 2% IN 50 YEARS)
+# CODE 005: (BOSTON - 2% IN 50 YEARS)
 # r_bo21, r_bo22, 0.01, cm/s2, 1.0, 29.99, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # r_bo23, r_bo24, 0.01, cm/s2, 1.0, 29.99, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # r_bo25, r_bo26, 0.01, cm/s2, 1.0, 29.99, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
@@ -109,7 +109,7 @@
 # r_bo37, r_bo38, 0.01, cm/s2, 1.0, 39.05, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # r_bo39, r_bo40, 0.01, cm/s2, 1.0, 33.24, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 
-# (BOSTON - 10% IN 50 YEARS)
+# CODE 006: (BOSTON - 10% IN 50 YEARS)
 # r_bo01, r_bo02, 0.01, cm/s2, 1.0, 29.99, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # r_bo03, r_bo04, 0.01, cm/s2, 1.0, 29.99, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # r_bo05, r_bo06, 0.005, cm/s2, 1.0, 19.23, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
@@ -121,7 +121,7 @@
 # r_bo17, r_bo18, 0.01, cm/s2, 1.0, 39.05, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # r_bo19, r_bo20, 0.01, cm/s2, 1.0, 33.24, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 
-# (SEATTLE - 2% IN 50 YEARS)
+# CODE 007: (SEATTLE - 2% IN 50 YEARS)
 # r_se21, r_se22, 0.02, cm/s2, 1.0, 59.98, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # r_se23, r_se24, 0.005, cm/s2, 1.0, 20.775, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # r_se25, r_se26, 0.02, cm/s2, 1.0, 79.98, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
@@ -133,7 +133,7 @@
 # r_se37, r_se38, 0.02, cm/s2, 1.0, 79.98, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # r_se39, r_se40, 0.02, cm/s2, 1.0, 79.98, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 
-# (SEATTLE - 10% IN 50 YEARS)
+# CODE 008: (SEATTLE - 10% IN 50 YEARS)
 # r_se01, r_se02, 0.01, cm/s2, 1.0, 39.08, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # r_se03, r_se04, 0.02, cm/s2, 1.0, 59.98, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # r_se05, r_se06, 0.02, cm/s2, 1.0, 79.98, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
@@ -145,27 +145,27 @@
 # r_se17, r_se18, 0.025, cm/s2, 1.0, 99.975, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # r_se19, r_se20, 0.025, cm/s2, 1.0, 99.975, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 
-# PROF. JANGID'S PAPER
+# CODE 009: PROF. JANGID'S PAPER
 # Cent_acc_00.txt, 0.02, cm/s2, 1.5, 30.0, x, 100;
 # Aruna_Taft_acc_S69E.TXT, Aruna_Taft_acc_N21E.TXT, 0.02, cm/s2, 1.0, 20.0, 100, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 
-# PROF. LIN'S EXCITATION
+# CODE 010: PROF. LIN'S EXCITATION
 # TaiwanC00_Lin.csv, 0.01, cm/s2, 1.0, 29.08, x, 100;
 
-# ARUNA MADAM EXCITATIONS
+# CODE 011: ARUNA MADAM EXCITATIONS
 # Aruna_Elcentro1940_00.txt, Aruna_Elcentro1940_90.txt, 0.02, cm/s2, 1.0, 53.48, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # Aruna_Kobe1995_00.txt, Aruna_Kobe1995_90.txt, 0.005, cm/s2, 1.0, 25.005, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # Aruna_LomaPrieta1989_00.txt, Aruna_LomaPrieta1989_90.txt, 0.02, cm/s2, 1.0, 150.0, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # Aruna_Northridge1994_00.txt, Aruna_Northridge1994_90.txt, 0.02, cm/s2, 1.0, 60.0, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
-# Aruna_Taft_acc_S69E.TXT, Aruna_Taft_acc_N21E.TXT, 0.02, cm/s2, 1.0, 30.0, 100, -90.0, 0.0, 0.0, 0.0, 90, x, rn;
+# Aruna_Taft_acc_S69E.TXT, Aruna_Taft_acc_N21E.TXT, 0.02, cm/s2, 1.0, 20.0, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 
-# VASANT SIRS EXCITATIONS
+# CODE 012: VASANT SIRS EXCITATIONS
 # Cent_acc_00.txt, Cent_acc_90.txt, 0.02, cm/s2, 1.0, 53.48, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # KobeNS.txt, KobeEW.txt, 0.005, cm/s2, 1.0, 25.005, 100, -90.0, 0.0, 0.0, 0.0, 90, x, rn;
-# Lgpc_acc_00.txt, Lgpc_acc_90.txt, 0.02, cm/s2, 1.0, 150.0, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
+Lgpc_acc_00.txt, Lgpc_acc_90.txt, 0.005, cm/s2, 1.0, 25.0, 10, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # Sylmar360.txt, Sylmar90.txt, 0.02, cm/s2, 1.0, 60.0, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 
-# VASANT SIRS NEAR-FAULT MOTIONS
+# CODE 013: VASANT SIRS NEAR-FAULT MOTIONS (EQ5 is a near fault)
 # w11.txt, w12.txt, 0.02, cm/s2, 1.0, 39.42, 20, 0.0, 0.0, 0.0, 0.0, 90, a, rn;
 # w21.txt, w22.txt, 0.02, cm/s2, 1.0, 36.90, 20, 0.0, 0.0, 0.0, 0.0, 90, a, rn;
 # w31.txt, w32.txt, 0.02, cm/s2, 1.0, 60.00, 20, 0.0, 0.0, 0.0, 0.0, 90, a, rn;
@@ -338,7 +338,7 @@
 # r_RSN1197_CHICHI_CHY028-E.AT2, r_RSN1197_CHICHI_CHY028-N.AT2, r_RSN1197_CHICHI_CHY028-V.AT2, 0.005, g, 1.0, 40.0, 20, 90.0, 0.0, 5.0, 0.0, 90, a, ry;
 # r_RSN1244_CHICHI_CHY101-E.AT2, r_RSN1244_CHICHI_CHY101-N.AT2, r_RSN1244_CHICHI_CHY101-V.AT2, 0.005, g, 1.0, 60.0, 20, 90.0, 0.0, 5.0, 0.0, 90, a, ry;
 # r_RSN1489_CHICHI_TCU049-E.AT2, r_RSN1489_CHICHI_TCU049-N.AT2, r_RSN1489_CHICHI_TCU049-V.AT2, 0.005, g, 1.0, 55.0, 20, 90.0, 0.0, 5.0, 0.0, 90, a, ry;
-r_RSN1492_CHICHI_TCU052-E.AT2, r_RSN1492_CHICHI_TCU052-N.AT2, r_RSN1492_CHICHI_TCU052-V.AT2, 0.005, g, 1.0, 50.0, 100, 90.0, 0.0, 5.0, 0.0, 90, a, ry;
+# r_RSN1492_CHICHI_TCU052-E.AT2, r_RSN1492_CHICHI_TCU052-N.AT2, r_RSN1492_CHICHI_TCU052-V.AT2, 0.005, g, 1.0, 20.0, 25, 90.0, 0.0, 5.0, 0.0, 90, x, ry;
 # r_RSN1493_CHICHI_TCU053-E.AT2, r_RSN1493_CHICHI_TCU053-N.AT2, r_RSN1493_CHICHI_TCU053-V.AT2, 0.005, g, 1.0, 50.0, 20, 90.0, 0.0, 5.0, 0.0, 90, a, ry;
 # r_RSN1494_CHICHI_TCU054-E.AT2, r_RSN1494_CHICHI_TCU054-N.AT2, r_RSN1494_CHICHI_TCU054-V.AT2, 0.005, g, 1.0, 50.0, 20, 90.0, 0.0, 5.0, 0.0, 90, a, ry;
 # r_RSN1505_CHICHI_TCU068-E.AT2, r_RSN1505_CHICHI_TCU068-N.AT2, r_RSN1505_CHICHI_TCU068-V.AT2, 0.005, g, 1.0, 50.0, 20, 90.0, 0.0, 5.0, 0.0, 90, a, ry;
@@ -401,7 +401,7 @@ r_RSN1492_CHICHI_TCU052-E.AT2, r_RSN1492_CHICHI_TCU052-N.AT2, r_RSN1492_CHICHI_T
 # HARMONIC EXCITATIONS
 # 490.5, 0.2:0.2:2.0, 0.0, 0.02, cm/s2, 15.0, x, 100;
 # 0.2, 0.5, 0.0, 0.02, g, 8.0, x, 100;
-# 490.5, 1.5, 0.0, 490.5, 1.5, 0.0, 0.02, cm/s2, 20, 10;
+# 490.5, 0.5, 0.0, 490.5, 0.5, 0.0, 0.02, cm/s2, 20, 10;
 
 # LIST OF UNI-DIRECTIONAL NEAR-FAULT EARTHQUAKES (NORMAL COMPONENT)
 

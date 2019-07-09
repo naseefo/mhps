@@ -32,8 +32,8 @@ iso = IsoOSBIModel(rmbm, tbx, zetabx, rtytxb, rzyzxb, typevf, mu0, alpha0, alpha
 print(iso)
 
 
-xb = 0.5 # 0.41500097
-yb = 0.0 # 0.41500097
+xb = 0.3 # 0.41500097
+yb = 0.3 # 0.41500097
 
 M = 6000
 rMrM = iso.Mr/M
@@ -74,13 +74,14 @@ print('Vertical offset (p_d0) = %8.4f m'%(p_d0))
 
 print('\n')
 
-fs1x, fs1y = fs1fixed(M, rMrM, c_d0, p_d0, drb, yb, xb)
+fs1x, fs1y = fs1fixed(M, 0, rMrM, c_d0, p_d0, drb, yb, xb)
+
 print("Mass of structure (M) = %8.4f kg"%(M))
 print("Mass of all osbi balls (mr) = %8.4f kg"%(iso.Mr))
 print("Restoring force in X-direction (fs1x) = %8.4f N"%(fs1x))
 print("Restoring force in Y-direction (fs1y) = %8.4f N"%(fs1y))
 
-fs1x, fs1y = fs1(M, rMrM, ya2, c_d0, p_d0, drb, yb, xb)
+fs1x, fs1y = fs1(M, 0, rMrM, ya2, c_d0, p_d0, drb, yb, xb)
 print("Mass of structure (M) = %8.4f kg"%(M))
 print("Mass of all osbi balls (mr) = %8.4f kg"%(iso.Mr))
 print("Restoring force in X-direction (fs1x) = %8.4f N"%(fs1x))
@@ -90,13 +91,13 @@ print('\n')
 
 mu = mu_val(iso, drb)
 
-fs2x, fs2y = fs2fixed(mu, M, rMrM)
+fs2x, fs2y = fs2fixed(mu, M, 0, rMrM)
 print("Mass of structure (M) = %8.4f kg"%(M))
 print("Mass of all osbi balls (mr) = %8.4f kg"%(iso.Mr))
 print("Frictional force in X-direction (fs1x) = %8.4f N"%(fs2x))
 print("Frictional force in Y-direction (fs1y) = %8.4f N"%(fs2y))
 
-fs2x, fs2y = fs2(M, rMrM, mu, ya2)
+fs2x, fs2y = fs2(M, 0, rMrM, mu, ya2)
 print("Mass of structure (M) = %8.4f kg"%(M))
 print("Mass of all osbi balls (mr) = %8.4f kg"%(iso.Mr))
 print("Frictional force in X-direction (fs1x) = %8.4f N"%(fs2x))

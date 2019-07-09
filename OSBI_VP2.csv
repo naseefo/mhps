@@ -1,4 +1,2 @@
-IJK, RMBM, TBX, ZETABX, RTYTXB, RZYZXB, TYPEVF, MU0, ALPHA0, ALPHA1, NU, UMAX, D, ECC, RMRM, KG, CG, DG
-1,  1.0,  50, 0.0,  1.0,  0.0,  0,  100,   1,  1,  1,  0.85 , 0.4,    0.0,    0.05,   100,    0.0,   0.95
-2,  1.0,  50, 0.0,  1.0,  0.0,  0,  0.02,   1,  1,  1,  0.85 , 0.4,    0.0,    0.05,   100,    0.0,   0.95
-3,  1.0,  50, 0.0,  1.0,  0.0,  0,  0.02,   1,  1,  1,  0.85 , 0.4,    0.5,    0.05,   100,    0.0,   0.95
+IJK, RMBM, TBX, ZETABX, RTYTXB, RZYZXB, TYPEVF, MU0, ALPHA0, ALPHA1, NU, UMAX, D, ECC, RMRM, TC, ECRC, FOS_UD
+1,  1.0,  50, 0.0,  1.0,  0.0,  0,  0.01,   1,  1,  1,  0.85 , 0.4,    0.5,    0.05,   5,    0.01,   1.0
