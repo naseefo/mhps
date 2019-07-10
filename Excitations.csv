@@ -162,7 +162,8 @@
 # CODE 012: VASANT SIRS EXCITATIONS
 # Cent_acc_00.txt, Cent_acc_90.txt, 0.02, cm/s2, 1.0, 53.48, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # KobeNS.txt, KobeEW.txt, 0.005, cm/s2, 1.0, 25.005, 100, -90.0, 0.0, 0.0, 0.0, 90, x, rn;
-Lgpc_acc_00.txt, Lgpc_acc_90.txt, 0.005, cm/s2, 1.0, 25.0, 10, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
+# Lgpc_acc_00.txt, Lgpc_acc_90.txt, 0.005, cm/s2, 1.0, 25.0, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
+Lgpc_acc_00.txt, Lgpc_acc_90.txt, 0.005, cm/s2, 1.0, 12.0, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # Sylmar360.txt, Sylmar90.txt, 0.02, cm/s2, 1.0, 60.0, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 
 # CODE 013: VASANT SIRS NEAR-FAULT MOTIONS (EQ5 is a near fault)

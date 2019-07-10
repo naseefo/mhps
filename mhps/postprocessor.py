@@ -217,10 +217,13 @@ def get_result(result, responsevariable, floorstart, floorend, peaktype, dirn):
         vectorhead = [("BASESHEAR-"+str(x+1)) for x in range(floorstart,floorend+1)]
     
     elif responsevariable == 'tscd':
+        if (floorend - floorstart == 5):
+            floorstart = 0
+            floorend = 2
         if (floorend - floorstart != 0):
             floorend = floorend+1
         si = 0
-        br = si + 3
+        br = si + 4
         floorstartX = floorstart + si
         floorendX = floorend + si
         vector1 = result.t_sc[:, floorstartX:floorendX+1]
@@ -231,11 +234,16 @@ def get_result(result, responsevariable, floorstart, floorend, peaktype, dirn):
         vectorheadx = [("SLAB-DX-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
         vectorheady = [("SLAB-DY-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
         vectorhead = vectorheadx + vectorheady
+    
     elif responsevariable == 'tbcd':
+        if (floorend - floorstart == 5):
+            floorstart = 0
+            floorend = 2
+
         if (floorend - floorstart != 0):
             floorend = floorend+1
         si = 0
-        br = si + 3
+        br = si + 4
         floorstartX = floorstart + si
         floorendX = floorend + si
         vector1 = result.t_bc[:, floorstartX:floorendX+1]
@@ -246,12 +254,18 @@ def get_result(result, responsevariable, floorstart, floorend, peaktype, dirn):
         vectorheadx = [("ISO-DX-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
         vectorheady = [("ISO-DY-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
         vectorhead = vectorheadx + vectorheady
+        print(vectorhead)
 
     elif responsevariable == 'tscv':
+        print(floorstart, floorend)
+        if (floorend - floorstart == 5):
+            floorstart = 0
+            floorend = 2
+
         if (floorend - floorstart != 0):
             floorend = floorend+1
-        si = 6
-        br = si + 3
+        si = 8
+        br = si + 4
         floorstartX = floorstart + si
         floorendX = floorend + si
         vector1 = result.t_sc[:, floorstartX:floorendX+1]
@@ -262,10 +276,15 @@ def get_result(result, responsevariable, floorstart, floorend, peaktype, dirn):
         vectorheadx = [("SLAB-VX-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
         vectorheady = [("SLAB-VY-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
         vectorhead = vectorheadx + vectorheady
+    
     elif responsevariable == 'tbcv':
+        if (floorend - floorstart == 5):
+            floorstart = 0
+            floorend = 2
+
         if (floorend - floorstart != 0):
             floorend = floorend+1
-        si = 6
+        si = 8
         br = si + 3
         floorstartX = floorstart + si
         floorendX = floorend + si
@@ -279,10 +298,14 @@ def get_result(result, responsevariable, floorstart, floorend, peaktype, dirn):
         vectorhead = vectorheadx + vectorheady
     
     elif responsevariable == 'tsca':
+        if (floorend - floorstart == 5):
+            floorstart = 0
+            floorend = 2
+
         if (floorend - floorstart != 0):
             floorend = floorend+1
-        si = 12
-        br = si + 3
+        si = 16
+        br = si + 4
         floorstartX = floorstart + si
         floorendX = floorend + si
         vector1 = result.t_sc[:, floorstartX:floorendX+1]
@@ -293,11 +316,16 @@ def get_result(result, responsevariable, floorstart, floorend, peaktype, dirn):
         vectorheadx = [("SLAB-AX-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
         vectorheady = [("SLAB-AY-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
         vectorhead = vectorheadx + vectorheady
+
     elif responsevariable == 'tbca':
+        if (floorend - floorstart == 5):
+            floorstart = 0
+            floorend = 2
+
         if (floorend - floorstart != 0):
             floorend = floorend+1
-        si = 12
-        br = si + 3
+        si = 16
+        br = si + 4
         floorstartX = floorstart + si
         floorendX = floorend + si
         vector1 = result.t_bc[:, floorstartX:floorendX+1]
@@ -310,10 +338,13 @@ def get_result(result, responsevariable, floorstart, floorend, peaktype, dirn):
         vectorhead = vectorheadx + vectorheady
     
     elif responsevariable == 'tscaa':
+        if (floorend - floorstart == 5):
+            floorstart = 0
+            floorend = 2
         if (floorend - floorstart != 0):
             floorend = floorend+1
-        si = 15
-        br = si + 3
+        si = 24
+        br = si + 4
         floorstartX = floorstart + si
         floorendX = floorend + si
         vector1 = result.t_sc[:, floorstartX:floorendX+1]
@@ -324,11 +355,16 @@ def get_result(result, responsevariable, floorstart, floorend, peaktype, dirn):
         vectorheadx = [("SLAB-AAX-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
         vectorheady = [("SLAB-AAY-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
         vectorhead = vectorheadx + vectorheady
+
     elif responsevariable == 'tbcaa':
+        if (floorend - floorstart == 5):
+            floorstart = 0
+            floorend = 2
+
         if (floorend - floorstart != 0):
             floorend = floorend+1
-        si = 15
-        br = si + 3
+        si = 24
+        br = si + 4
         floorstartX = floorstart + si
         floorendX = floorend + si
         vector1 = result.t_bc[:, floorstartX:floorendX+1]
@@ -341,6 +377,9 @@ def get_result(result, responsevariable, floorstart, floorend, peaktype, dirn):
         vectorhead = vectorheadx + vectorheady
 
     elif responsevariable == 'tfc':
+        if (floorend - floorstart == 5):
+            floorstart = 0
+            floorend = 2
         if (floorend - floorstart != 0):
             floorend = floorend+1
         si = 0

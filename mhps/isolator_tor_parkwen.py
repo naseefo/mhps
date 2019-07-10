@@ -71,7 +71,7 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
 
     gamma = 0.5
     beta = 1/6
-    nit = 10
+    nit = 1
 
     
 
@@ -100,8 +100,10 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
     fyx = np.zeros(shape=(4, ), dtype=np.dtype('d'), order='F')
     fyy = np.zeros(shape=(4, ), dtype=np.dtype('d'), order='F')
 
+    
     qyf = iso.f0*(fm + bm)*9.81
     alp = iso.g1*ckabx/qyf
+    print(iso.rmbm, fm, bm, wbx, ckabx, iso.g1, qyf, alp)
 
     fyx[0] = qyf*0.25*(1 + 2.0*iso.efxd)
     fyx[1] = qyf*0.25*(1 - 2.0*iso.efxd)
@@ -109,6 +111,21 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
     fyx[3] = qyf*0.25*(1 + 2.0*iso.efxd)
 
     fyy = fyx
+
+    print(fyx)
+
+    print("f0")
+    print(iso.f0)
+    print("g1")
+    print(iso.g1)
+    print("qyf")
+    print(qyf)
+    print("alp")
+    print(alp)
+    print("fyx")
+    print(fyx)
+
+    
 
 
     sm_inv = np.linalg.inv(sm)
@@ -240,7 +257,6 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
     faby = np.zeros((4, 1), dtype=np.dtype('d'), order='F')
 
     
-
     for i in range(1,len(xg)):
 
         t += dt
@@ -335,9 +351,15 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
             aab[0,index] = a2[3,0] + xg[i]
             aab[1,index] = a2[4,0] + yg[i]
             aab[2,index] = a2[5,0] + 0.0
+            
+            # DO WORK HERE
+            
+            baseshear = np.dot(sm, a2) + np.dot(np.dot(sm, r), ug2)
 
-            for i in range(3):
-                f[index, i] = sm[i,i]*aa[i,index] + sm[i+3, i+3]*aab[i, index]
+            for wc in range(3):
+                # f[index, wc] = sm[wc,wc]*aa[wc,index] + sm[wc+3, wc+3]*aab[wc, index]
+                f[index, wc] = baseshear[wc +3, 0] 
+                
       
             # Corner calculations
             for nc in range(0,4):
@@ -364,12 +386,20 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
 
                 aabcx[index, nc] = aab[0,index] - yb[nc]*aab[2,index]
                 aabcy[index, nc] = aab[1,index] + xb[nc]*aab[2,index]
+                
+                # DO WORK HERE
 
-                fcx[index, nc] = f[index, 0] - yb[nc]*f[index, 2]
-                fcy[index, nc] = f[index, 1] + xb[nc]*f[index, 2]
+                # fcx[index, nc] = -1.0*(f[index, 0] - yb[nc]*f[index, 2]) # fabx[nc] # 
+                # fcy[index, nc] = f[index, 1] + xb[nc]*f[index, 2] # faby[nc] #
+
+                fcx[index, nc] = fabx[nc] # 
+                fcy[index, nc] = faby[nc] #
+
+                # f[index, 0] = fabx[nc]
+                # f[index, 0] =
+                # f[index, 0] =
 
 
-            
             ek[index, 0] = eki
             ed[index, 0] = edi
             es[index, 0] = esi
@@ -389,6 +419,35 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
     peakbasedispx = max(abs(db[0,:]))
     peakbasedispy = max(abs(db[1,:]))
     peakbasedisptheta = max(abs(db[2,:]))
+
+    print("Velocity in Structure")
+    print(v.shape)
+    print(v)
+
+    print("Velocity in Isolator")
+    print(vb.shape)
+    print(vb)
+
+    print("Velocity Corner-X in Structure")
+    print(vcx.shape)
+    print(vcx)
+    print("Velocity Corner-Y in Structure")
+    print(vcy.shape)
+    print(vcy)
+
+    print("Velocity Corner-X in Isolator")
+    print(vbcx.shape)
+    print(vbcx)
+    print("Velocity Corner-Y in Isolator")
+    print(vbcy.shape)
+    print(vbcy)
+
+    print("Force Corner-X in Isolator")
+    print(fcx.shape)
+    print(fcx)
+    print("Force Corner-Y in Isolator")
+    print(fcy.shape)
+    print(fcy)
 
     print(" ")
     print("Simulation" + "\033[91m" + " SET%d-%d" %(ref, ijk) + "\033[0m" + ": Earthquake #: %d, Parameter #: %d" %(ref, ijk))

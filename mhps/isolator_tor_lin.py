@@ -430,8 +430,14 @@ def simulator_linear_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, 
             aab[1,index] = a2[4,0] + yg[i]
             aab[2,index] = a2[5,0] + 0.0
 
-            for i in range(3):
-                f[index, i] = sm[i,i]*aa[i,index] + sm[i+3, i+3]*aab[i, index]
+            baseshear = np.dot(sm, a2) + np.dot(np.dot(sm, r), ug2)
+
+            for wc in range(3):
+                # f[index, wc] = sm[wc,wc]*aa[wc,index] + sm[wc+3, wc+3]*aab[wc, index]
+                f[index, wc] = baseshear[wc +3, 0]
+
+            # for i in range(3):
+            #     f[index, i] = sm[i,i]*aa[i,index] + sm[i+3, i+3]*aab[i, index]
       
             # Corner calculations
             for nc in range(0,4):
@@ -459,7 +465,7 @@ def simulator_linear_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, 
                 aabcx[index, nc] = aab[0,index] - yb[nc]*aab[2,index]
                 aabcy[index, nc] = aab[1,index] + xb[nc]*aab[2,index]
 
-                fcx[index, nc] = f[index, 0] - yb[nc]*f[index, 2]
+                fcx[index, nc] = -1.0*(f[index, 0] - yb[nc]*f[index, 2]) #f[index, 0] - yb[nc]*f[index, 2]
                 fcy[index, nc] = f[index, 1] + xb[nc]*f[index, 2]
 
 

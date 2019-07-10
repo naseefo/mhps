@@ -32,8 +32,8 @@ C RV114.FOR..............................................31/12/99
         COMMON/RS15/QX,QY,PQX,PQY
         COMMON/RS16/QYF,QYD,ALP,B,T,A,NT,DT
         COMMON/RS17/AA
-        OPEN(1,FILE='RV1141.DAT')
-        OPEN( 2,FILE='Lgpc_acc_00.txt')
+        OPEN(1,FILE='RV114.DAT')
+        OPEN(2,FILE='Lgpc_acc_00.txt')
         OPEN(21,FILE='Lgpc_acc_90.txt')
         OPEN(3,FILE='RV114.3')
         OPEN(4,FILE='RV114.4')
@@ -93,10 +93,10 @@ c       Because isolators are Orthotropic EXD=EYD EBXD=EBYD EFXD=EFYD
         WB=2.0*PI/TB
         FWWRB=FWWB*WRWXB*WRWXB
         CKAB=(FM+BM)*WB*WB
-        write(*,*) CKAB
         QYF=QYF*(FM+BM)*9.81
         ALP=(QYD*CKAB)/QYF
-        ALP=1.0
+        write(*,*) RMMB, FM, BM, WB, CKAB, QYD, QYF, ALP
+c        ALP=1.0
         CDABX=2.0*(FM+BM)*ZETABX*WB
         CDABY=2.0*(FM+BM)*ZETABY*WB
         
@@ -451,7 +451,7 @@ C       WRITE(5,1356) IJK,(PD(I),I=1,6)
 C       CORNER BEARING DISPLACEMENT
         D27=ABS(D2(5))+(10.0/2.0)*ABS(D2(6))
         IF(ABS(PD27).LT.ABS(D27)) PD27=D27
-        WRITE(4,1354) TIME,AA(2), D2(2)*100.0, D2(5)*100.0
+        WRITE(4,1354) TIME, AA(2), D2(2), D2(5)
 
 c        WRITE(4,1354) TIME,A2(1)/10.0,A2(2)/10.0
 c	1  ,D2(4)*100.0,D2(5)*100.0

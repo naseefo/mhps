@@ -1,0 +1,109 @@
+* indicates redundant variables (it will have no effect on the results)
+
+biso-linear-tor:
+----------------
+SS_VP_T: IJK, TX1, ZETA, EXD, WRWX
+OSBI_VP_T: IJK, RMBM, TBX, ZETABX, EBXD, WRWXB, EFXD, MU0* (F0 or QYF), G1*, BT*, G2*, A*, NT*, D*, ECC*, RMRM*, EBOXD*, TBE0X*
+
+<1> Paper: Impact Response of Torsionally Coupled Base-Isolated Structures (2010)
+
+HDRB
+EQ: Lgpc_acc_00.txt, Lgpc_acc_90.txt, 0.005, cm/s2, 1.0, 25, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
+SS_VP_T: 1, 0.25, 0.05, 0.3, 1.0
+OSBI_VP_T: 1, 0.99, 2.0, 0.1, 0.3, 1.0, 0.30, 0.05, 0.001, 0.5, 0.5, 1.0, 15, 0.4, 0.5, 0.05, 0.3, 2.5
+-r: "tsaa2, tsd2"
+Folder Code: 001-VAM-TOR-2010-HDRB-TLIN
+
+<2> Force-Displacement Check
+
+HDRB
+EQ: Lgpc_acc_00.txt, Lgpc_acc_90.txt, 0.005, cm/s2, 1.0, 25, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
+SS_VP_T: 1, 0.25, 0.05, 0.001, 1.0
+OSBI_VP_T: 1, 0.99, 2.0, 0.1, 0.001, 1.0, 0.001, 402.430, 100, 0.5, 0.5, 1.0, 15, 0.4, 0.5, 0.05, 0.3, 2.5s
+-r: "tbcd*, tfc*s"
+Folder Code: 006-HDRB-TLIN
+
+biso-parkwen-tor:
+-----------------
+SS_VP_T: IJK, TX1, ZETA, EXD, WRWX
+OSBI_VP_T: IJK, RMBM, TBX, ZETABX, EBXD, WRWXB, EFXD, MU0 (F0 or QYF), G1, BT, G2, A, NT*, D*, ECC*, RMRM*, EBOXD*, TBE0X*
+
+Non-zero Parameters: EXD (0.001), EBXD (0.001), EFXD (0.001), G1 (0.001)
+Non-one Parameters: RMBM (0.999)
+
+<1> Paper: Impact Response of Torsionally Coupled Base-Isolated Structures (2010)
+
+HDRB [ndiv = 20, nit = 2]
+EQ: Lgpc_acc_00.txt, Lgpc_acc_90.txt, 0.005, cm/s2, 1.0, 25, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
+SS_VP_T: 1, 0.25, 0.05, 0.3, 1.0
+OSBI_VP_T: 1, 0.99, 2.0, 0.1, 0.3, 1.0, 0.3, 402.430, 100, 0.5, 0.5, 1.0, 15, 0.4, 0.5, 0.05, 0.3, 2.5
+-r: "tsaa2, tsd2, tbcd*, tfc*"
+Folder Code: 002-VAM-TOR-2010-HDRB-TPW [DONE]
+
+Note: For making it linear, we need to establish a relation between the yield displacement (G1) and normalized yield strength (F0). It is given by F0 = 157.913*G1/(g*Tb^2), where tm and g are the total mass of the structure including the base mass and the acceleration due to gravity, respectively.
+
+LRB
+EQ: Lgpc_acc_00.txt, Lgpc_acc_90.txt, 0.005, cm/s2, 1.0, 25, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn; 
+SS_VP_T: 
+OSBI_VP_T: 
+-r: "tsaa2, tsd2"
+Folder Code: 003-VAM-TOR-2010-LRB-TPW
+
+FPS [ndiv = 20, nit = 1]
+EQ: Lgpc_acc_00.txt, Lgpc_acc_90.txt, 0.005, cm/s2, 1.0, 25, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn; 
+SS_VP_T: 1, 0.25, 0.05, 0.3, 1.0
+OSBI_VP_T: 1, 0.999, 2.5, 0.0, 0.3, 1.0, 0.3, 0.05, 0.05, 0.5, 0.5, 1.0, 15, 0.4, 0.5, 0.05, 0.3, 2.5
+-r: "tsaa2, tbd2, tbcd*, tfc*"
+Folder Code: 004-VAM-TOR-2010-FPS-TPW
+
+<2> Force-Displacement Check
+
+HDRB [ndiv = 20, nit = 2]
+EQ: Lgpc_acc_00.txt, Lgpc_acc_90.txt, 0.005, cm/s2, 1.0, 12, 20, -90.0, 0.0, 0.0, 0.0, 90, x, rn;
+SS_VP_T: 1, 0.25, 0.05, 0.001, 1.0
+OSBI_VP_T: 1, 0.999, 2.0, 0.3, 0.001, 1.0, 0.001, 402.430, 100, 0.5, 0.5, 1.0, 15, 0.4, 0.5, 0.05, 0.3, 2.5
+-r: "tbcd*, tfc*"
+Folder Code: 005-HDRB-TPW [DONE]
+
+NZ [ndiv = 20, nit = 2]
+
+EQ: Lgpc_acc_00.txt, Lgpc_acc_90.txt, 0.005, cm/s2, 1.0, 12.0, 20, -90.0, 0.0, 0.0, 0.0, 90, x, rn;
+SS_VP_T: 1, 0.25, 0.05, 0.001, 1.0
+OSBI_VP_T: 1, 0.999, 2.5, 0.0, 0.001, 1.0, 0.001, 0.05, 0.025, 0.5, 0.5, 1.0, 15, 0.4, 0.5, 0.05, 0.3, 2.5
+-r: "tbcd*, tfc*"
+Folder Code: 009-NZ-TPW [DONE]
+
+
+
+LRB
+EQ: 
+SS_VP_T: 
+OSBI_VP_T: 
+-r: "tbcd*, tfc*s" 
+Folder Code: 007-LRB-TPW
+
+FPS [[ndiv = 20, nit = 1]]
+EQ: Lgpc_acc_00.txt, Lgpc_acc_90.txt, 0.005, cm/s2, 1.0, 12.0, 20, -90.0, 0.0, 0.0, 0.0, 90, x, rn;
+SS_VP_T: 1, 0.25, 0.05, 0.001, 1.0
+OSBI_VP_T: 1, 0.999, 2.5, 0.0, 0.001, 1.0, 0.001, 0.05, 0.001, 0.5, 0.5, 1.0, 15, 0.4, 0.5, 0.05, 0.3, 2.5
+-r: "tbcd*, tfc*s" 
+Folder Code: 008-FPS-TPW [DONE]
+
+PF
+EQ: Lgpc_acc_00.txt, Lgpc_acc_90.txt, 0.005, cm/s2, 1.0, 12.0, 20, -90.0, 0.0, 0.0, 0.0, 90, x, rn;
+SS_VP_T: 1, 0.25, 0.05, 0.001, 1.0
+OSBI_VP_T: 1, 0.999, 0.001, 0.0, 0.001, 1.0, 0.001, 0.05, 0.001, 0.5, 0.5, 1.0, 15, 0.4, 0.5, 0.05, 0.3, 2.5
+-r: "tbcd*, tfc*s"
+Folder Code: 010-PF-TPW
+
+List of Folder Code:
+001-VAM-TOR-2010-HDRB-TLIN
+002-VAM-TOR-2010-HDRB-TPW [DONE]
+003-VAM-TOR-2010-LRB-TPW
+004-VAM-TOR-2010-FPS-TPW
+005-HDRB-TPW	[DONE]
+006-HDRB-TLIN
+007-LRB-TPW
+008-FPS-TPW	[DONE]
+009-NZ-TPW	[DONE]
+010-PF-TPW
