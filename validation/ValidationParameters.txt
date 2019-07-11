@@ -42,11 +42,11 @@ Folder Code: 002-VAM-TOR-2010-HDRB-TPW [DONE]
 
 Note: For making it linear, we need to establish a relation between the yield displacement (G1) and normalized yield strength (F0). It is given by F0 = 157.913*G1/(g*Tb^2), where tm and g are the total mass of the structure including the base mass and the acceleration due to gravity, respectively.
 
-LRB
+LRB [[ndiv = 20, nit = 1]]
 EQ: Lgpc_acc_00.txt, Lgpc_acc_90.txt, 0.005, cm/s2, 1.0, 25, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn; 
-SS_VP_T: 
-OSBI_VP_T: 
--r: "tsaa2, tsd2"
+SS_VP_T: 1, 0.25, 0.05, 0.3, 1.0
+OSBI_VP_T: 1, 0.999, 2.5, 0.05, 0.3, 1.0, 0.3, 0.05, 0.025, 0.5, 0.5, 1.0, 15, 0.4, 0.5, 0.05, 0.3, 2.5
+-r: "tsaa2, tbd1, tbd2, tf1, tf2, tbcd*, tfc*"
 Folder Code: 003-VAM-TOR-2010-LRB-TPW
 
 FPS [ndiv = 20, nit = 1]
@@ -75,7 +75,7 @@ Folder Code: 009-NZ-TPW [DONE]
 
 
 
-LRB
+LRB [[ndiv = 20, nit = 1]]
 EQ: 
 SS_VP_T: 
 OSBI_VP_T: 
@@ -106,4 +106,4 @@ List of Folder Code:
 007-LRB-TPW
 008-FPS-TPW	[DONE]
 009-NZ-TPW	[DONE]
-010-PF-TPW
+010-PF-TPW	[DONE] 

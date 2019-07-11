@@ -768,6 +768,10 @@ C 1302  FORMAT(5X,3E13.5)
         CDB(3,2) = CDB(3,2) + XB(I)*BCY(I)
         CDB(3,3) = CDB(3,3) + BCX(I)*YB(I)*YB(I) + BCY(I)*XB(I)*XB(I)
    3    CONTINUE
+        write(*,*) "Damping Matrix"
+        write(*,*) CDB(1,1), CDB(1,2), CDB(1,3)
+        write(*,*) CDB(2,1), CDB(2,2), CDB(2,3)
+        write(*,*) CDB(3,1), CDB(3,2), CDB(3,3)
 C       WRITE(3,1383)
 C       WRITE(3,1302)((CDB(I,J),J=1,3),I=1,3)
 C 1383  FORMAT(/,10X,'BASE DAMPING MATRIX')

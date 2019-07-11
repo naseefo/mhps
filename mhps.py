@@ -14,7 +14,7 @@ from mhps.fixed import read_const_param, read_ss_var_param, get_total_variable_p
 from mhps.fixedtorsion import read_const_param_torsion, read_ss_torsion_var_param, get_total_variable_parameter_set_torsion, superstructure_propxy_t, fixed_simulator_tor
 from mhps.isolator_tor_lin import addlinear_iso_tor, simulator_linear_tor
 from mhps.isolator_tor_parkwen import simulator_parkwen_tor
-from mhps.isolator_osbi_t import read_iso_osbi_torsion_var_param
+from mhps.isolator_tor_osbi import read_iso_osbi_torsion_var_param, simulator_osbi_tor
 from mhps.isolator_l import addlinear_iso, simulator_linear, read_iso_l_var_param
 from mhps.isolator_pf import simulator_pf, read_iso_pf_var_param, IsoPFModel
 from mhps.isolator_boucwen import simulator_boucwen, read_iso_boucwen_var_param, IsoBoucWenModel, addboucwen_iso
@@ -939,15 +939,14 @@ def biso_osbi_tor(const_param, var_param, iso_param, earthquakes, knor, results_
             
             if ((i == 0) and (j==0)) or ((p_tx1, p_zeta, p_exd, p_wrwx, p_iso != tx1, zeta, exd, wrwx, iso)):
                 sm, sk, cd = superstructure_propxy_t(tx1, zeta, exd, wrwx, fm, nb, x, y, xb, yb)
-                print(sm)
-                print(sk)
-                print(cd)
+               
                 
-                # sm, sk, cd = addlinear_iso_t(sm, sk, cd, iso.rmbm, iso.tbx, iso.zetabx, iso.rtytxb, iso.rzyzxb)
+                sm, sk, cd = addlinear_iso_tor(sm, sk, cd, iso.rmbm, iso.tbx, iso.zetabx, iso.ebxd, iso.wrwxb, xb, yb, nb)
+              
                 p_tx1, p_zeta, p_exd, p_wrwx  = tx1, zeta, exd, wrwx
                 p_iso = iso
-                
-            result, model = fixed_simulator_t(ref, xg, yg, dt, ndiv, ndt, ijk, 3, sm, sk, cd, x, y, nb)
+               
+            result, model = simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb, nb, iso)
             
             # result, model = simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso, screen)    
             analysis_folder = os.path.join('results', folder, 'Time History Response', 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))
@@ -960,7 +959,8 @@ def biso_osbi_tor(const_param, var_param, iso_param, earthquakes, knor, results_
                 else:
                     peakvalues = np.vstack((peakvalues, peakvaluesparam))
             
-
+            
+        
         
         if peakvalues is not None:
             if i == 0:
@@ -992,9 +992,11 @@ def biso_osbi_tor(const_param, var_param, iso_param, earthquakes, knor, results_
         print("REALIZATION: Analysis Duration = %8.4fs | Parameter Speed Rate = %8.4fs | EQ Speed Rate = %8.4fs | Total Time Elapsed = %8.4f"%(eq_dur, s_rate, s_rate2, (end_t - start_t_eq)))
         print('STATUS: Earthquake #%d completed successfully!'%(ref) + " | End Time: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n\n")
         
+        
     
     end_t_eq = time.time()
     print('STATUS OVERALL: Complete Duration = %8.4f'%(end_t_eq - start_t_eq))
+    
     
     
     try:
@@ -1011,7 +1013,10 @@ def biso_osbi_tor(const_param, var_param, iso_param, earthquakes, knor, results_
             access_id = input('Enter Access ID: ')
             access_secret = input('Enter Access Secret Key: ')
             upload(folder, access_id, access_secret)
+    
+
     return None
+
 
 '''
 RESULT CODE DOCUMENTATION

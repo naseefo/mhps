@@ -201,6 +201,7 @@ C       INITIALIZATION OF VECTORS.
         Z=Z+DZ
         FAB=CKAB*D2(NDOF)+PZ
         FAB1 = 0.0
+        write(*, *) FAB
         
         CALL ACCN(P2,NDOF,PZ)
         CALL PEAK(P1,P2,AA,EQ,NDOF)
