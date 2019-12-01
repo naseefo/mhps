@@ -156,6 +156,8 @@ class IsoOSBITorsionModel:
         self.k0i[2] = self.k0*0.25*(1 - 2.0*self.e0exd)
         self.k0i[3] = self.k0*0.25*(1 + 2.0*self.e0exd)
 
+        print(self.k0i)
+
         calc_ecc0_k0i = lambda e, k0val: k0val - self.tm/4.0/self.D*(1+0.5*self.ro2)*9.81*S2(e)
         
         for i in range(4):
@@ -327,10 +329,14 @@ def fs1(dt, iso, idb, tm, dbcx2, dbcy2, yd1, yv1, fs1x1, fs1y1):
     c_d02 = iso.a0[idb]*sin(theta_d02)*cos(theta_r_d02) - iso.b0[idb]*cos(theta_d02)*sin(theta_r_d02)
     p_d02 = iso.a0[idb]*sin(theta_d02)*sin(theta_r_d02) + iso.b0[idb]*cos(theta_d02)*cos(theta_r_d02)
 
-    dyb_dt0 = 2.0*(p_d02 - iso.b0[idb]) - yd1
-    yd2 = yd1 + dyb_dt0
-    yv2 = (yd2 - yd1)/dt
-    ya2 = (yv2 - yv1)/dt
+    # dyb_dt0 = 2.0*(p_d02 - iso.b0[idb]) - yd1
+    # yd2 = yd1 + dyb_dt0
+    # yv2 = (yd2 - yd1)/dt
+    # ya2 = (yv2 - yv1)/dt
+
+    yd2 = 0.0
+    yv2 = 0.0
+    ya2 = 0.0
 
     fs1r = 0.5*tm*((1 + 2.0*iso.mr[idb]/tm)*g + ya2)*(c_d02/2.0/p_d02)
     # fs1r = ((2 + rMrM)*M*g + (2 + 0)*M*y_b_d2)*(c_d0/2.0/p_d0) + fcz*c_d0/p_d0
@@ -410,15 +416,22 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
 
     fyx = np.zeros(shape=(4, ), dtype=np.dtype('d'), order='F')
     fyy = np.zeros(shape=(4, ), dtype=np.dtype('d'), order='F')
+    fyxt = np.zeros(shape=(4, ), dtype=np.dtype('d'), order='F')
+    fyyt = np.zeros(shape=(4, ), dtype=np.dtype('d'), order='F')
 
     qyf = iso.f0*(fm + bm)*9.81
     alp = iso.g1*ckabx/qyf
     print(iso.rmbm, fm, bm, wbx, ckabx, iso.g1, qyf, alp)
 
-    fyx[0] = qyf*0.5*(1 + 2.0*iso.mu0exd)
-    fyx[1] = qyf*0.5*(1 - 2.0*iso.mu0exd)
-    fyx[2] = qyf*0.5*(1 - 2.0*iso.mu0exd)
-    fyx[3] = qyf*0.5*(1 + 2.0*iso.mu0exd)
+    qyf = 0.5*iso.f0*(fm + bm)*2.0*9.81
+    fyx[0] = qyf*0.25*(1 + 2.0*iso.mu0exd)
+    fyx[1] = qyf*0.25*(1 - 2.0*iso.mu0exd)
+    fyx[2] = qyf*0.25*(1 - 2.0*iso.mu0exd)
+    fyx[3] = qyf*0.25*(1 + 2.0*iso.mu0exd)
+    fyy = fyx
+    print("Hi Naseef")
+
+    
 
 
     print("f0")
@@ -619,10 +632,11 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
             d2 = d1 + dd
             dv = (gamma/beta/dt)*dd - gamma/beta*v1 + dt*(1.0 - gamma/2.0/beta)*a1
             v2 = v1 + dv
+            # print(d2)
 
             ep = p2 - np.dot(cd, v2) - np.dot(sk, d2)
             ep[3:6,0] = ep[3:6,0] - pzt.T - pfs1t.T  # added
-            a2 = np.dot(sm_inv, ep)
+            a22 = np.dot(sm_inv, ep)
             
             # CALCULATION OF FORCES FROM BEARING
             dpz1, dpz2, dpz3 = 0.0, 0.0, 0.0
@@ -634,11 +648,11 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
                 vbcx2[bc] = v2[3,0] - yb[bc]*v2[5,0]
                 vbcy2[bc] = v2[4,0] + xb[bc]*v2[5,0]
 
-                abcx2[bc] = a2[3,0] - yb[bc]*a2[5,0]
-                abcy2[bc] = a2[4,0] + xb[bc]*a2[5,0]
+                abcx2[bc] = a22[3,0] - yb[bc]*a22[5,0]
+                abcy2[bc] = a22[4,0] + xb[bc]*a22[5,0]
 
-                aabcx2[bc] = a2[3,0] + xg[i] - yb[bc]*(a2[5,0] + 0.0)
-                aabcy2[bc] = a2[4,0] + yg[i] + xb[bc]*(a2[5,0] + 0.0)
+                aabcx2[bc] = a22[3,0] + xg[i] - yb[bc]*(a22[5,0] + 0.0)
+                aabcy2[bc] = a22[4,0] + yg[i] + xb[bc]*(a22[5,0] + 0.0)
 
                 # added
                 dpfs1x[bc], dpfs1y[bc], yd2[bc], yv2[bc], ya2[bc] = fs1(dt, iso, bc, tm, dbcx2[bc], dbcy2[bc], yd1[bc], yv1[bc], fs1x1[bc], fs1y1[bc])
@@ -650,8 +664,8 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
                 # added
                 # print("velocity")
                 # print(ya2[bc])
-                fyx[bc] = fyx[bc]*((1 + 2.0*iso.mr[bc]/tm) + (1 + iso.mr[bc]/tm)*ya2[bc]/9.81)
-                fyy[bc] = fyx[bc]
+                # fyxt[bc] = fyx[bc]*9.81*((1 + 2.0*iso.mr[bc]/tm) + (1 + iso.mr[bc]/tm)*ya2[bc])
+                # fyyt[bc] = fyx[bc]
                 # added
                 # print(fyx[bc])
                 # print(vbcx2[bc], vbcy2[bc], zx[bc], zy[bc], dt, alp, alp, fyx[bc], fyy[bc])
@@ -659,6 +673,8 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
                 dpz1 = dpz1 + dpzx[bc]
                 dpz2 = dpz2 + dpzy[bc]
                 dpz3 = dpz3 + (-1.0*dpzx[bc]*yb[bc] + dpzy[bc]*xb[bc])
+            # print(fyx)
+            # print(ya2)
                 
                 
 
@@ -711,6 +727,9 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
         esi = esi + 0.5*dt*(np.dot(np.dot(v2.T, sk),d2) + np.dot(np.dot(v1.T, sk),d1))
         eii = eii - 0.5*dt*(np.dot(np.dot(v2.T, sm), np.array([[xg[i]], [yg[i]], [0.0], [xg[i]], [yg[i]], [0.0]])) + np.dot(np.dot(v1.T, sm), np.array([[xg[i-1]], [yg[i-1]], [0.0], [xg[i-1]], [yg[i-1]], [0.0]])))
 
+        ep = p2 - np.dot(cd, v2) - np.dot(sk, d2)
+        ep[3:6,0] = ep[3:6,0] - pz.T - pfs1.T  # added
+        a2 = np.dot(sm_inv, ep)
 
         d1, v1, p1, a1 = d2, v2, p2, a2 # added
         yd1, yv1, ya1 =  yd2, yv2, ya2 # added
@@ -729,7 +748,7 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
             aa[2,index] = a2[2,0] + a2[5] +0.0
 
             db[:, index] = d2[3:6,0]
-            print(time[0,index], db[2, index])
+            # print(time[0,index], db[2, index])
             vb[:, index] = v2[3:6,0]
             ab[:, index] = a2[3:6,0]
             aab[0,index] = a2[3,0] + xg[i]

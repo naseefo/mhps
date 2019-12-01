@@ -70,7 +70,7 @@ def cli1():
 @click.option('--var_param', '-vp',type=str, default= 'SS_VP.csv', help= 'File name containing variable parameters for the structure')
 @click.option('--earthquakes','-eq', type=(str), default= "Excitations.csv", help= 'Earthquakes')
 @click.option('--knor', '-knor', type=int, default=1, help="Normalizing the superstructure for given time period. 1 for normalized and 0 for un-normalized.")
-@click.option('--results_type', '-r', type=str, default="g*, aa1, paa1", help="Choice to select output results")
+@click.option('--results_type', '-r', type=str, default="g*, aa1, d1, paa1", help="Choice to select output results")
 @click.option('--lxy', '-lxy', type=int, default=0)
 @click.option('--folder', '-f', type=str, default="result", help="Folder name to store result")
 @click.option('--folder', '-f', type=str, default="result", help="Folder name to store result")
@@ -181,13 +181,13 @@ def fixed_fn(const_param, var_param, earthquakes, knor, results_type, lxy, folde
         # SUPERSTRUCTURE VARIABLE PARAMETER SETUP
         superstructure_param_generator = read_ss_var_param(var_param)
         for j in range(total_param):
-            ijk, nst, tx1, zeta, rtytx = next(superstructure_param_generator)
+            ijk, nst, tx1, zeta, rtytx, styp = next(superstructure_param_generator)
 
-            if ((i == 0) and (j==0)) or ((p_nst, p_tx1, p_rtytx, p_zeta != nst, tx1, rtytx, zeta)):
-                smx, skx, cdx, smy, sky, cdy = superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor)
+            if ((i == 0) and (j==0)) or ((p_nst, p_tx1, p_rtytx, p_zeta, p_styp != nst, tx1, rtytx, zeta, styp)):
+                smx, skx, cdx, smy, sky, cdy = superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor, styp)
                 print(smx)
                 print(skx)
-                p_nst, p_tx1, p_rtytx, p_zeta = nst, tx1, rtytx, zeta
+                p_nst, p_tx1, p_rtytx, p_zeta, p_styp = nst, tx1, rtytx, zeta, styp
                 
             result, model = fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx[0:nst,0:nst], skx[0:nst,0:nst], cdx[0:nst,0:nst], smy[0:nst,0:nst], sky[0:nst,0:nst], cdy[0:nst,0:nst], screen)
             
@@ -271,10 +271,18 @@ def seeq(earthquakes, unit, screen):
 
     for i in range(total_eq):
         ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
+        print(xg.shape)
+        print(yg.shape)
+        print(zg.shape)
+        print(dt)
+        print(ndiv)
+        print(ndt)
+
         time = np.arange(0, (ndt-1)*dt*ndiv+dt, dt)
         # print(ndt, dt, ndt*dt, (ndt-1)*dt*ndiv, ndiv)
         # print(xg.size, yg.size, zg.size, time.size)
-
+        print('Time')
+        print(time.shape)
         plt.figure(i)
 
         # Plot X
@@ -374,12 +382,13 @@ def spectral(earthquakes, results_type, folder, damping, screen):
         
         # SUPERSTRUCTURE VARIABLE PARAMETER SETUP
         superstructure_param_generator = read_ss_var_param(var_param)
+        
         for j in range(total_param):
-            ijk, nst, tx1, zeta, rtytx = next(superstructure_param_generator)
+            ijk, nst, tx1, zeta, rtytx, styp = next(superstructure_param_generator)
             zeta = damping
-            if ((i == 0) and (j==0)) or ((p_nst, p_tx1, p_rtytx, p_zeta != nst, tx1, rtytx, zeta)):
-                smx, skx, cdx, smy, sky, cdy = superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor)
-                p_nst, p_tx1, p_rtytx, p_zeta = nst, tx1, rtytx, zeta
+            if ((i == 0) and (j==0)) or ((p_nst, p_tx1, p_rtytx, p_zeta, p_styp != nst, tx1, rtytx, zeta, styp)):
+                smx, skx, cdx, smy, sky, cdy = superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor, styp=0)
+                p_nst, p_tx1, p_rtytx, p_zeta, p_styp = nst, tx1, rtytx, zeta,styp
             result, model = fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx[0:nst,0:nst], skx[0:nst,0:nst], cdx[0:nst,0:nst], smy[0:nst,0:nst], sky[0:nst,0:nst], cdy[0:nst,0:nst], screen)
             # analysis_folder = 'results\\' + folder + '\\Time History Response\\' + 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk)
             # analysis_folder = os.path.join('results', folder, 'Time History Response', 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))
@@ -523,19 +532,19 @@ def biso_linear(const_param, var_param, iso_param, earthquakes, knor, results_ty
         isolator_param_generator = read_iso_l_var_param(iso_param)
 
         for j in range(total_param):
-            ijk, nst, tx1, zeta, rtytx = next(superstructure_param_generator)
+            ijk, nst, tx1, zeta, rtytx, styp = next(superstructure_param_generator)
             ##? 
             ijk, rmbm, tbx, zetabx, rtytxb, rzxzyb = next(isolator_param_generator)
 
             ##? 
             # if ((i == 0) and (j==0)) or ((p_nst, p_tx1, p_rtytx, p_zeta != nst, tx1, rtytx, zeta)):
-            if ((i == 0) and (j==0)) or ((p_nst, p_tx1, p_rtytx, p_zeta, p_rmbm, p_tbx, p_zetabx, p_rtytxb, p_rzxzyb != nst, tx1, rtytx, zeta, rmbm, tbx, zetabx, rtytxb, rzxzyb)):
-                smx, skx, cdx, smy, sky, cdy = superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor)
+            if ((i == 0) and (j==0)) or ((p_nst, p_tx1, p_rtytx, p_zeta, p_styp, p_rmbm, p_tbx, p_zetabx, p_rtytxb, p_rzxzyb != nst, tx1, rtytx, zeta, styp, rmbm, tbx, zetabx, rtytxb, rzxzyb)):
+                smx, skx, cdx, smy, sky, cdy = superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor, styp)
                 ##? 
                 smx, skx, cdx, smy, sky, cdy = addlinear_iso(smx, skx, cdx, smy, sky, cdy, nst, rmbm, tbx, zetabx, rtytxb, rzxzyb)
                 # p_nst, p_tx1, p_rtytx, p_zeta = nst, tx1, rtytx, zeta
                 ##? 
-                p_nst, p_tx1, p_rtytx, p_zeta, p_rmbm, p_tbx, p_zetabx, p_rtytxb, p_rzxzyb  = nst, tx1, rtytx, zeta, rmbm, tbx, zetabx, rtytxb, rzxzyb
+                p_nst, p_tx1, p_rtytx, p_zeta, p_styp, p_rmbm, p_tbx, p_zetabx, p_rtytxb, p_rzxzyb  = nst, tx1, rtytx, zeta, styp, rmbm, tbx, zetabx, rtytxb, rzxzyb
             
             result, model = simulator_linear(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, screen)    
             #result, model = fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx[0:nst,0:nst], skx[0:nst,0:nst], cdx[0:nst,0:nst], smy[0:nst,0:nst], sky[0:nst,0:nst], cdy[0:nst,0:nst])
@@ -602,7 +611,8 @@ def biso_linear(const_param, var_param, iso_param, earthquakes, knor, results_ty
 @click.option('--iso_param', '-vip',type=str, default= 'PF_VP.csv', help= 'File name containing variable parameters for linear base isolator')
 @click.option('--earthquakes','-eq', type=(str), default= "Excitations.csv", help= 'Earthquakes')
 @click.option('--knor', '-knor', type=int, default=1, help="Normalizing the superstructure for given time period. 1 for normalized and 0 for un-normalized.")
-@click.option('--results_type', '-r', type=str, default="g*, aa1, db, f*, paa1, pdb", help="Choice to select output results")
+@click.option('--results_type', '-r', type=str, default="g*, aa1, paa1, db, pdb, fb", help="Choice to select output results")
+# @click.option('--results_type', '-r', type=str, default="g*, aa1, db, f*, paa1, pdb", help="Choice to select output results")
 @click.option('--folder', '-f', type=str, default="Result", help="Folder name to store result")
 @click.option('--outputunits', type=list, default=['m/s2', 'cm/s', 'cm', 'kn', 'j'])
 @click.option('--lxy', '-lxy', type=int, default=0)
@@ -632,6 +642,7 @@ def biso_pf(const_param, var_param, iso_param, earthquakes, knor, results_type, 
         earthquake_generator = get_earthquake_list('db elc')
 
     total_param = get_total_variable_parameter_set(var_param)
+    print("Total Earthquakes: " + str(total_eq))
     print("Total Parameters: " + str(total_param))
     
     # CONSTANT PARAMETER SETUP
@@ -663,13 +674,13 @@ def biso_pf(const_param, var_param, iso_param, earthquakes, knor, results_type, 
         isolator_param_generator = read_iso_pf_var_param(iso_param)
 
         for j in range(total_param):
-            ijk, nst, tx1, zeta, rtytx = next(superstructure_param_generator)
+            ijk, nst, tx1, zeta, rtytx, styp = next(superstructure_param_generator)
             iso = next(isolator_param_generator)
 
-            if ((i == 0) and (j==0)) or ((p_nst, p_tx1, p_rtytx, p_zeta, p_iso != nst, tx1, rtytx, zeta, iso)):
-                smx, skx, cdx, smy, sky, cdy = superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor)
+            if ((i == 0) and (j==0)) or ((p_nst, p_tx1, p_rtytx, p_zeta, p_styp, p_iso != nst, tx1, rtytx, zeta, styp, iso)):
+                smx, skx, cdx, smy, sky, cdy = superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor, styp)
                 smx, skx, cdx, smy, sky, cdy = addlinear_iso(smx, skx, cdx, smy, sky, cdy, nst, iso.rmbm, iso.tbx, iso.zetabx, iso.rtytxb, iso.rzxzyb)
-                p_nst, p_tx1, p_rtytx, p_zeta  = nst, tx1, rtytx, zeta
+                p_nst, p_tx1, p_rtytx, p_zeta, p_styp  = nst, tx1, rtytx, zeta, styp
                 p_iso = iso
             
             result, model = simulator_pf(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso, screen)    
@@ -685,18 +696,34 @@ def biso_pf(const_param, var_param, iso_param, earthquakes, knor, results_type, 
 
         if peakvalues is not None:
             if i == 0:
-                if total_param == 1:
-                    peakmat = pd.DataFrame(peakmat.reshape(-1, len(peakmat)))
-                else:
-                    peakmat = pd.DataFrame(peakmat)
+                peakmat = peakvalues
                 peakmathead = [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
             else:
                 peakmat = np.hstack((peakmat, peakvalues))
                 peakmathead += [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
             if i == (total_eq - 1):
-                peakmat = pd.DataFrame(peakmat)
+                if total_param == 1:
+                    peakmat = pd.DataFrame(peakmat.reshape(-1, len(peakmat)))
+                else:
+                    peakmat = pd.DataFrame(peakmat)
                 peakmat.columns = peakmathead
                 peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
+
+
+        # if peakvalues is not None:
+        #     if i == 0:
+        #         if total_param == 1:
+        #             peakmat = pd.DataFrame(peakmat.reshape(-1, len(peakmat)))
+        #         else:
+        #             peakmat = pd.DataFrame(peakmat)
+        #         peakmathead = [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
+        #     else:
+        #         peakmat = np.hstack((peakmat, peakvalues))
+        #         peakmathead += [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
+        #     if i == (total_eq - 1):
+        #         peakmat = pd.DataFrame(peakmat)
+        #         peakmat.columns = peakmathead
+        #         peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
         end_t = time.time()
         eq_dur = end_t - start_t
         s_rate = eq_dur/total_param
@@ -791,15 +818,15 @@ def biso_osbi(const_param, var_param, iso_param, earthquakes, knor, results_type
         isolator_param_generator = read_iso_osbi_var_param(iso_param, am[0], 4)
 
         for j in range(total_param):
-            ijk, nst, tx1, zeta, rtytx = next(superstructure_param_generator)
+            ijk, nst, tx1, zeta, rtytx, styp = next(superstructure_param_generator)
             iso = next(isolator_param_generator)
             if screen == True:
                 print(iso)
 
-            if ((i == 0) and (j==0)) or ((p_nst, p_tx1, p_rtytx, p_zeta, p_iso != nst, tx1, rtytx, zeta, iso)):
-                smx, skx, cdx, smy, sky, cdy = superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor)
+            if ((i == 0) and (j==0)) or ((p_nst, p_tx1, p_rtytx, p_zeta, p_styp, p_iso != nst, tx1, rtytx, zeta, styp, iso)):
+                smx, skx, cdx, smy, sky, cdy = superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor, styp)
                 smx, skx, cdx, smy, sky, cdy = addlinear_iso(smx, skx, cdx, smy, sky, cdy, nst, iso.rmbm, iso.tbx, iso.zetabx, iso.rtytxb, iso.rzyzxb)
-                p_nst, p_tx1, p_rtytx, p_zeta  = nst, tx1, rtytx, zeta
+                p_nst, p_tx1, p_rtytx, p_zeta, p_styp  = nst, tx1, rtytx, zeta, styp
                 p_iso = iso
             
             result, model = simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso, screen)    
@@ -1122,8 +1149,8 @@ def fixed_tor(const_param, var_param, iso_param, earthquakes, knor, results_type
             
             ijk, tx1, zeta, exd, wrwx = next(superstructure_param_generator)
             # iso = next(isolator_param_generator)
-            if screen == True:
-                print(iso)
+            # if screen == True:
+            #     print(iso)
             
             # if ((i == 0) and (j==0)) or ((p_tx1, p_zeta, p_exd, p_wrwx, p_iso != tx1, zeta, exd, wrwx, iso)):
             if ((i == 0) and (j==0)) or ((p_tx1, p_zeta, p_exd, p_wrwx != tx1, zeta, exd, wrwx)):
@@ -1520,7 +1547,7 @@ def biso_parkwen_tor(const_param, var_param, iso_param, earthquakes, knor, resul
 @cli1.command()
 @click.option('--const_param', '-cp',type=str, default= 'ConstantParameters.txt', help= 'File name containing constant parameters for the structure')
 @click.option('--var_param', '-vp',type=str, default= 'SS_VP.csv', help= 'File name containing variable parameters for the structure')
-@click.option('--iso_param', '-vp',type=str, default= 'OSBI_VP.csv', help= 'File name containing variable parameters for linear base isolator')
+@click.option('--iso_param', '-vp',type=str, default= 'BW_VP.csv', help= 'File name containing variable parameters for linear base isolator')
 @click.option('--earthquakes','-eq', type=(str), default= "Excitations.csv", help= 'Earthquakes')
 @click.option('--knor', '-knor', type=int, default=1, help="Normalizing the superstructure for given time period. 1 for normalized and 0 for un-normalized.")
 @click.option('--results_type', '-r', type=str, default="g*, aa1, db, f*, paa1, pdb", help="Choice to select output results")
@@ -1582,13 +1609,13 @@ def biso_boucwen(const_param, var_param, iso_param, earthquakes, knor, results_t
         isolator_param_generator = read_iso_boucwen_var_param(iso_param)
 
         for j in range(total_param):
-            ijk, nst, tx1, zeta, rtytx = next(superstructure_param_generator)
+            ijk, nst, tx1, zeta, rtytx, styp = next(superstructure_param_generator)
             iso = next(isolator_param_generator)
 
-            if ((i == 0) and (j==0)) or ((p_nst, p_tx1, p_rtytx, p_zeta, p_iso != nst, tx1, rtytx, zeta, iso)):
-                smx, skx, cdx, smy, sky, cdy = superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor)
+            if ((i == 0) and (j==0)) or ((p_nst, p_tx1, p_rtytx, p_zeta, p_styp, p_iso != nst, tx1, rtytx, zeta, styp, iso)):
+                smx, skx, cdx, smy, sky, cdy = superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor, styp)
                 smx, skx, cdx, smy, sky, cdy = addboucwen_iso(smx, skx, cdx, smy, sky, cdy, nst, iso.rmbm, iso.tbx, iso.zetabx, iso.rtytxb, iso.rzyzxb)
-                p_nst, p_tx1, p_rtytx, p_zeta  = nst, tx1, rtytx, zeta
+                p_nst, p_tx1, p_rtytx, p_zeta, p_styp  = nst, tx1, rtytx, zeta, styp
                 p_iso = iso
             
             result, model = simulator_boucwen(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso, screen)    

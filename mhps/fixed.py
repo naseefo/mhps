@@ -1,6 +1,7 @@
 
 import numpy as np
 from scipy import linalg
+import scipy.io
 import math
 from data.defaults.param_manager import default
 from data.defaults.param_manager import get_default_param_values
@@ -9,6 +10,7 @@ import io
 import pstats
 import pandas as pd
 from mhps.postprocessor import ResultFixedXY, ModelInfo
+import os
 
 
 def profile(fnc):
@@ -57,10 +59,10 @@ def read_ss_var_param(var_param_file):
     to increase speed.
     """
     
-    dtype1 = np.dtype([('IJK', 'i4'), ('NST', 'i4'), ('TX1', 'd'), ('ZETA','d'), ('RTYTX','d')])
+    dtype1 = np.dtype([('IJK', 'i4'), ('NST', 'i4'), ('TX1', 'd'), ('ZETA','d'), ('RTYTX','d'), ('STYP', 'i4')])
 
-    ijk, nst, tx1, zeta, rtytx = np.loadtxt \
-    (var_param_file, delimiter=',', usecols=range(5),\
+    ijk, nst, tx1, zeta, rtytx, styp = np.loadtxt \
+    (var_param_file, delimiter=',', usecols=range(6),\
      skiprows=1, unpack = True, dtype=dtype1)
     
     try:
@@ -71,22 +73,22 @@ def read_ss_var_param(var_param_file):
 
     for i in range(0, total_param):
         try:
-            yield ijk[i], nst[i], tx1[i], zeta[i], rtytx[i]
+            yield ijk[i], nst[i], tx1[i], zeta[i], rtytx[i], styp[i]
         except:
-            yield ijk, nst, tx1, zeta, rtytx
+            yield ijk, nst, tx1, zeta, rtytx, styp
 
 
 def get_total_variable_parameter_set(var_param_file):
  
-    dtype1 = np.dtype([('IJK', 'i4'), ('NST', 'i4'), ('TX1', 'd'), ('ZETA','d')])
+    dtype1 = np.dtype([('IJK', 'i4'), ('NST', 'i4'), ('TX1', 'd'), ('ZETA','d'), ('RTYTX','d'), ('STYP', 'i4')])
 
-    ijk, nst, tx1, zeta = np.loadtxt(var_param_file, delimiter=',', usecols=range(4), skiprows=1, unpack = True, dtype=dtype1)
+    ijk, nst, tx1, zeta, rtytx, styp = np.loadtxt(var_param_file, delimiter=',', usecols=range(6), skiprows=1, unpack = True, dtype=dtype1)
     try:
         return len(ijk)
     except:
         return 1
 
-def superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor):
+def superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor, styp):
     
     """
     Calculation of superstructure mass, stiffness and damping matrices
@@ -94,27 +96,51 @@ def superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor):
     """
     
     zeta = np.ones(nst)*zeta
+    
+    if styp == 0:
+        # Calculation of msss matrix in x-direction
+        smx = np.zeros(shape=(nst+1,nst+1), dtype=np.dtype('d'), order='F')
+        smx[0:nst,0:nst] = np.diag(am[0:nst])   # ------> Mass matrix in x-direction
 
-    # Calculation of msss matrix in x-direction
-    smx = np.zeros(shape=(nst+1,nst+1), dtype=np.dtype('d'), order='F')
-    smx[0:nst,0:nst] = np.diag(am[0:nst])   # ------> Mass matrix in x-direction
+        # Calculation of msss matrix in y-direction
+        smy = np.zeros(shape=(nst+1,nst+1), dtype=np.dtype('d'), order='F')
+        smy = smx                  # ------> Mass matrix in y-direction
 
-    # Calculation of msss matrix in y-direction
-    smy = np.zeros(shape=(nst+1,nst+1), dtype=np.dtype('d'), order='F')
-    smy = smx                  # ------> Mass matrix in y-direction
+        # Calculation of stiffness matrix in x- and y-direction
+        temp = np.array([[1.,-1.],[-1.,1.]], dtype=np.dtype('d'),order='F')
+        skx = np.zeros(shape=(nst+1,nst+1), dtype=np.dtype('d'), order='F')
+        for i in range(nst-1):
+            skx[i:i+2,i:i+2] += temp*ak[i]
+        skx[-2,-2] += ak[-1]
+        sky = np.zeros(shape=(nst+1,nst+1), dtype=np.dtype('d'), order='F')
+        sky = skx
+        del temp
+        
+    else:
+        filename = {1: {3:"YR3", 6:"YR6", 9:"YR9"}}
+        data = scipy.io.loadmat('data\\structurecase\\' + filename[int(styp)][int(nst)])
 
-    # Calculation of stiffness matrix in x- and y-direction
-    temp = np.array([[1.,-1.],[-1.,1.]], dtype=np.dtype('d'),order='F')
-    skx = np.zeros(shape=(nst+1,nst+1), dtype=np.dtype('d'), order='F')
-    for i in range(nst-1):
-        skx[i:i+2,i:i+2] += temp*ak[i]
-    skx[-2,-2] += ak[-1]
-    sky = np.zeros(shape=(nst+1,nst+1), dtype=np.dtype('d'), order='F')
-    sky = skx
-    del temp
+        smx = np.zeros(shape=(nst+1,nst+1), dtype=np.dtype('d'), order='F') 
+        smx[0:nst,0:nst] = data['Meq']   # ------> Mass matrix in x-direction
+
+        # Calculation of msss matrix in y-direction
+        smy = np.zeros(shape=(nst+1,nst+1), dtype=np.dtype('d'), order='F')
+        smy = smx                  # ------> Mass matrix in y-direction
+
+        skx = np.zeros(shape=(nst+1,nst+1), dtype=np.dtype('d'), order='F') 
+        skx[0:nst,0:nst] = data['Keq']   # ------> Stiffness matrix in x-direction
+
+        # Calculation of msss matrix in y-direction
+        sky = np.zeros(shape=(nst+1,nst+1), dtype=np.dtype('d'), order='F')
+        sky = skx                  # ------> Stiffness matrix in y-direction
+
+        # print(skx)
+        # print(smx)
     
     D = np.dot(skx[0:nst,0:nst],np.linalg.inv(smx[0:nst,0:nst]))
     e,v = np.linalg.eig(D)
+
+    
 
     if knor == 1:
         wx1 = 2.0*np.pi/tx1
@@ -130,6 +156,7 @@ def superstructure_propxy(nst, tx1, rtytx, am, ak, zeta, knor):
     # Calculation of damping matrix in x-direction
     D = np.dot(skx[0:nst,0:nst],np.linalg.inv(smx[0:nst,0:nst]))
     e,v = np.linalg.eig(D)
+    # print(2.0*np.pi/np.sqrt(e))
     idx = e.argsort()[::1]
     e = e[idx]
     #v = v[:,idx]
@@ -174,6 +201,9 @@ def fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx, skx, cdx, sm
     # print(ndt)
     gamma = 0.5
     beta = 1/6
+
+    # gamma = 0.5
+    # beta = 0.25
 
     # knx = skx + (gamma/beta/dt)*cdx + (1.0/beta/np.power(dt,2))*smx
 

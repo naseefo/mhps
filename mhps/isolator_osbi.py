@@ -44,18 +44,34 @@ class IsoOSBIModel:
         ud0 = pi/2
         delta = ud0/tdiv
         sizeTable = int((ud0 - ld0)/delta + 1)
+        # print(sizeTable)
         xbtab = np.zeros((sizeTable, ), dtype=np.dtype('d'), order ='F')
         ttab = np.zeros((sizeTable, ), dtype=np.dtype('d'), order ='F')
+        trtab = np.zeros((sizeTable, ), dtype=np.dtype('d'), order ='F')
+        cd0tab = np.zeros((sizeTable, ), dtype=np.dtype('d'), order ='F')
+        pd0tab = np.zeros((sizeTable, ), dtype=np.dtype('d'), order ='F')
         
         fun1 = lambda x: sqrt(1-pow(self.ecc*sin(x), 2.0))
         i = 0
-        for td0 in np.arange(ld0, ud0 + delta, delta):
+        for td0 in np.arange(ld0, ud0 + 0*delta, delta):
+            # print(i)
             ttab[i] = td0
             trd0 = atan((self.b0/self.a0)*tan(td0))
+            trtab[i] = trd0
             cd0 = self.a0*sin(td0)*cos(trd0) - self.b0*cos(td0)*sin(trd0)
+            pd0 = self.a0*sin(td0)*sin(trd0) + self.b0*cos(td0)*cos(trd0)
+            cd0tab[i] = cd0
+            pd0tab[i] = pd0
             itheta = integrate.quad(fun1, 0.0, td0)
             xbtab[i] = 2.0*self.a0*itheta[0] - 2.0*cd0
             i += 1
+        
+        pd.DataFrame(xbtab).to_csv("xbtab.csv")
+        pd.DataFrame(ttab).to_csv("ttab.csv")
+        pd.DataFrame(trtab).to_csv("trtab.csv")
+        pd.DataFrame(cd0tab).to_csv("cd0tab.csv")
+        pd.DataFrame(pd0tab).to_csv("pd0tab.csv")
+        
         return xbtab, ttab
 
     def u_max(self):
@@ -256,7 +272,7 @@ def fc(iso, dt, dyb, dxb, drb, dc1, p_d0, tm):
         vc2 = 0.0
         e_axial = 0.0
 
-
+        fc_axial, fcx, fcy, fcz, dc2, vc2, e_axial = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
     return fc_axial, fcx, fcy, fcz, dc2, vc2, e_axial
 
 
@@ -299,6 +315,9 @@ def fb(J, mr, drb, dyb, dxb, vrb, vyb, vxb, arg, ayg, axg, arb, ayb, axb, p_d0, 
 
     fby = fbr1y + fbr2y + fbr3y + fbr4y
 
+    fbx = 0.0
+    fby = 0.0
+
     return fbx, fby
 
 def fbfixed(mr, ayg, axg):
@@ -319,7 +338,7 @@ def fs2(M, fcz, rMrM, mu, y_b_d2):
 
     g = 9.81
 
-    fs2r = 0.5*mu*M*((2.0 + rMrM)*g + (2.0 + 0.5*rMrM)*y_b_d2) + mu*fcz
+    fs2r = 0.5*mu*M*((2.0 + rMrM)*g + (2.0 + 0.5*rMrM)*y_b_d2) + 0*mu*fcz
     
     return fs2r, fs2r
 
@@ -327,7 +346,7 @@ def fs2fixed(mu, M, fcz, rMrM):
 
     g = 9.81
 
-    fs2r = 0.5*mu*M*(2.0 + rMrM)*g + mu*fcz
+    fs2r = 0.5*mu*M*(2.0 + rMrM)*g + 0*mu*fcz
 
     return fs2r, fs2r
 
@@ -361,21 +380,23 @@ def stat0(ddxb, ddyb, fs2x, fs2y):
 
 
 def mu_val(iso, ub):
-    L0 = iso.alpha0*iso.mu0
-    L1 = (iso.alpha1-iso.alpha0)*(iso.mu0/iso.umax)*abs(ub)
-    L2 = (iso.alpha1-iso.alpha0)*(iso.mu0/pow(iso.umax,2))*pow(ub,2)
-    if iso.typevf == 1:
-        mu = L0 + (1-iso.nu)*L1 + iso.nu*L2
-    elif iso.typevf == 2:
-        mu = L0 - (1-iso.nu)*L1 - iso.nu*(L2 - 2*L1)
-    else:
-        mu = iso.mu0
 
-    if abs(ub) > iso.fos_ud*iso.umax and abs(ub) < iso.umax:
+    ud = iso.fos_ud*iso.umax
+
+    L0 = iso.alpha0*iso.mu0
+    L1 = (iso.alpha1-iso.alpha0)*iso.mu0*abs(ub)/ud
+    L2 = (iso.alpha1-iso.alpha0)*iso.mu0*pow(ub, 2.0)/pow(ud, 2.0)
+
+    if abs(ub) <= ud:
+        if iso.typevf == 1:
+            mu = L0 + (1-iso.nu)*L1 + iso.nu*L2
+        elif iso.typevf == 2:
+            mu = L0 - (1-iso.nu)*L1 - iso.nu*(L2 - 2.0*L1)
+        else:
+            mu = iso.mu0
+    else:
         mu = iso.alpha1*iso.mu0
 
-    if abs(ub) >= iso.umax and iso.typevf != 0:
-        mu = 100
     return mu
 
 #@profile 
@@ -784,8 +805,8 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
             for j in range(nst):
                 fx[index, j] = 1.0*np.dot(smx_diag[0:j+1].T, aax[0:j+1,index])   
                 fy[index, j] = 1.0*np.dot(smy_diag[0:j+1].T, aay[0:j+1,index])    
-            fx[index, ndof-1] = fabx
-            fy[index, ndof-1] = faby
+            fx[index, ndof-1] = fabx + fs1x + fbx
+            fy[index, ndof-1] = faby + fs1y + fby
             ek[index, 0] = eki
             ed[index, 0] = edi
             es[index, 0] = esi

@@ -1,0 +1,5 @@
+Each study will contain the following input files
+
+1. Excitations
+2. Building Input
+3. Base Isolator Input

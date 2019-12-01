@@ -3,3 +3,4 @@ accesskeys.csv
 phd.pem
 build/
 dist/
+node_modules/
