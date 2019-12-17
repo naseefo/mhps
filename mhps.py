@@ -611,7 +611,7 @@ def biso_linear(const_param, var_param, iso_param, earthquakes, knor, results_ty
 @click.option('--iso_param', '-vip',type=str, default= 'PF_VP.csv', help= 'File name containing variable parameters for linear base isolator')
 @click.option('--earthquakes','-eq', type=(str), default= "Excitations.csv", help= 'Earthquakes')
 @click.option('--knor', '-knor', type=int, default=1, help="Normalizing the superstructure for given time period. 1 for normalized and 0 for un-normalized.")
-@click.option('--results_type', '-r', type=str, default="g*, aa1, paa1, db, pdb, fb", help="Choice to select output results")
+@click.option('--results_type', '-r', type=str, default="g*, aa1, paa1, aab, paab, db, pdb, fb", help="Choice to select output results")
 # @click.option('--results_type', '-r', type=str, default="g*, aa1, db, f*, paa1, pdb", help="Choice to select output results")
 @click.option('--folder', '-f', type=str, default="Result", help="Folder name to store result")
 @click.option('--outputunits', type=list, default=['m/s2', 'cm/s', 'cm', 'kn', 'j'])
@@ -636,6 +636,7 @@ def biso_pf(const_param, var_param, iso_param, earthquakes, knor, results_type, 
 
     # EARTHQUAKE GENERATOR SETUP
     if earthquakes:
+        print(earthquakes)
         total_eq = get_total_excitations(earthquakes)
         earthquake_generator = get_earthquake_list(earthquakes)
     else:
