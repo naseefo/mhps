@@ -126,7 +126,7 @@ def mu_val(iso, ub):
 #@profile 
 def simulator_pf(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, smy, sky, cdy, iso, screen_on):
     
-    nit = 5
+    nit = 10
     nst = ndof - 1
     gamma = 0.5
     beta = 1/6
@@ -316,7 +316,7 @@ def simulator_pf(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, smy,
 
                 rvl = math.sqrt(math.pow(vx2[ndof-1, 0], 2) + math.pow(vy2[ndof-1, 0], 2))
 
-                if rvl > 1.0e-5:
+                if rvl > 1.0e-8:
                     ub = math.sqrt(math.pow(dx2[ndof-1,0], 2) + math.pow(dy2[ndof-1,0], 2))
                     mu = mu_val(iso, ub)
                     qx = 9.81*tm*mu

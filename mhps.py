@@ -255,7 +255,26 @@ def fixed_fn(const_param, var_param, earthquakes, knor, results_type, lxy, folde
 @click.option('--earthquakes','-eq', type=(str), default= "Excitations.csv", help= 'Earthquakes')
 @click.option('--unit', '-u', type=(str), default='m/s2')
 @click.option('--screen/--no-screen', default=False)
-def seeq(earthquakes, unit, screen):
+@click.option('--folder', '-f', type=str, default="Result", help="Folder name to store result")
+def seeq(earthquakes, unit, screen, folder):
+    print_preference = input('Do you wish to store earthquake data (default: no) ? [y/n] : ')
+    
+    if print_preference:
+        upload_preference = input('Do you wish to upload (default: no) ? [y/n] : ')
+
+        # RESULT FOLDER SETUP
+        folder = createfolder(folder)
+        # os.makedirs(os.path.join('results', folder, 'Time History Response'))
+        # os.makedirs('results\\' + folder + '\\Time History Response')
+        simulationdesc = input('Enter simulation description [None] : ')
+        if simulationdesc:
+            Path(os.path.join('results', folder, "SimulationInfo.csv")).touch()
+            # Path('results\\' + folder + "\\SimulationInfo.csv").touch()
+            with open(os.path.join('results', folder, "SimulationInfo.csv"), 'w') as f:
+                for line in simulationdesc:
+                    f.write(line)
+            f.close()
+
     if earthquakes:
         total_eq = get_total_excitations(earthquakes)
         earthquake_generator = get_earthquake_list(earthquakes)
@@ -271,18 +290,30 @@ def seeq(earthquakes, unit, screen):
 
     for i in range(total_eq):
         ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
-        print(xg.shape)
-        print(yg.shape)
-        print(zg.shape)
-        print(dt)
-        print(ndiv)
-        print(ndt)
+        # time = np.arange(0, (ndt-1)*dt*ndiv+dt, dt)
+        time = np.arange(0,  xg.shape[0]*dt, dt)
+        print("Shape of Time Array: {}".format(time.shape))
+        print("Shape of XG: {}".format(xg.shape))
+        print("Shape of YG: {}".format(yg.shape))
+        print("Shape of ZG: {}".format(zg.shape))
+        print("Time Step, DT: {}".format(dt))
+        print("Number of Divisions, NDIV: {}".format(ndiv))
+        print("Number of Data Points, NDT: {}".format(ndt))
 
-        time = np.arange(0, (ndt-1)*dt*ndiv+dt, dt)
+        if print_preference:
+            os.makedirs(os.path.join('results', folder, 'EQ-' + str(i)))
+            # xg.to_csv(os.path.join("results", folder, 'EQ-' + str(i), "xg.csv"), mode='w', sep=',', index=False)
+            # yg.to_csv(os.path.join("results", folder, 'EQ-' + str(i), "yg.csv"), mode='w', sep=',', index=False)
+            # zg.to_csv(os.path.join("results", folder, 'EQ-' + str(i), "zg.csv"), mode='w', sep=',', index=False)
+            np.savetxt(os.path.join("results", folder, 'EQ-' + str(i), "xg.csv"), xg*scale, delimiter=",")
+            np.savetxt(os.path.join("results", folder, 'EQ-' + str(i), "yg.csv"), yg*scale, delimiter=",")
+            np.savetxt(os.path.join("results", folder, 'EQ-' + str(i), "zg.csv"), zg*scale, delimiter=",")
+        
+        # time = np.arange(0, (ndt-1)*dt*ndiv+dt, dt)
         # print(ndt, dt, ndt*dt, (ndt-1)*dt*ndiv, ndiv)
         # print(xg.size, yg.size, zg.size, time.size)
-        print('Time')
-        print(time.shape)
+        # print('Time')
+        # print(time.shape)
         plt.figure(i)
 
         # Plot X
@@ -316,7 +347,7 @@ def seeq(earthquakes, unit, screen):
 
 @cli1.command()
 @click.option('--earthquakes','-eq', type=(str), default= "Excitations.csv", help= 'Earthquakes')
-@click.option('--results_type', '-r', type=str, default="paa1, pv1, pd1", help="Choice to select output results")
+@click.option('--results_type', '-r', type=str, default="g*,paa1, pv1, pd1", help="Choice to select output results")
 @click.option('--folder', '-f', type=str, default="Result", help="Folder name to store result")
 @click.option('--damping', '-d', type=float, default=0.05, help="Critical damping ratio")
 @click.option('--screen/--no-screen', default=False)
