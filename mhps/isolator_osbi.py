@@ -1,4 +1,4 @@
-
+import sys
 import numpy as np
 import math
 from data.defaults.param_manager import default
@@ -66,11 +66,13 @@ class IsoOSBIModel:
             xbtab[i] = 2.0*self.a0*itheta[0] - 2.0*cd0
             i += 1
         
-        pd.DataFrame(xbtab).to_csv("xbtab.csv")
-        pd.DataFrame(ttab).to_csv("ttab.csv")
-        pd.DataFrame(trtab).to_csv("trtab.csv")
-        pd.DataFrame(cd0tab).to_csv("cd0tab.csv")
-        pd.DataFrame(pd0tab).to_csv("pd0tab.csv")
+        activate_1 = 0 # To print the values of the various terms in restoring force to a file
+        if activate_1 == 1:
+            pd.DataFrame(xbtab).to_csv("xbtab.csv")
+            pd.DataFrame(ttab).to_csv("ttab.csv")
+            pd.DataFrame(trtab).to_csv("trtab.csv")
+            pd.DataFrame(cd0tab).to_csv("cd0tab.csv")
+            pd.DataFrame(pd0tab).to_csv("pd0tab.csv")
         
         return xbtab, ttab
 
@@ -278,12 +280,12 @@ def fc(iso, dt, dyb, dxb, drb, dc1, p_d0, tm):
 
 
 def fb(J, mr, drb, dyb, dxb, vrb, vyb, vxb, arg, ayg, axg, arb, ayb, axb, p_d0, theta_r_dot2, c_d0, y_b_d2):
-
+    shut = 1 # 1 for on and 0 for off
     if arb == 0:
         fbr1x = 0.0
         fbr1y = 0.0
     else:
-        fbr1 = (1/2.0/p_d0)*(J*theta_r_dot2)
+        fbr1 = (1/2.0/p_d0)*(J*theta_r_dot2)*shut
         fbr1x = fbr1*axb/arb 
         fbr1y = fbr1*ayb/arb
 
@@ -291,7 +293,7 @@ def fb(J, mr, drb, dyb, dxb, vrb, vyb, vxb, arg, ayg, axg, arb, ayb, axb, p_d0, 
         fbr2x = 0.0
         fbr2y = 0.0
     else:
-        fbr2 = 0.5*mr*arg
+        fbr2 = 0.5*mr*arg*shut
         fbr2x = fbr2*axg/arg 
         fbr2y = fbr2*ayg/arg
 
@@ -299,7 +301,7 @@ def fb(J, mr, drb, dyb, dxb, vrb, vyb, vxb, arg, ayg, axg, arb, ayb, axb, p_d0, 
         fbr3x = 0.0
         fbr3y = 0.0
     else:
-        fbr3 =  0.5*mr*0.5*arb
+        fbr3 =  0.5*mr*0.5*arb*shut
         fbr3x = fbr3*axb/arb 
         fbr3y = fbr3*ayb/arb
     
@@ -307,7 +309,7 @@ def fb(J, mr, drb, dyb, dxb, vrb, vyb, vxb, arg, ayg, axg, arb, ayb, axb, p_d0, 
         fbr4x = 0.0
         fbr4y = 0.0
     else:
-        fbr4 = mr*y_b_d2*c_d0/4.0*p_d0
+        fbr4 = mr*y_b_d2*c_d0/4.0*p_d0*shut
         fbr4x = fbr4*dxb/drb
         fbr4y = fbr4*dyb/drb
 
@@ -321,9 +323,10 @@ def fb(J, mr, drb, dyb, dxb, vrb, vyb, vxb, arg, ayg, axg, arb, ayb, axb, p_d0, 
     return fbx, fby
 
 def fbfixed(mr, ayg, axg):
+    shut = 1 # 1 for on and 0 for off
 
     arg = sqrt(pow(axg, 2.0) + pow(ayg, 2.0)) #CB
-    fbr = 0.5*mr*arg
+    fbr = 0.5*mr*arg*shut
 
     if arg == 0:
         fbx = 0.0
@@ -403,7 +406,7 @@ def mu_val(iso, ub):
 def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, smy, sky, cdy, iso, screen_on):
   
     # INITIALIZATION OF PRIMARY INPUT VARIABLES
-    nit = 5
+    nit = 2
     nst = ndof - 1
     gamma = 0.5
     beta = 1/6
@@ -592,6 +595,8 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
             if drb > iso.umax:
                 print(prRed('WARNING: ') + prCyan('Isolator has crossed maximum displacement.'))
                 print(drb, dy2[ndof-1, 0], dx2[ndof-1, 0])
+                print("System terminating simulation")
+                sys.exit()
             
             theta_d02 = np.interp(drb, iso.xbtab, iso.ttab)
             theta_r_d02 = atan((iso.b0/iso.a0)*tan(theta_d02))
@@ -744,6 +749,13 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
             rolling_state = stat0(ddx[ndof-1], ddy[ndof-1], fabx, faby)
 
             if rolling_state == False:
+                drb = sqrt(pow(dy2[ndof-1, 0], 2.0) + pow(dx2[ndof-1, 0], 2.0))
+                if drb > iso.umax:
+                    print(prRed('WARNING: ') + prCyan('Isolator has crossed maximum displacement.'))
+                    print(drb, dy2[ndof-1, 0], dx2[ndof-1, 0])
+                    print("System terminating simulation")
+                    sys.exit()
+
                 idx = 21 # del
                 vx2[ndof-1, 0] = 1e-10
                 ax2[ndof-1, 0] = 0.0
@@ -758,6 +770,14 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
                 ax2[0:nst, 0] = np.dot(smx_inv_fixed, px2[0:nst, 0] - np.dot(cdx[0:nst, 0:nst], vx2[0:nst, 0]) - np.dot(skx[0:nst, 0:nst], dx2[0:nst, 0]))
                 ay2[0:nst, 0] = np.dot(smy_inv_fixed, py2[0:nst, 0] - np.dot(cdy[0:nst, 0:nst], vy2[0:nst, 0]) - np.dot(sky[0:nst, 0:nst], dy2[0:nst, 0]))
             else:
+
+                drb = sqrt(pow(dy2[ndof-1, 0], 2.0) + pow(dx2[ndof-1, 0], 2.0))
+                if drb > iso.umax:
+                    print(prRed('WARNING: ') + prCyan('Isolator has crossed maximum displacement.'))
+                    print(drb, dy2[ndof-1, 0], dx2[ndof-1, 0])
+                    print("System terminating simulation")
+                    sys.exit()
+
                 idx = 22 # del
                 epx = px2 - np.dot(cdx, vx2) - np.dot(skx, dx2)
                 epy = py2 - np.dot(cdy, vy2) - np.dot(sky, dy2)
@@ -839,6 +859,8 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
     peaktopdispy = max(abs(dy[0,:]))
     peakbasedispx = max(abs(dx[ndof-1,:]))
     peakbasedispy = max(abs(dy[ndof-1,:]))
+    residualdispx = abs(dx[ndof-1,-1])
+    residualdispy = abs(dy[ndof-1,-1])
 
     if screen_on == True:
         print(" ")
@@ -851,6 +873,8 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
         print("Peak Top Floor Relative Displacement in Y-Direction: % 8.6f cm" %(peaktopdispy*100.0))
         print("Peak Isolator Displacement in X-Direction: % 8.6f cm" %(peakbasedispx*100.0))
         print("Peak Isolator Displacement in Y-Direction: % 8.6f cm" %(peakbasedispy*100.0))
+        print("Isolator Residual Displacement in X-Direction: % 8.6f cm" %(residualdispx*100.0))
+        print("Isolator Residual Displacement in Y-Direction: % 8.6f cm" %(residualdispy*100.0))
     
     result = ResultFixedXY(ref, ijk, time.T, gx.T, dx.T, vx.T, ax.T, aax.T, gy.T, dy.T, vy.T, ay.T, aay.T, fx, fy, ek, ed, es, ei, error, smx, skx, cdx, smy, sky, cdy, roll, theta_0, theta_r, theta_r_dot2, zbd, zbd_dot2, Fs1x, Fs1y, Fs2x, Fs2y, Fbx, Fby, F_axial, Dc_axial, Strain_axial)
     model = ModelInfo(ndof)

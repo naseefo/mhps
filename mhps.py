@@ -165,6 +165,7 @@ def fixed_fn(const_param, var_param, earthquakes, knor, results_type, lxy, folde
     nparam = 1.0
 
     peakvalues = None
+    residualvalues = None
     start_t_eq = time.time()
     for i in range(total_eq):
         start_t = time.time()
@@ -193,19 +194,22 @@ def fixed_fn(const_param, var_param, earthquakes, knor, results_type, lxy, folde
             
             # analysis_folder = 'results\\' + folder + '\\Time History Response\\' + 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk)
             
-            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, folder)
+            peakvaluesparam, peakvaluesparamhead, residualvaluesparam, residualvaluesparamhead = result_viewer(result, model, results_type, folder)
          
             if peakvaluesparam is not None:
                 if j == 0:
                     peakvalues = peakvaluesparam
                 else:
                     peakvalues = np.vstack((peakvalues, peakvaluesparam))
+            
+            if residualvaluesparam is not None:
+                if j == 0:
+                    residualvalues = residualvaluesparam
+                else:
+                    residualvalues = np.vstack((residualvalues, residualvaluesparam))
 
-
-        
         if peakvalues is not None:
             if i == 0:
-                # Path('results\\' + folder + "\\Peak.csv").touch()
                 peakmat = peakvalues
                 peakmathead = [s+'-EQ-'+str(result.eq_ref) for s in peakvaluesparamhead]
             else:
@@ -216,11 +220,23 @@ def fixed_fn(const_param, var_param, earthquakes, knor, results_type, lxy, folde
                     peakmat = pd.DataFrame(peakmat.reshape(-1, len(peakmat)))
                 else:
                     peakmat = pd.DataFrame(peakmat)
-                # print(peakmat)
-                # print(peakvaluesparamhead)
                 peakmat.columns = peakmathead
                 peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
-                # peakmat.to_csv('results\\' + folder + "\\Peak.csv", mode='w', sep=',', index=False)
+        
+        if residualvalues is not None:
+            if i == 0:
+                residualmat = residualvalues
+                residualmathead = [s+'-EQ-'+str(result.eq_ref) for s in residualvaluesparamhead]
+            else:
+                residualmat = np.hstack((residualmat, residualvalues))
+                residualmathead += [s+'-EQ-'+str(result.eq_ref) for s in residualvaluesparamhead]
+            if i == (total_eq - 1):
+                if total_param == 1:
+                    residualmat = pd.DataFrame(residualmat.reshape(-1, len(residualmat)))
+                else:
+                    residualmat = pd.DataFrame(residualmat)
+                residualmat.columns = residualmathead
+                residualmat.to_csv(os.path.join("results", folder, "residual.csv"), mode='w', sep=',', index=False)
         
         end_t = time.time()
         eq_dur = end_t - start_t
@@ -399,6 +415,7 @@ def spectral(earthquakes, results_type, folder, damping, screen):
     start_t_eq = time.time()
 
     peakvalues = None
+    residualvalues = None
     for i in range(total_eq):
         start_t = time.time()
         ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
@@ -424,13 +441,19 @@ def spectral(earthquakes, results_type, folder, damping, screen):
             # analysis_folder = 'results\\' + folder + '\\Time History Response\\' + 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk)
             # analysis_folder = os.path.join('results', folder, 'Time History Response', 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))
             # os.makedirs(analysis_folder)
-            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, folder)
+            peakvaluesparam, peakvaluesparamhead, residualvaluesparam, residualvaluesparamhead = result_viewer(result, model, results_type, folder)
          
             if peakvaluesparam is not None:
                 if j == 0:
                     peakvalues = peakvaluesparam
                 else:
                     peakvalues = np.vstack((peakvalues, peakvaluesparam))
+            
+            if residualvaluesparam is not None:
+                if j == 0:
+                    residualvalues = residualvaluesparam
+                else:
+                    residualvalues = np.vstack((residualvalues, residualvaluesparam))
         print('EQ' + str(ref) + 'Successful!')
 
 
@@ -462,6 +485,34 @@ def spectral(earthquakes, results_type, folder, damping, screen):
                 peakmat.columns = peakmathead
                 # peakmat.to_csv('results\\' + folder + "\\Peak.csv", mode='w', sep=',', index=False)
                 peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
+        
+        if residualvalues is not None:
+            if i == 0:
+                # Path('results\\' + folder + "\\residual.csv").touch()
+                dtype1 = np.dtype([('IJK', 'i4'), ('NST', 'i4'), ('TX1', 'f4'), ('ZETA','f4'), ('RTYTX','f4')])
+                ijk, nst, tx1, zeta, rtytx = np.loadtxt(var_param, delimiter=',', usecols=range(5), skiprows=1, unpack = True, dtype=dtype1)
+                vector_length = len(ijk)
+                ijk = ijk.reshape(vector_length,1)
+                nst = nst.reshape(vector_length,1)
+                tx1 = tx1.reshape(vector_length,1)
+                zeta = zeta.reshape(vector_length,1)
+                rtytx = rtytx.reshape(vector_length,1)
+
+                residualmat = np.hstack((ijk, nst, tx1, zeta, rtytx, residualvalues))
+                residualmathead = ['#', 'N', 'T', 'ZETA', 'RTYTX'] +  [s+'-EQ-'+str(result.eq_ref) for s in residualvaluesparamhead]
+            else:
+                residualmat = np.hstack((residualmat, residualvalues))
+                residualmathead += [s+'-EQ-'+str(result.eq_ref) for s in residualvaluesparamhead]
+            if i == (total_eq - 1):
+                if total_param == 1:
+                    residualmat = pd.DataFrame(residualmat.reshape(-1, len(residualmat)))
+                else:
+                    residualmat = pd.DataFrame(residualmat)
+                # print(residualmat)
+                # print(residualvaluesparamhead)
+                residualmat.columns = residualmathead
+                # residualmat.to_csv('results\\' + folder + "\\residual.csv", mode='w', sep=',', index=False)
+                residualmat.to_csv(os.path.join("results", folder, "residual.csv"), mode='w', sep=',', index=False)
         end_t = time.time()
         eq_dur = end_t - start_t
         s_rate = eq_dur/total_param
@@ -543,6 +594,7 @@ def biso_linear(const_param, var_param, iso_param, earthquakes, knor, results_ty
     start_t_eq = time.time()
 
     peakvalues = None
+    residualvalues = None
     for i in range(total_eq):
         start_t = time.time()
         ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
@@ -581,7 +633,7 @@ def biso_linear(const_param, var_param, iso_param, earthquakes, knor, results_ty
             #result, model = fixed_simulator(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst, smx[0:nst,0:nst], skx[0:nst,0:nst], cdx[0:nst,0:nst], smy[0:nst,0:nst], sky[0:nst,0:nst], cdy[0:nst,0:nst])
             # analysis_folder = 'results\\' + folder + '\\Time History Response\\' + 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk)
             # os.makedirs(analysis_folder)
-            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, folder)
+            peakvaluesparam, peakvaluesparamhead, residualvaluesparam, residualvaluesparamhead = result_viewer(result, model, results_type, folder)
          
             if peakvaluesparam is not None:
                 if j == 0:
@@ -687,6 +739,7 @@ def biso_pf(const_param, var_param, iso_param, earthquakes, knor, results_type, 
     start_t_eq = time.time()
 
     peakvalues = None
+    residualvalues = None
     for i in range(total_eq):
         start_t = time.time()
         ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
@@ -718,13 +771,19 @@ def biso_pf(const_param, var_param, iso_param, earthquakes, knor, results_type, 
             result, model = simulator_pf(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso, screen)    
             # analysis_folder = 'results\\' + folder + '\\Time History Response\\' + 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk)
             # os.makedirs(analysis_folder)
-            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, folder)
+            peakvaluesparam, peakvaluesparamhead, residualvaluesparam, residualvaluesparamhead = result_viewer(result, model, results_type, folder)
          
             if peakvaluesparam is not None:
                 if j == 0:
                     peakvalues = peakvaluesparam
                 else:
                     peakvalues = np.vstack((peakvalues, peakvaluesparam))
+            
+            if residualvaluesparam is not None:
+                if j == 0:
+                    residualvalues = residualvaluesparam
+                else:
+                    residualvalues = np.vstack((residualvalues, residualvaluesparam))
 
         if peakvalues is not None:
             if i == 0:
@@ -740,6 +799,21 @@ def biso_pf(const_param, var_param, iso_param, earthquakes, knor, results_type, 
                     peakmat = pd.DataFrame(peakmat)
                 peakmat.columns = peakmathead
                 peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
+        
+        if residualvalues is not None:
+            if i == 0:
+                residualmat = residualvalues
+                residualmathead = [s+'-EQ-'+str(result.eq_ref) for s in residualvaluesparamhead]
+            else:
+                residualmat = np.hstack((residualmat, residualvalues))
+                residualmathead += [s+'-EQ-'+str(result.eq_ref) for s in residualvaluesparamhead]
+            if i == (total_eq - 1):
+                if total_param == 1:
+                    residualmat = pd.DataFrame(residualmat.reshape(-1, len(residualmat)))
+                else:
+                    residualmat = pd.DataFrame(residualmat)
+                residualmat.columns = residualmathead
+                residualmat.to_csv(os.path.join("results", folder, "residual.csv"), mode='w', sep=',', index=False)
 
 
         # if peakvalues is not None:
@@ -831,6 +905,7 @@ def biso_osbi(const_param, var_param, iso_param, earthquakes, knor, results_type
     start_t_eq = time.time()
 
     peakvalues = None
+    residualvalues = None
     for i in range(total_eq):
         start_t = time.time()
         ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
@@ -864,13 +939,19 @@ def biso_osbi(const_param, var_param, iso_param, earthquakes, knor, results_type
             result, model = simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso, screen)    
             # analysis_folder = os.path.join('results', folder, 'Time History Response', 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))
             # os.makedirs(analysis_folder)
-            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, folder)
+            peakvaluesparam, peakvaluesparamhead, residualvaluesparam, residualvaluesparamhead = result_viewer(result, model, results_type, folder)
          
             if peakvaluesparam is not None:
                 if j == 0:
                     peakvalues = peakvaluesparam
                 else:
                     peakvalues = np.vstack((peakvalues, peakvaluesparam))
+            
+            if residualvaluesparam is not None:
+                if j == 0:
+                    residualvalues = residualvaluesparam
+                else:
+                    residualvalues = np.vstack((residualvalues, residualvaluesparam))
 
 
         if peakvalues is not None:
@@ -893,6 +974,21 @@ def biso_osbi(const_param, var_param, iso_param, earthquakes, knor, results_type
                     peakmat = pd.DataFrame(peakmat)
                 peakmat.columns = peakmathead
                 peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
+        
+        if residualvalues is not None:
+            if i == 0:
+                residualmat = residualvalues
+                residualmathead = [s+'-EQ-'+str(result.eq_ref) for s in residualvaluesparamhead]
+            else:
+                residualmat = np.hstack((residualmat, residualvalues))
+                residualmathead += [s+'-EQ-'+str(result.eq_ref) for s in residualvaluesparamhead]
+            if i == (total_eq - 1):
+                if total_param == 1:
+                    residualmat = pd.DataFrame(residualmat.reshape(-1, len(residualmat)))
+                else:
+                    residualmat = pd.DataFrame(residualmat)
+                residualmat.columns = residualmathead
+                residualmat.to_csv(os.path.join("results", folder, "residual.csv"), mode='w', sep=',', index=False)
         end_t = time.time()
         eq_dur = end_t - start_t
         s_rate = eq_dur/total_param
@@ -1010,7 +1106,7 @@ def biso_osbi_tor(const_param, var_param, iso_param, earthquakes, knor, results_
             # result, model = simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso, screen)    
             analysis_folder = os.path.join('results', folder, 'Time History Response', 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))
             os.makedirs(analysis_folder)
-            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, folder)
+            peakvaluesparam, peakvaluesparamhead, residualvaluesparam, residualvaluesparamhead = result_viewer(result, model, results_type, folder)
          
             if peakvaluesparam is not None:
                 if j == 0:
@@ -1200,7 +1296,7 @@ def fixed_tor(const_param, var_param, iso_param, earthquakes, knor, results_type
             # result, model = simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso, screen)    
             analysis_folder = os.path.join('results', folder, 'Time History Response', 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))
             os.makedirs(analysis_folder)
-            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, folder)
+            peakvaluesparam, peakvaluesparamhead, residualvaluesparam, residualvaluesparamhead = result_viewer(result, model, results_type, folder)
          
             if peakvaluesparam is not None:
                 if j == 0:
@@ -1353,7 +1449,7 @@ def biso_linear_tor(const_param, var_param, iso_param, earthquakes, knor, result
             # result, model = simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso, screen)    
             analysis_folder = os.path.join('results', folder, 'Time History Response', 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))
             os.makedirs(analysis_folder)
-            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, folder)
+            peakvaluesparam, peakvaluesparamhead, residualvaluesparam, residualvaluesparamhead = result_viewer(result, model, results_type, folder)
          
             if peakvaluesparam is not None:
                 if j == 0:
@@ -1509,7 +1605,7 @@ def biso_parkwen_tor(const_param, var_param, iso_param, earthquakes, knor, resul
             # result, model = simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso, screen)    
             analysis_folder = os.path.join('results', folder, 'Time History Response', 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))
             os.makedirs(analysis_folder)
-            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, folder)
+            peakvaluesparam, peakvaluesparamhead, residualvaluesparam, residualvaluesparamhead = result_viewer(result, model, results_type, folder)
          
             if peakvaluesparam is not None:
                 if j == 0:
@@ -1587,7 +1683,7 @@ def biso_parkwen_tor(const_param, var_param, iso_param, earthquakes, knor, resul
 @click.option('--outputunits', type=list, default=['m/s2', 'cm/s', 'cm', 'kn', 'j'])
 @click.option('--lxy', '-lxy', type=int, default=0)
 @click.option('--screen/--no-screen', default=False)
-def biso_boucwen(const_param, var_param, iso_param, earthquakes, knor, results_type, folder, outputunits, lxy, screen):
+def biso_parkwen(const_param, var_param, iso_param, earthquakes, knor, results_type, folder, outputunits, lxy, screen):
 
     upload_preference = input('Do you wish to upload (default: no) ? [y/n] : ')
 
@@ -1622,6 +1718,7 @@ def biso_boucwen(const_param, var_param, iso_param, earthquakes, knor, results_t
     start_t_eq = time.time()
 
     peakvalues = None
+    residualvalues = None
     for i in range(total_eq):
         start_t = time.time()
         ref, xg, yg, zg, dt, ndiv, ndt = next(earthquake_generator)
@@ -1653,13 +1750,19 @@ def biso_boucwen(const_param, var_param, iso_param, earthquakes, knor, results_t
             result, model = simulator_boucwen(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso, screen)    
             # analysis_folder = 'results\\' + folder + '\\Time History Response\\' + 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk)
             # os.makedirs(analysis_folder)
-            peakvaluesparam, peakvaluesparamhead = result_viewer(result, model, results_type, folder)
+            peakvaluesparam, peakvaluesparamhead, residualvaluesparam, residualvaluesparamhead = result_viewer(result, model, results_type, folder)
          
             if peakvaluesparam is not None:
                 if j == 0:
                     peakvalues = peakvaluesparam
                 else:
                     peakvalues = np.vstack((peakvalues, peakvaluesparam))
+            
+            if residualvaluesparam is not None:
+                if j == 0:
+                    residualvalues = residualvaluesparam
+                else:
+                    residualvalues = np.vstack((residualvalues, residualvaluesparam))
 
         if peakvalues is not None:
             if i == 0:
@@ -1675,6 +1778,21 @@ def biso_boucwen(const_param, var_param, iso_param, earthquakes, knor, results_t
                     peakmat = pd.DataFrame(peakmat)
                 peakmat.columns = peakmathead
                 peakmat.to_csv(os.path.join("results", folder, "Peak.csv"), mode='w', sep=',', index=False)
+        
+        if residualvalues is not None:
+            if i == 0:
+                residualmat = residualvalues
+                residualmathead = [s+'-EQ-'+str(result.eq_ref) for s in residualvaluesparamhead]
+            else:
+                residualmat = np.hstack((residualmat, residualvalues))
+                residualmathead += [s+'-EQ-'+str(result.eq_ref) for s in residualvaluesparamhead]
+            if i == (total_eq - 1):
+                if total_param == 1:
+                    residualmat = pd.DataFrame(residualmat.reshape(-1, len(residualmat)))
+                else:
+                    residualmat = pd.DataFrame(residualmat)
+                residualmat.columns = residualmathead
+                residualmat.to_csv(os.path.join("results", folder, "residual.csv"), mode='w', sep=',', index=False)
         end_t = time.time()
         eq_dur = end_t - start_t
         s_rate = eq_dur/total_param

@@ -27,6 +27,15 @@
 # Imperial5_Elcentro.txt, 0.02, cm/s2, 1.0, 0.2, x, 2;
 # Taft_acc_S69E.TXT, 0.02, cm/s2, 1.0, 20, x, 100;
 
+
+
+#VALIDATION EXCITATIONS
+
+# Validation for Uni- and Bi- of PF and FPS system using "Paper: 091-Computational Numeritcal Models for seismic response of structure isolated by sliding systems. Check for graphs in Thesis ChAp3 folder. Both uni-directional and bi-directional validated." Use NDIV as 100.
+# Cent_acc_00.txt, Cent_acc_90.txt, 0.02, cm/s2, 1.0, 100.0, 1, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
+
+
+
 # LARSON TOUBRO FOLDER:
 # TH1_LarsenToubro.txt, 0.005, g, 1.0, 90.0, x, 20;
 # TH2_LarsenToubro.txt, 0.005, g, 1.0, 90.0, x, 20;
@@ -155,7 +164,7 @@
 # CODE 010: PROF. LIN'S EXCITATION
 # TaiwanC00_Lin.csv, 0.01, cm/s2, 1.0, 29.08, x, 100;
 
-# CODE 011: ARUNA MADAM EXCITATIONS
+# CODE 011: ARUNA MADAM EXCITATIONS (For Kobe dt = 0.02 and not 0.005. verified based on 091 reference)
 # Aruna_Elcentro1940_00.txt, Aruna_Elcentro1940_90.txt, 0.02, cm/s2, 1.0, 53.48, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
 # Aruna_Elcentro1940_00.txt, Aruna_Elcentro1940_90.txt, 0.02, cm/s2, 1.0, 53.48, 200, -90.0, 0.0, 0.0, 0.0, 90, x, rn;
 # Aruna_Kobe1995_00.txt, Aruna_Kobe1995_90.txt, 0.005, cm/s2, 1.0, 25.005, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;

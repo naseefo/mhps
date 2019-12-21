@@ -380,6 +380,8 @@ def simulator_boucwen(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx,
     peaktopdispy = max(abs(dy[0,:]))
     peakbasedispx = max(abs(dx[ndof-1,:]))
     peakbasedispy = max(abs(dy[ndof-1,:]))
+    residualdispx = abs(dx[ndof-1,-1])
+    residualdispy = abs(dy[ndof-1,-1])
 
     if screen_on == True:
         print(" ")
@@ -392,6 +394,8 @@ def simulator_boucwen(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx,
         print("Peak Top Floor Relative Displacement in Y-Direction: % 8.6f cm" %(peaktopdispy*100.0))
         print("Peak Isolator Displacement in X-Direction: % 8.6f cm" %(peakbasedispx*100.0))
         print("Peak Isolator Displacement in Y-Direction: % 8.6f cm" %(peakbasedispy*100.0))
+        print("Isolator Residual Displacement in X-Direction: % 8.6f cm" %(residualdispx*100.0))
+        print("Isolator Residual Displacement in Y-Direction: % 8.6f cm" %(residualdispy*100.0))
     
     result = ResultFixedXY(ref, ijk, time.T, gx.T, dx.T, vx.T, ax.T, aax.T, gy.T, dy.T, vy.T, ay.T, aay.T, fx, fy, ek, ed, es, ei, error, smx, skx, cdx, smy, sky, cdy)
     model = ModelInfo(ndof)

@@ -126,7 +126,7 @@ def mu_val(iso, ub):
 #@profile 
 def simulator_pf(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, smy, sky, cdy, iso, screen_on):
     
-    nit = 10
+    nit = 2
     nst = ndof - 1
     gamma = 0.5
     beta = 1/6
@@ -381,8 +381,8 @@ def simulator_pf(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, smy,
             for j in range(nst):
                 fx[index, j] = 1.0*np.dot(smx_diag[0:j+1].T, aax[0:j+1,index])   
                 fy[index, j] = 1.0*np.dot(smy_diag[0:j+1].T, aay[0:j+1,index])    
-            fx[index, ndof-1] = fabx
-            fy[index, ndof-1] = faby
+            fx[index, ndof-1] = fabx + skx[ndof-1, ndof-1]*dx2[ndof-1,0]
+            fy[index, ndof-1] = faby + sky[ndof-1, ndof-1]*dy2[ndof-1,0]
             ek[index, 0] = eki
             ed[index, 0] = edi
             es[index, 0] = esi
@@ -426,6 +426,8 @@ def simulator_pf(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, smy,
     peaktopdispy = max(abs(dy[0,:]))
     peakbasedispx = max(abs(dx[ndof-1,:]))
     peakbasedispy = max(abs(dy[ndof-1,:]))
+    residualdispx = abs(dx[ndof-1,-1])
+    residualdispy = abs(dy[ndof-1,-1])
 
     if screen_on == True:
         print(" ")
@@ -438,6 +440,8 @@ def simulator_pf(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, smy,
         print("Peak Top Floor Relative Displacement in Y-Direction: % 8.6f cm" %(peaktopdispy*100.0))
         print("Peak Isolator Displacement in X-Direction: % 8.6f cm" %(peakbasedispx*100.0))
         print("Peak Isolator Displacement in Y-Direction: % 8.6f cm" %(peakbasedispy*100.0))
+        print("Isolator Residual Displacement in X-Direction: % 8.6f cm" %(residualdispx*100.0))
+        print("Isolator Residual Displacement in Y-Direction: % 8.6f cm" %(residualdispy*100.0))
     
     result = ResultFixedXY(ref, ijk, time.T, gx.T, dx.T, vx.T, ax.T, aax.T, gy.T, dy.T, vy.T, ay.T, aay.T, fx, fy, ek, ed, es, ei, error, smx, skx, cdx, smy, sky, cdy)
     model = ModelInfo(ndof)

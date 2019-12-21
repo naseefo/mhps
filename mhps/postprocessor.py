@@ -398,6 +398,8 @@ def get_result(result, responsevariable, floorstart, floorend, peaktype, dirn):
 
     if peaktype == 1:
         responsevalues = np.absolute(vector).max(axis=0)
+    elif peaktype == 2:
+        responsevalues = np.absolute(vector)[-1,:]
     elif peaktype == 0:
         responsevalues = vector
     return responsevalues, vectorhead
@@ -405,10 +407,12 @@ def get_result(result, responsevariable, floorstart, floorend, peaktype, dirn):
 
 def result_viewer(result, model, results_type, folder):
     results_type = results_type.split(',')
-    i, j = 0, 0
+    i, j, k = 0, 0, 0
     peakvalues = None
     timeresponses = None
     peakhead = None
+    residualvalues = None
+    residualhead = None
     for rpattern in results_type:
         responsevariable, floorstart, floorend, peaktype, dirn = pattern_reader(rpattern.strip(), model.nst)
         # print(responsevariable, floorstart, floorend, peaktype, dirn)
@@ -418,6 +422,14 @@ def result_viewer(result, model, results_type, folder):
                 peakvalues = responsevalues
                 peakhead = vectorhead
                 i = 1
+            else:
+                peakvalues = np.hstack((peakvalues, responsevalues))
+                peakhead += vectorhead
+        elif peaktype == 2:
+            if k == 0:
+                residualvalues = responsevalues
+                residualhead = vectorhead
+                k = 1
             else:
                 peakvalues = np.hstack((peakvalues, responsevalues))
                 peakhead += vectorhead
@@ -439,10 +451,10 @@ def result_viewer(result, model, results_type, folder):
         superstructure = pd.DataFrame(result.skx)
         timeresponses.to_csv(os.path.join(analysis_folder, "TimeDomainResponses.csv"), mode='w', sep=',', index=False)
         superstructure.to_csv(os.path.join(analysis_folder, "SimulationInfo.csv"), mode='w', index=False)
-    return peakvalues, peakhead
+    return peakvalues, peakhead, residualvalues, residualhead
 
 def pattern_reader(rpattern, nst):
-    pattern_res = '^([p]|)([a-z]+|[f,e,r]+)([0-9\-\*\s]+|b$)'
+    pattern_res = '^([pz]|)([a-z]+|[f,e,r]+)([0-9\-\*\s]+|b$)'
     flag = 0
     for i in range(0,23):
         pattern_check = re.findall(pattern_res, rpattern)
@@ -450,6 +462,8 @@ def pattern_reader(rpattern, nst):
         if pattern_check[0]:
             if pattern_check[0][0] == 'p':
                 peaktype = 1
+            elif pattern_check[0][0] == 'z':
+                peaktype = 2
             else:
                 peaktype = 0
             
