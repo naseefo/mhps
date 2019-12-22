@@ -274,7 +274,7 @@ def simulator_linear_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, 
     beta = 1/6
 
     sm_inv = np.linalg.inv(sm)
-    print(sm_inv)
+    # print(sm_inv)
     # sm_diag = np.diag(-1.0*sm).reshape(nst,1)
     r = np.zeros((6,3), dtype=np.dtype('d'), order='F')
     r[3:6,0:3] = np.diag([1.0, 1.0, 1.0])
@@ -378,12 +378,12 @@ def simulator_linear_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, 
     esi = 0.0
     eii = 0.0
 
-    print("Linear-Mass Matrix")
-    print(sm)
-    print("Linear-Stiffness Matrix")
-    print(sk)
-    print("Linear-Damping Matrix")
-    print(cd)
+    # print("Linear-Mass Matrix")
+    # print(sm)
+    # print("Linear-Stiffness Matrix")
+    # print(sk)
+    # print("Linear-Damping Matrix")
+    # print(cd)
 
     for i in range(1,len(xg)):
 

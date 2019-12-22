@@ -415,7 +415,7 @@ def result_viewer(result, model, results_type, folder):
     residualhead = None
     for rpattern in results_type:
         responsevariable, floorstart, floorend, peaktype, dirn = pattern_reader(rpattern.strip(), model.nst)
-        # print(responsevariable, floorstart, floorend, peaktype, dirn)
+        print(responsevariable, floorstart, floorend, peaktype, dirn)
         responsevalues, vectorhead = get_result(result, responsevariable, floorstart, floorend, peaktype, dirn)
         if peaktype == 1:
             if i == 0:

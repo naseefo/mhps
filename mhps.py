@@ -315,7 +315,9 @@ def seeq(earthquakes, unit, screen, folder):
         print("Time Step, DT: {}".format(dt))
         print("Number of Divisions, NDIV: {}".format(ndiv))
         print("Number of Data Points, NDT: {}".format(ndt))
-
+        print("Peak Ground Acceleration X-Dirn: {}".format(scale*max(xg.min(), xg.max(), key=abs)))
+        print("Peak Ground Acceleration Y-Dirn: {}".format(scale*max(yg.min(), yg.max(), key=abs)))
+        print("Peak Ground Acceleration Z-Dirn: {}".format(scale*max(zg.min(), zg.max(), key=abs)))
         if print_preference:
             os.makedirs(os.path.join('results', folder, 'EQ-' + str(i)))
             # xg.to_csv(os.path.join("results", folder, 'EQ-' + str(i), "xg.csv"), mode='w', sep=',', index=False)
@@ -1283,9 +1285,9 @@ def fixed_tor(const_param, var_param, iso_param, earthquakes, knor, results_type
             # if ((i == 0) and (j==0)) or ((p_tx1, p_zeta, p_exd, p_wrwx, p_iso != tx1, zeta, exd, wrwx, iso)):
             if ((i == 0) and (j==0)) or ((p_tx1, p_zeta, p_exd, p_wrwx != tx1, zeta, exd, wrwx)):
                 sm, sk, cd = superstructure_propxy_t(tx1, zeta, exd, wrwx, fm, nb, x, y, xb, yb)
-                print(sm)
-                print(sk)
-                print(cd)
+                # print(sm)
+                # print(sk)
+                # print(cd)
                 
                 # sm, sk, cd = addlinear_iso_t(sm, sk, cd, iso.rmbm, iso.tbx, iso.zetabx, iso.rtytxb, iso.rzyzxb)
                 p_tx1, p_zeta, p_exd, p_wrwx  = tx1, zeta, exd, wrwx
@@ -1563,6 +1565,7 @@ def biso_parkwen_tor(const_param, var_param, iso_param, earthquakes, knor, resul
     start_t_eq = time.time()
 
     peakvalues = None
+    residualvalues = None
     for i in range(total_eq):
         
         start_t = time.time()

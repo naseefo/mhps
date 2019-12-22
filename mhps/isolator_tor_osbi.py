@@ -44,10 +44,10 @@ class IsoOSBITorsionModel:
         return fn_value
 
     def t0fn(e, *data):
-        print(data)
+        # print(data)
         i, tbe0x, D, ro2 = data
-        print(tbe0x, D, ro2)
-        print(tbe0x - sqrt(D)*sqrt(4.0*pow(pi, 2.0)/((1 + ro2)*9.81*(pow(e, 2.0)/pow((1-pow(e, 2.0)), 3.0/2.0))))  )
+        # print(tbe0x, D, ro2)
+        # print(tbe0x - sqrt(D)*sqrt(4.0*pow(pi, 2.0)/((1 + ro2)*9.81*(pow(e, 2.0)/pow((1-pow(e, 2.0)), 3.0/2.0))))  )
         fn_value = tbe0x - sqrt(D)*sqrt(4.0*pow(pi, 2.0)/((1 + ro2)*9.81*(pow(e, 2.0)/pow((1-pow(e, 2.0)), 3.0/2.0))))  
         return fn_value
         
@@ -67,6 +67,9 @@ class IsoOSBITorsionModel:
         default_values = get_default_param_values()
         tdiv = default_values['TDIV']
         
+
+
+
         ld0 = 0.0
         ud0 = pi/2
         delta = ud0/tdiv
@@ -76,7 +79,8 @@ class IsoOSBITorsionModel:
         
         fun1 = lambda x: sqrt(1-pow(ecc*sin(x), 2.0))
         i = 0
-        for td0 in np.arange(ld0, ud0 + delta, delta):
+        
+        for td0 in np.arange(ld0, ud0 + 0*delta, delta):
             ttab[i, 0] = td0
             trd0 = atan((b0/a0)*tan(td0))
             cd0 = a0*sin(td0)*cos(trd0) - b0*cos(td0)*sin(trd0)
@@ -156,7 +160,7 @@ class IsoOSBITorsionModel:
         self.k0i[2] = self.k0*0.25*(1 - 2.0*self.e0exd)
         self.k0i[3] = self.k0*0.25*(1 + 2.0*self.e0exd)
 
-        print(self.k0i)
+        # print(self.k0i)
 
         calc_ecc0_k0i = lambda e, k0val: k0val - self.tm/4.0/self.D*(1+0.5*self.ro2)*9.81*S2(e)
         
@@ -831,34 +835,34 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
     
 
 
-    print("Velocity in Structure")
-    print(v.shape)
-    print(v)
+    # print("Velocity in Structure")
+    # print(v.shape)
+    # print(v)
 
-    print("Velocity in Isolator")
-    print(vb.shape)
-    print(vb)
+    # print("Velocity in Isolator")
+    # print(vb.shape)
+    # print(vb)
 
-    print("Velocity Corner-X in Structure")
-    print(vcx.shape)
-    print(vcx)
-    print("Velocity Corner-Y in Structure")
-    print(vcy.shape)
-    print(vcy)
+    # print("Velocity Corner-X in Structure")
+    # print(vcx.shape)
+    # print(vcx)
+    # print("Velocity Corner-Y in Structure")
+    # print(vcy.shape)
+    # print(vcy)
 
-    print("Velocity Corner-X in Isolator")
-    print(vbcx.shape)
-    print(vbcx)
-    print("Velocity Corner-Y in Isolator")
-    print(vbcy.shape)
-    print(vbcy)
+    # print("Velocity Corner-X in Isolator")
+    # print(vbcx.shape)
+    # print(vbcx)
+    # print("Velocity Corner-Y in Isolator")
+    # print(vbcy.shape)
+    # print(vbcy)
 
-    print("Force Corner-X in Isolator")
-    print(fcx.shape)
-    print(fcx)
-    print("Force Corner-Y in Isolator")
-    print(fcy.shape)
-    print(fcy)
+    # print("Force Corner-X in Isolator")
+    # print(fcx.shape)
+    # print(fcx)
+    # print("Force Corner-Y in Isolator")
+    # print(fcy.shape)
+    # print(fcy)
 
     print(" ")
     print("Simulation" + "\033[91m" + " SET%d-%d" %(ref, ijk) + "\033[0m" + ": Earthquake #: %d, Parameter #: %d" %(ref, ijk))

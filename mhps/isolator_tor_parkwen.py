@@ -103,7 +103,7 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
     
     qyf = iso.f0*(fm + bm)*9.81
     alp = iso.g1*ckabx/qyf
-    print(iso.rmbm, fm, bm, wbx, ckabx, iso.g1, qyf, alp)
+    # print(iso.rmbm, fm, bm, wbx, ckabx, iso.g1, qyf, alp)
 
     fyx[0] = qyf*0.25*(1 + 2.0*iso.efxd)
     fyx[1] = qyf*0.25*(1 - 2.0*iso.efxd)
@@ -112,18 +112,18 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
 
     fyy = fyx
 
-    print(fyx)
+    # print(fyx)
 
-    print("f0")
-    print(iso.f0)
-    print("g1")
-    print(iso.g1)
-    print("qyf")
-    print(qyf)
-    print("alp")
-    print(alp)
-    print("fyx")
-    print(fyx)
+    # print("f0")
+    # print(iso.f0)
+    # print("g1")
+    # print(iso.g1)
+    # print("qyf")
+    # print(qyf)
+    # print("alp")
+    # print(alp)
+    # print("fyx")
+    # print(fyx)
 
     
 
@@ -226,12 +226,12 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
     esi = 0.0
     eii = 0.0
 
-    print("Linear-Mass Matrix")
-    print(sm)
-    print("Linear-Stiffness Matrix")
-    print(sk)
-    print("Linear-Damping Matrix")
-    print(cd)
+    # print("Linear-Mass Matrix")
+    # print(sm)
+    # print("Linear-Stiffness Matrix")
+    # print(sk)
+    # print("Linear-Damping Matrix")
+    # print(cd)
 
     pzx = np.zeros((4, ), dtype=np.dtype('d'), order='F')
     pzy = np.zeros((4, ), dtype=np.dtype('d'), order='F')
@@ -429,34 +429,34 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
     
 
 
-    print("Velocity in Structure")
-    print(v.shape)
-    print(v)
+    # print("Velocity in Structure")
+    # print(v.shape)
+    # print(v)
 
-    print("Velocity in Isolator")
-    print(vb.shape)
-    print(vb)
+    # print("Velocity in Isolator")
+    # print(vb.shape)
+    # print(vb)
 
-    print("Velocity Corner-X in Structure")
-    print(vcx.shape)
-    print(vcx)
-    print("Velocity Corner-Y in Structure")
-    print(vcy.shape)
-    print(vcy)
+    # print("Velocity Corner-X in Structure")
+    # print(vcx.shape)
+    # print(vcx)
+    # print("Velocity Corner-Y in Structure")
+    # print(vcy.shape)
+    # print(vcy)
 
-    print("Velocity Corner-X in Isolator")
-    print(vbcx.shape)
-    print(vbcx)
-    print("Velocity Corner-Y in Isolator")
-    print(vbcy.shape)
-    print(vbcy)
+    # print("Velocity Corner-X in Isolator")
+    # print(vbcx.shape)
+    # print(vbcx)
+    # print("Velocity Corner-Y in Isolator")
+    # print(vbcy.shape)
+    # print(vbcy)
 
-    print("Force Corner-X in Isolator")
-    print(fcx.shape)
-    print(fcx)
-    print("Force Corner-Y in Isolator")
-    print(fcy.shape)
-    print(fcy)
+    # print("Force Corner-X in Isolator")
+    # print(fcx.shape)
+    # print(fcx)
+    # print("Force Corner-Y in Isolator")
+    # print(fcy.shape)
+    # print(fcy)
 
     print(" ")
     print("Simulation" + "\033[91m" + " SET%d-%d" %(ref, ijk) + "\033[0m" + ": Earthquake #: %d, Parameter #: %d" %(ref, ijk))

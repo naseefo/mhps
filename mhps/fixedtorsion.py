@@ -120,7 +120,7 @@ def superstructure_propxy_t(tx1, zeta, exd, wrwx, fm, nb, x, y, xb, yb):
 
     akx = fm*pow(wx, 2.0)
 
-    print("Width = %8.4f m, Time period = %8.4f s, Angular Frequency = %8.4f, Stiffness = %8.3f N/m"%(B, tx1, wx, akx))
+    # print("Width = %8.4f m, Time period = %8.4f s, Angular Frequency = %8.4f, Stiffness = %8.3f N/m"%(B, tx1, wx, akx))
       
     ckx[0] = 0.25*akx*(1.0 + 2.0*exd)
     ckx[1] = 0.25*akx*(1.0 - 2.0*exd)
@@ -183,10 +183,10 @@ def fixed_simulator_tor(ref, xg, yg, dt, ndiv, ndt, ijk, nst, sm, sk, cd, x, y, 
     sk = sk[0:nst, 0:nst]
     cd = cd[0:nst, 0:nst]
 
-    print("New test")
-    print(sm)
-    print(sk)
-    print(cd)
+    # print("New test")
+    # print(sm)
+    # print(sk)
+    # print(cd)
 
     sm_inv = np.linalg.inv(sm)
     sm_diag = np.diag(-1.0*sm).reshape(nst,1)
