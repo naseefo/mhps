@@ -1,4 +1,4 @@
-
+import sys
 import numpy as np
 import math
 from data.defaults.param_manager import default
@@ -191,6 +191,8 @@ def addlinear_iso_tor(sm, sk, cd, rmbm, tbx, zetabx, ebxd, wrwxb, xb, yb, nb):
     bm = sm[0,0]*rmbm
     tm = fm + bm
 
+    
+
     ckabx = (fm + bm)*wbx*wbx
 
     bkx = np.zeros(shape=(4, ), dtype=np.dtype('d'), order='F')
@@ -201,8 +203,10 @@ def addlinear_iso_tor(sm, sk, cd, rmbm, tbx, zetabx, ebxd, wrwxb, xb, yb, nb):
     bkx[2] = 0.25*ckabx*(1.0 - 2.0*ebxd)
     bkx[3] = 0.25*ckabx*(1.0 + 2.0*ebxd)
 
-    bky = bkx
+    
 
+    bky = bkx
+    
     kxxb = np.sum(bkx)
     kxyb = 0.0
     kxtb = -1.0*np.sum(bkx*yb)
@@ -222,15 +226,31 @@ def addlinear_iso_tor(sm, sk, cd, rmbm, tbx, zetabx, ebxd, wrwxb, xb, yb, nb):
     sk[5,4] = ktyb
     sk[5,5] = kttb
 
+    sk[3:6, 0:3] = -1*sk[0:3,0:3]  # Recently added after missing -Kss found WOW delete to revert
+
+
+    
+    print(kttb, sk[2,2])
     smb = np.zeros(shape=(3, 3), dtype=np.dtype('d'), order='F')
     wrb = wbx*wrwxb
     bmr = sk[5,5]/pow(wrb, 2.0) - sm[2,2]
+
+    # Previous
     smb[0,0] = bm + fm
     smb[1,1] = bm + fm
     smb[2,2] = bmr + sm[2,2]
+    # WOW add
+    # smb[0,0] = bm
+    # smb[1,1] = bm
+    # smb[2,2] = bmr
+
+
     sm[0:3,3:6] = sm[0:3,0:3]
-    sm[3:6,0:3] = sm[0:3,0:3]
-    sm[3:6,3:6] = smb
+    # sm[3:6,0:3] = sm[0:3,0:3]    WOW please uncomment this to normal
+    sm[3:6,3:6] = smb[0:3,0:3]
+
+    
+
     del smb
 
     bcx = np.zeros(shape=(4, ), dtype=np.dtype('d'), order='F')
@@ -262,6 +282,13 @@ def addlinear_iso_tor(sm, sk, cd, rmbm, tbx, zetabx, ebxd, wrwxb, xb, yb, nb):
     cd[5,3] = ctxb
     cd[5,4] = ctyb
     cd[5,5] = cttb
+    cd[3:6, 0:3] = -1*cd[0:3,0:3]  # Recently added after missing -Kss found WOW delete to revert
+
+    # print(sm)
+    # print(sk)
+    # print(cd)
+    # print("I am going out here")
+    # sys.exit()
     
     return sm, sk, cd
 

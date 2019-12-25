@@ -430,6 +430,8 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
     ddy = np.zeros((ndof, 1), dtype=np.dtype('d'), order ='F') #C
     dvy = np.zeros((ndof, 1), dtype=np.dtype('d'), order ='F') #C
 
+    dbr = np.zeros((1, ndt), dtype=np.dtype('d'), order ='F') #C woohoo
+
     gx[0,0] = xg[0]
     gy[0,0] = yg[0]
 
@@ -484,6 +486,8 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
     vy2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0000000001 #C
     py2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0 #C
     ay2 = np.ones((ndof, 1), dtype=np.dtype('d'), order ='F')*0.0 #C
+
+
 
     dpx = 0.0 #INCREMENT IN EXCITATION FORCE
     dpy = 0.0
@@ -822,6 +826,8 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
             aay[:,index] = ay2[:,0] + ay2[ndof-1,0] + yg[i]
             aay[ndof-1,index] = ay2[ndof-1,0] + yg[i]
 
+            dbr[0,index] = sqrt(pow(dx2[ndof-1,0], 2.0) + pow(dy2[ndof-1,0], 2.0)) # woohoo
+
             for j in range(nst):
                 fx[index, j] = 1.0*np.dot(smx_diag[0:j+1].T, aax[0:j+1,index])   
                 fy[index, j] = 1.0*np.dot(smy_diag[0:j+1].T, aay[0:j+1,index])    
@@ -861,6 +867,7 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
     peakbasedispy = max(abs(dy[ndof-1,:]))
     residualdispx = abs(dx[ndof-1,-1])
     residualdispy = abs(dy[ndof-1,-1])
+    peakresultantbasedisp = max(abs(dbr[0,:])) # woohoo
 
     if screen_on == True:
         print(" ")
@@ -873,10 +880,11 @@ def simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, sm
         print("Peak Top Floor Relative Displacement in Y-Direction: % 8.6f cm" %(peaktopdispy*100.0))
         print("Peak Isolator Displacement in X-Direction: % 8.6f cm" %(peakbasedispx*100.0))
         print("Peak Isolator Displacement in Y-Direction: % 8.6f cm" %(peakbasedispy*100.0))
+        print("Peak Resultant Isolator Displacement: % 8.6f cm" %(peakresultantbasedisp*100.0)) # woohoo
         print("Isolator Residual Displacement in X-Direction: % 8.6f cm" %(residualdispx*100.0))
         print("Isolator Residual Displacement in Y-Direction: % 8.6f cm" %(residualdispy*100.0))
     
-    result = ResultFixedXY(ref, ijk, time.T, gx.T, dx.T, vx.T, ax.T, aax.T, gy.T, dy.T, vy.T, ay.T, aay.T, fx, fy, ek, ed, es, ei, error, smx, skx, cdx, smy, sky, cdy, roll, theta_0, theta_r, theta_r_dot2, zbd, zbd_dot2, Fs1x, Fs1y, Fs2x, Fs2y, Fbx, Fby, F_axial, Dc_axial, Strain_axial)
+    result = ResultFixedXY(ref, ijk, time.T, gx.T, dx.T, vx.T, ax.T, aax.T, gy.T, dy.T, vy.T, ay.T, aay.T, fx, fy, ek, ed, es, ei, error, smx, skx, cdx, smy, sky, cdy, roll, theta_0, theta_r, theta_r_dot2, zbd, zbd_dot2, Fs1x, Fs1y, Fs2x, Fs2y, Fbx, Fby, F_axial, Dc_axial, Strain_axial, dbr = dbr.T)
     model = ModelInfo(ndof)
 
     return result, model

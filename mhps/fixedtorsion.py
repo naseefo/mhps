@@ -1,4 +1,4 @@
-
+import sys
 import numpy as np
 import math
 from data.defaults.param_manager import default
@@ -110,6 +110,7 @@ def superstructure_propxy_t(tx1, zeta, exd, wrwx, fm, nb, x, y, xb, yb):
     sm = np.zeros(shape=(6,6), dtype=np.dtype('d'), order='F')
     sm[0:3, 0:3] = np.diag(am)    # ------> Mass matrix in x-direction
 
+    
     # Calculation of stiffness matrix in x- and y-direction
     
     sk = np.zeros(shape=(6, 6), dtype=np.dtype('d'), order='F')
@@ -126,6 +127,8 @@ def superstructure_propxy_t(tx1, zeta, exd, wrwx, fm, nb, x, y, xb, yb):
     ckx[1] = 0.25*akx*(1.0 - 2.0*exd)
     ckx[2] = 0.25*akx*(1.0 - 2.0*exd)
     ckx[3] = 0.25*akx*(1.0 + 2.0*exd)
+
+    
 
     cky = ckx
 
@@ -148,8 +151,12 @@ def superstructure_propxy_t(tx1, zeta, exd, wrwx, fm, nb, x, y, xb, yb):
     sk[2,1] = ktys
     sk[2,2] = ktts
 
+    
+
     fmr = sk[2,2]/pow(wr, 2.0)
     sm[2,2] = fmr
+
+    
 
     # Calculation of damping matrix in x-direction
     D = np.dot(sk[0:3,0:3],np.linalg.inv(sm[0:3,0:3]))
@@ -170,6 +177,8 @@ def superstructure_propxy_t(tx1, zeta, exd, wrwx, fm, nb, x, y, xb, yb):
     for i in range(3):
         cd[0:nst,0:nst] += np.dot(np.linalg.matrix_power(D,i), sm[0:3,0:3])*a_i[i]  # Damping matrix in x-direction
     del W, c_w, a_i, D, T
+
+    
 
     return sm, sk, cd
 

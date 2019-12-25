@@ -291,6 +291,7 @@ def simulator_boucwen(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx,
     dpx = 0.0
     dpy = 0.0
 
+
     for i in range(1,len(xg)):
 
         t += dt

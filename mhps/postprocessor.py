@@ -30,7 +30,7 @@ def profile(fnc):
 
 
 class ResultFixedXY:
-    def __init__(self, eq_refi= 0.0, ijki= 0.0, timei= 0.0, gxi= 0.0, dxi= 0.0, vxi= 0.0, axi= 0.0, aaxi= 0.0, gyi= 0.0, dyi= 0.0, vyi= 0.0, ayi= 0.0, aayi= 0.0, fxi= 0.0, fyi= 0.0, eki= 0.0, edi= 0.0, esi= 0.0, eii= 0.0, errori= 0.0, smxi= 0.0, skxi= 0.0, cdxi= 0.0, smyi= 0.0, skyi= 0.0, cdyi= 0.0, roll = 0, theta_0 = 0.0, theta_r= 0.0, theta_r_dot2= 0.0, zbd= 0.0, zbd_dot2= 0.0, Fs1x= 0.0, Fs1y= 0.0, Fs2x= 0.0, Fs2y= 0.0, Fbx= 0.0, Fby= 0.0, F_axial= 0.0, Dc_axial= 0.0, Strain_axial=0.0, t_si =0.0, t_bi = 0.0, f_bi =0.0, t_sci =0.0, t_bci = 0.0, f_bci =0.0): # del
+    def __init__(self, eq_refi= 0.0, ijki= 0.0, timei= 0.0, gxi= 0.0, dxi= 0.0, vxi= 0.0, axi= 0.0, aaxi= 0.0, gyi= 0.0, dyi= 0.0, vyi= 0.0, ayi= 0.0, aayi= 0.0, fxi= 0.0, fyi= 0.0, eki= 0.0, edi= 0.0, esi= 0.0, eii= 0.0, errori= 0.0, smxi= 0.0, skxi= 0.0, cdxi= 0.0, smyi= 0.0, skyi= 0.0, cdyi= 0.0, roll = 0, theta_0 = 0.0, theta_r= 0.0, theta_r_dot2= 0.0, zbd= 0.0, zbd_dot2= 0.0, Fs1x= 0.0, Fs1y= 0.0, Fs2x= 0.0, Fs2y= 0.0, Fbx= 0.0, Fby= 0.0, F_axial= 0.0, Dc_axial= 0.0, Strain_axial=0.0, t_si =0.0, t_bi = 0.0, f_bi =0.0, t_sci =0.0, t_bci = 0.0, f_bci =0.0, dbr = 0.0, t_dbr = 0.0): # del
         self.eq_ref = eq_refi
         self.ijk = ijki
         self.time = timei
@@ -79,6 +79,9 @@ class ResultFixedXY:
         self.t_bc = t_bci
         self.f_b = f_bi
         self.f_bc = f_bci
+
+        self.dbr = dbr
+        self.t_dbr = t_dbr
       
 
 class ModelInfo:
@@ -126,6 +129,10 @@ def get_result(result, responsevariable, floorstart, floorend, peaktype, dirn):
         vectorheadx = [("FX-"+str(x+1)) for x in range(floorstart,floorend+1)]
         vectorheady = [("FY-"+str(x+1)) for x in range(floorstart,floorend+1)]
         vectorhead = vectorheadx + vectorheady
+    elif responsevariable == 'dbr':
+        # print("I am in dbr")
+        vector = result.dbr
+        vectorhead = ['Res ISO Disp.']
     elif responsevariable == 'en':
         vector1 = result.ek
         vector2 = result.ed
@@ -254,6 +261,29 @@ def get_result(result, responsevariable, floorstart, floorend, peaktype, dirn):
         vectorheadx = [("ISO-DX-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
         vectorheady = [("ISO-DY-C-"+str(x+1)) for x in range(floorstart,floorend+1)]
         vectorhead = vectorheadx + vectorheady
+        print(vectorhead)
+
+    elif responsevariable == 'tbcdr':
+        responsevariable, floorstart, floorend, peaktype, dirn
+        if (floorend - floorstart == 5):
+            print("I am in dude")
+            floorstart = 0
+            floorend = 4
+
+        if (floorend - floorstart == 0):
+            floorend = floorend+1
+        si = 0
+        
+        floorstartX = floorstart + si
+        floorendX = floorend + si
+        vector = result.t_dbr[:, floorstartX:floorendX]
+        
+        print(result.t_dbr.shape)
+        print(vector.shape)
+        print(floorend, floorstart)
+        vectorhead = [("RES-ISO-D-C-"+str(x+1)) for x in range(floorstart,floorend)]
+        
+        
         print(vectorhead)
 
     elif responsevariable == 'tscv':
@@ -415,7 +445,7 @@ def result_viewer(result, model, results_type, folder):
     residualhead = None
     for rpattern in results_type:
         responsevariable, floorstart, floorend, peaktype, dirn = pattern_reader(rpattern.strip(), model.nst)
-        print(responsevariable, floorstart, floorend, peaktype, dirn)
+        # print(responsevariable, floorstart, floorend, peaktype, dirn)
         responsevalues, vectorhead = get_result(result, responsevariable, floorstart, floorend, peaktype, dirn)
         if peaktype == 1:
             if i == 0:
@@ -451,6 +481,8 @@ def result_viewer(result, model, results_type, folder):
         superstructure = pd.DataFrame(result.skx)
         timeresponses.to_csv(os.path.join(analysis_folder, "TimeDomainResponses.csv"), mode='w', sep=',', index=False)
         superstructure.to_csv(os.path.join(analysis_folder, "SimulationInfo.csv"), mode='w', index=False)
+    # print("I am going out here.")
+    # sys.exit()
     return peakvalues, peakhead, residualvalues, residualhead
 
 def pattern_reader(rpattern, nst):
@@ -503,6 +535,8 @@ def pattern_reader(rpattern, nst):
         print("ERROR: Discrepancy in response variable keys.")
         sys.exit()
     dirn = 0
+    print(responsevariable, floorstart, floorend, peaktype, dirn)
+    
     return responsevariable, floorstart, floorend, peaktype, dirn
 
 

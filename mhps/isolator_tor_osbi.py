@@ -452,9 +452,14 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
 
     
 
+    smg = np.zeros((6, 6), dtype=np.dtype('d'), order='F') # WOW added
+    
+    smg[0:3, 0:3] = sm[0:3,0:3] # WOW added
+    smg[3:6, 3:6] = sm[3:6,3:6] # WOW added
 
     sm_inv = np.linalg.inv(sm)
     r = np.zeros((6,3), dtype=np.dtype('d'), order='F')
+    r[0:3,0:3] = np.diag([1.0, 1.0, 1.0]) # WOW added delete to revert
     r[3:6,0:3] = np.diag([1.0, 1.0, 1.0])
 
     time = np.zeros((1, ndt), dtype=np.dtype('d'), order='F')
@@ -489,6 +494,7 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
 
     dbcx = np.zeros((ndt, 4), dtype=np.dtype('d'), order='F')
     dbcy = np.zeros((ndt, 4), dtype=np.dtype('d'), order='F')
+    dbcr = np.zeros((ndt, 4), dtype=np.dtype('d'), order='F')
     vbcx = np.zeros((ndt, 4), dtype=np.dtype('d'), order='F')
     vbcy = np.zeros((ndt, 4), dtype=np.dtype('d'), order='F')
     abcx = np.zeros((ndt, 4), dtype=np.dtype('d'), order='F')
@@ -513,7 +519,7 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
     a1 = np.ones((6, 1), dtype=np.dtype('d'), order='F')*0.0
     p1 = np.ones((6, 1), dtype=np.dtype('d'), order='F')*0.0
     ug1 = np.array([[xg[0]],[yg[0]], [0.0]])
-    p1 = -1.0*np.dot(np.dot(sm, r), ug1)
+    p1 = -1.0*np.dot(np.dot(smg, r), ug1)
     a1 = np.dot(sm_inv, p1 - np.dot(cd, v1) - np.dot(sk, d1))
 
     d2 = np.zeros((6, 1), dtype=np.dtype('d'), order='F')
@@ -612,7 +618,7 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
         
         
         ug2 = np.array([[xg[i]],[yg[i]], [0.0]])
-        p2 = -1.0*np.dot(np.dot(sm, r), ug2)
+        p2 = -1.0*np.dot(np.dot(smg, r), ug2)
         dp = p2 - p1
 
         for wc in range(4):
@@ -784,6 +790,7 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
 
                 dbcx[index, nc] = d2[3,0] - yb[nc]*d2[5,0]
                 dbcy[index, nc] = d2[4,0] + xb[nc]*d2[5,0]
+                dbcr[index, nc] = sqrt(pow(dbcx[index, nc], 2.0) + pow(dbcy[index, nc], 2.0))
 
                 vbcx[index, nc] = v2[3,0] - yb[nc]*v2[5,0]
                 vbcy[index, nc] = v2[4,0] + xb[nc]*v2[5,0]
@@ -832,6 +839,8 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
     peakbaseshearcornerY1 = max(abs(fcy[:, 0]))
     peakbaseshearcornerX2 = max(abs(fcx[:, 1]))
     peakbaseshearcornerY2 = max(abs(fcy[:, 1]))
+    peakisolatordisplacementcorner1 = max(abs(dbcr[:, 0]))
+    peakisolatordisplacementcorner2 = max(abs(dbcr[:, 1]))
     
 
 
@@ -883,6 +892,8 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
     print("Peak Corner 1 Base Shear in Y-Direction: % 8.6f N" %(peakbaseshearcornerY1))
     print("Peak Corner 2 Base Shear in X-Direction: % 8.6f N" %(peakbaseshearcornerX2))
     print("Peak Corner 2 Base Shear in Y-Direction: % 8.6f N" %(peakbaseshearcornerY2))
+    print("Peak Corner 1 Resultant Isolator Displacement: % 8.6f cm" %(peakisolatordisplacementcorner1*100.0))
+    print("Peak Corner 2 Resultant Isolator Displacement: % 8.6f cm" %(peakisolatordisplacementcorner2*100.0))
     
     
     t_s = np.hstack((d.T, v.T, a.T, aa.T))
@@ -893,7 +904,7 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
     f_bc = np.hstack((fcx, fcy))
     
 
-    result = ResultFixedXY(ref, ijk, time.T, gx.T, gyi = gy.T, eki = ek, edi = ed, esi = es, eii = ei, errori = error, t_si = t_s, t_bi = t_b, f_bi = f_b,t_sci = t_sc, t_bci = t_bc, f_bci = f_bc, smxi = sm, skxi = sk, cdxi = cd)
+    result = ResultFixedXY(ref, ijk, time.T, gx.T, gyi = gy.T, eki = ek, edi = ed, esi = es, eii = ei, errori = error, t_si = t_s, t_bi = t_b, f_bi = f_b,t_sci = t_sc, t_bci = t_bc, f_bci = f_bc, smxi = sm, skxi = sk, cdxi = cd, t_dbr = dbcr)
     model = ModelInfo(6)
  
     # plt.plot(np.transpose(time), d[1,:]*100)
