@@ -1,0 +1,74 @@
+
+
+
+Ch_Innov:
+
+TH, FD
+
+py -3.7-64 mhps.py biso_osbi --screen -r "aa1, db, f*, paa1, zdb, pdb, pf*"
+
+py -3.7-64 mhps.py biso_pf --screen -r "aa1, db, f*, paa1, zdb, pdb, pf*"
+
+
+
+PARAM
+
+py -3.7-64 mhps.py biso_osbi --screen -r "paa1, zdb, pdb, pf*"
+
+py -3.7-64 mhps.py biso_pf --screen -r "paa1, zdb, pdb, pf*"
+
+--------------------------------------------------
+Ch_Bi
+
+TH, FD
+
+py -3.7-64 mhps.py biso_osbi --screen -r "aa1, db, dbrb, f*, paa1, pdb, zdb, pdbrb, pf*"
+
+py -3.7-64 mhps.py biso_pf --screen -r "aa1, db, dbrb, f*, paa1, pdb, zdb, pdbrb, pf*"
+
+PARAM
+
+py -3.7-64 mhps.py biso_osbi --screen -r "paa1, pdb, zdb, pdbrb, pf*"
+
+py -3.7-64 mhps.py biso_pf --screen -r "paa1, pdb, zdb, pdbrb, pf*"
+
+--------------------------------------------------
+Ch_tor
+TH, FD
+
+py -3.7-64 mhps.py biso_osbi_tor --screen -r "tsaa1, tsaa2, tsaa3, tbcd1, tfc1, tbcd2, tfc2, tbcd3, tfc3, tbcd4, tfc4, tbcdr1, tbcdr2, tbcdr3, tbcdr4, ptsaa1, ptsaa2, ptsaa3, ptbcd1, ptbcd2, ptbcd3, ptbcd4, ptbcdr1, ptbcdr2, ptbcdr3, ptbcdr4"
+
+py -3.7-64 mhps.py biso_parkwen_tor --screen -r "tsaa1, tsaa2, tsaa3, tbcd1, tfc1, tbcd2, tfc2, tbcd3, tfc3, tbcd4, tfc4, tbcdr1, tbcdr2, tbcdr3, tbcdr4, ptsaa1, ptsaa2, ptsaa3, ptbcd1, ptbcd2, ptbcd3, ptbcd4, ptbcdr1, ptbcdr2, ptbcdr3, ptbcdr4"
+
+PARAM
+
+py -3.7-64 mhps.py biso_osbi_tor --screen -r "ptsaa1, ptsaa2, ptsaa3, ptbcd1, ptbcd2, ptbcd3, ptbcd4, ptbcdr1, ptbcdr2, ptbcdr3, ptbcdr4"
+
+py -3.7-64 mhps.py biso_parkwen_tor --screen -r "ptsaa1, ptsaa2, ptsaa3, ptbcd1, ptbcd2, ptbcd3, ptbcd4, ptbcdr1, ptbcdr2, ptbcdr3, ptbcdr4"
+
+--------------------------------------------------
+Ch_VFOSBI
+
+TH, FD
+
+py -3.7-64 mhps.py biso_osbi --screen -r "aa1, db, dbrb, f*, paa1, pdb, zdb, pdbrb, pf*"
+
+py -3.7-64 mhps.py biso_pf --screen -r "aa1, db, dbrb, f*, paa1, pdb, zdb, pdbrb, pf*"
+
+PARAM
+
+py -3.7-64 mhps.py biso_osbi --screen -r "paa1, pdb, zdb, pdbrb, pf*"
+
+py -3.7-64 mhps.py biso_pf --screen -r "paa1, pdb, zdb, pdbrb, pf*"
+
+
+
+
+
+
+Rough:
+
+py -3.7-64 mhps.py biso_osbi-tor --screen -r "tsaa1, tsaa2, tsaa3, tbcd1, tfc1, tbcd2, tfc2, tbcd3, tfc3, tbcd4, tfc4, ptsaa1, ptsaa2, ptsaa3, ptbcd1, ptbcd2, ptbcd3, ptbcd4"
+
+
+py -3.7-64 mhps.py biso_osbi-tor --screen -r "tsaa1, tsaa2, tsaa3, tbcd1, tfc1, tbcd2, tfc2, tbcd3, tfc3, tbcd4, tfc4, ptsaa1, ptsaa2, ptsaa3, ptbcd1, ptbcd2, ptbcd3, ptbcd4"
