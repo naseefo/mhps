@@ -82,6 +82,7 @@ class ResultFixedXY:
 
         self.dbr = dbr
         self.t_dbr = t_dbr
+        self.tamp = tamp
       
 
 class ModelInfo:
@@ -428,6 +429,7 @@ def get_result(result, responsevariable, floorstart, floorend, peaktype, dirn):
         # print("I am in dbr")
         vector = result.tamp
         vectorhead = ['Tamp']
+        print("I am in tamp")
     
 
     if peaktype == 1:

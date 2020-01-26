@@ -1,13 +1,4 @@
-# Torsional FPS validation
-# Lgpc_acc_00.txt, Lgpc_acc_90.txt, 0.005, cm/s2, 1.0, 25, 25, -90.0, 0.0, 0.0, 0.0, 90, a, rn; 
-# Lgpc_acc_00.txt, Lgpc_acc_90.txt, 0.005, cm/s2, 1.0, 25, 25, -90.0, 0.0, 0.0, 0.0, 90, a, rn; 
-# Aruna_Elcentro1940_00.txt, Aruna_Elcentro1940_90.txt, 0.02, cm/s2, 1.0, 20.0, 100, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
-# Cent_acc_00.txt, Cent_acc_90.txt, 0.02, cm/s2, 1.0, 30.0, 100, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
-# Aruna_Kobe1995_00.txt, Aruna_Kobe1995_90.txt, 0.02, cm/s2, 1.0, 30.0, 100, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
-
-
-
-# XY-DIRN , I = 1.5
+# Selected
 
 r_RSN68_SFERN_PEL090.AT2, r_RSN68_SFERN_PEL180.AT2, r_RSN68_SFERN_PEL-UP.AT2,0.01, g,1.5,79.45,20,90,180,287,90,180, a, ry;
 r_RSN161_IMPVALL.H_H-BRA225.AT2, r_RSN161_IMPVALL.H_H-BRA315.AT2, r_RSN161_IMPVALL.H_H-BRA-UP.AT2,0.005, g,1.5,37.86,10,225,315,323,90,180, a, ry;
