@@ -1,0 +1,10 @@
+# Cent_acc_00.txt, Cent_acc_90.txt, 0.02, cm/s2, 1.5, 30.0, 100, -90.0, 0.0, 0.0, 0.0, 90, x, rn;
+# Cent_acc_00.txt, Cent_acc_90.txt, 0.02, cm/s2, 1.2, 30.0, 20, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
+# Aruna_Elcentro1940_00.txt, Aruna_Elcentro1940_90.txt, 0.02, cm/s2, 1.0, 20.0, 100, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
+# Imperial5_Elcentro.txt, 0.02, cm/s2, 1.0, 20.0, x, 100;
+# ElCentro1940_NS_Terminal.txt, 0.02, m/s2, 1.0, 100.0, x, 100;
+# Aruna_Kobe1995_00.txt, Aruna_Kobe1995_90.txt, 0.02, cm/s2, 1.0, 30.0, 100, -90.0, 0.0, 0.0, 0.0, 90, a, rn;
+
+# Torsional FPS validation
+# Lgpc_acc_00.txt, Lgpc_acc_90.txt, 0.005, cm/s2, 1.0, 25, 25, -90.0, 0.0, 0.0, 0.0, 90, a, rn; 
+# Lgpc_acc_00.txt, Lgpc_acc_90.txt, 0.005, cm/s2, 1.0, 1, 100, -90.0, 0.0, 0.0, 0.0, 90, a, rn; 

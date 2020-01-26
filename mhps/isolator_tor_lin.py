@@ -203,13 +203,19 @@ def addlinear_iso_tor(sm, sk, cd, rmbm, tbx, zetabx, ebxd, wrwxb, xb, yb, nb):
     bkx[2] = 0.25*ckabx*(1.0 - 2.0*ebxd)
     bkx[3] = 0.25*ckabx*(1.0 + 2.0*ebxd)
 
-    
+    print("BKX")
+    print([x for x in bkx])
+
+    print("yb")
+    print([x for x in xb])
 
     bky = bkx
     
     kxxb = np.sum(bkx)
     kxyb = 0.0
     kxtb = -1.0*np.sum(bkx*yb)
+    print("kxtb")
+    print(kxtb)
     kyxb = 0.0
     kyyb = np.sum(bky)
     kytb = np.sum(bky*xb)
@@ -230,19 +236,20 @@ def addlinear_iso_tor(sm, sk, cd, rmbm, tbx, zetabx, ebxd, wrwxb, xb, yb, nb):
 
 
     
-    print(kttb, sk[2,2])
+    # print(kttb, sk[2,2])
     smb = np.zeros(shape=(3, 3), dtype=np.dtype('d'), order='F')
     wrb = wbx*wrwxb
     bmr = sk[5,5]/pow(wrb, 2.0) - sm[2,2]
 
-    # Previous
-    smb[0,0] = bm + fm
-    smb[1,1] = bm + fm
-    smb[2,2] = bmr + sm[2,2]
-    # WOW add
-    # smb[0,0] = bm
-    # smb[1,1] = bm
-    # smb[2,2] = bmr
+    # Previous Ch: Woohoo : commented
+    # smb[0,0] = bm + fm
+    # smb[1,1] = bm + fm
+    # smb[2,2] = bmr + sm[2,2]
+    
+    # WOW add Ch: Woohoo : uncommented
+    smb[0,0] = bm
+    smb[1,1] = bm
+    smb[2,2] = bmr
 
 
     sm[0:3,3:6] = sm[0:3,0:3]
@@ -295,16 +302,24 @@ def addlinear_iso_tor(sm, sk, cd, rmbm, tbx, zetabx, ebxd, wrwxb, xb, yb, nb):
 
 
 #@profile
-def simulator_linear_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb, nb):
+def simulator_linear_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb, nb, exd):
 
     gamma = 0.5
     beta = 1/6
+    # Woohoo
+    smg = np.zeros(shape=(6, 6), dtype=np.dtype('d'), order='F') # Woohoo
+    smg[0:3,0:3] = sm[0:3,0:3] # Woohoo
+    smg[3:6,3:6] = sm[3:6,3:6] # Woohoo
 
     sm_inv = np.linalg.inv(sm)
     # print(sm_inv)
     # sm_diag = np.diag(-1.0*sm).reshape(nst,1)
     r = np.zeros((6,3), dtype=np.dtype('d'), order='F')
+    r[0:3,0:3] = np.diag([1.0, 1.0, 1.0]) # Woohoo
     r[3:6,0:3] = np.diag([1.0, 1.0, 1.0])
+
+    print("Naseef is here")
+    print(r)
 
     time = np.zeros((1, ndt), dtype=np.dtype('d'), order='F')
     
@@ -338,6 +353,7 @@ def simulator_linear_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, 
 
     dbcx = np.zeros((ndt, 4), dtype=np.dtype('d'), order='F')
     dbcy = np.zeros((ndt, 4), dtype=np.dtype('d'), order='F')
+    dbcr = np.zeros((ndt, 4), dtype=np.dtype('d'), order='F')
     vbcx = np.zeros((ndt, 4), dtype=np.dtype('d'), order='F')
     vbcy = np.zeros((ndt, 4), dtype=np.dtype('d'), order='F')
     abcx = np.zeros((ndt, 4), dtype=np.dtype('d'), order='F')
@@ -362,7 +378,7 @@ def simulator_linear_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, 
     a1 = np.ones((6, 1), dtype=np.dtype('d'), order='F')*0.0
     p1 = np.ones((6, 1), dtype=np.dtype('d'), order='F')*0.0
     ug1 = np.array([[xg[0]],[yg[0]], [0.0]])
-    p1 = -1.0*np.dot(np.dot(sm, r), ug1)
+    p1 = -1.0*np.dot(np.dot(smg, r), ug1) # woohoo to smg
     # print(p1)
     a1 = np.dot(sm_inv, p1 - np.dot(cd, v1) - np.dot(sk, d1))
 
@@ -405,19 +421,21 @@ def simulator_linear_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, 
     esi = 0.0
     eii = 0.0
 
-    # print("Linear-Mass Matrix")
-    # print(sm)
-    # print("Linear-Stiffness Matrix")
-    # print(sk)
-    # print("Linear-Damping Matrix")
-    # print(cd)
+    print("Linear-Mass Matrix")
+    print(sm)
+    print("Linear-Mass Matrix Excitation")
+    print(smg)
+    print("Linear-Stiffness Matrix")
+    print(sk)
+    print("Linear-Damping Matrix")
+    print(cd)
 
     for i in range(1,len(xg)):
 
         t += dt
         
         ug2 = np.array([[xg[i]],[yg[i]], [0.0]])
-        p2 = -1.0*np.dot(np.dot(sm, r), ug2)
+        p2 = -1.0*np.dot(np.dot(smg, r), ug2) # woohoo to smg
         dp = p2 - p1
         
         pcx1 = dp + np.dot(na2x, v1) + np.dot(na3x, a1)
@@ -457,7 +475,7 @@ def simulator_linear_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, 
             aab[1,index] = a2[4,0] + yg[i]
             aab[2,index] = a2[5,0] + 0.0
 
-            baseshear = np.dot(sm, a2) + np.dot(np.dot(sm, r), ug2)
+            baseshear = np.dot(sm, a2) + np.dot(np.dot(smg, r), ug2) # woohoo to smg
 
             for wc in range(3):
                 # f[index, wc] = sm[wc,wc]*aa[wc,index] + sm[wc+3, wc+3]*aab[wc, index]
@@ -482,6 +500,7 @@ def simulator_linear_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, 
 
                 dbcx[index, nc] = d2[3,0] - yb[nc]*d2[5,0]
                 dbcy[index, nc] = d2[4,0] + xb[nc]*d2[5,0]
+                dbcr[index, nc] = sqrt(pow(dbcx[index, nc], 2.0) + pow(dbcy[index, nc], 2.0))
 
                 vbcx[index, nc] = v2[3,0] - yb[nc]*v2[5,0]
                 vbcy[index, nc] = v2[4,0] + xb[nc]*v2[5,0]
@@ -516,13 +535,41 @@ def simulator_linear_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, 
     peakbasedispx = max(abs(db[0,:]))
     peakbasedispy = max(abs(db[1,:]))
     peakbasedisptheta = max(abs(db[2,:]))
+    peakbaseshearcenterX = max(abs(f[:, 0]))
+    peakbaseshearcenterY = max(abs(f[:, 1]))
+    peakbasetorsion = max(abs(f[:, 2]))
+    peakbaseshearcornerX1 = max(abs(fcx[:, 0]))
+    peakbaseshearcornerY1 = max(abs(fcy[:, 0]))
+    peakbaseshearcornerX2 = max(abs(fcx[:, 1]))
+    peakbaseshearcornerY2 = max(abs(fcy[:, 1]))
+    peakisolatordisplacementcorner1 = max(abs(dbcr[:, 0]))
+    peakisolatordisplacementcorner2 = max(abs(dbcr[:, 1]))
+    peakbasedispcorner1x = max(abs(dbcx[:, 0]))
+    peakbasedispcorner1y = max(abs(dbcy[:, 0]))
+    peakbasedispcorner2x = max(abs(dbcx[:, 1]))
+    peakbasedispcorner2y = max(abs(dbcy[:, 1]))
+
+    Length = xb[0] - xb[1]
+    tamp = peakbasetorsion/(peakbaseshearcenterY*exd*Length)
+    # print("I am here")
+    # print(Length, peakbasetorsion, peakbaseshearcenterY, exd, tamp)
 
     print(" ")
     print("Simulation" + "\033[91m" + " SET%d-%d" %(ref, ijk) + "\033[0m" + ": Earthquake #: %d, Parameter #: %d" %(ref, ijk))
     print("Peak Error: % 8.6f" %(peakerror))
+    # print("Absolute Sum of Errors: % 8.6f" %(sumerror))
+    # print("Peak Top Floor Absolute Acceleration in X-Direction: % 8.6f m/s2" %(peaktopaccx))
+    # print("Peak Top Floor Absolute Acceleration in Y-Direction: % 8.6f m/s2" %(peaktopaccy))
+    # print("Peak Top Floor Absolute Acceleration in Theta-Direction: % 8.6f rad/s2" %(peaktopacctheta))
+    # print("Peak Top Floor Relative Displacement in X-Direction: % 8.6f cm" %(peaktopdispx*100.0))
+    # print("Peak Top Floor Relative Displacement in Y-Direction: % 8.6f cm" %(peaktopdispy*100.0))
+    # print("Peak Top Floor Relative Displacement in Theta-Direction: % 8.6f rad" %(peaktopdisptheta))
+    # print("Peak Isolator Displacement in X-Direction: % 8.6f cm" %(peakbasedispx*100.0))
+    # print("Peak Isolator Displacement in Y-Direction: % 8.6f cm" %(peakbasedispy*100.0))
+    # print("Peak Isolator Displacement in Theta-Direction: % 8.6f rad" %(peakbasedisptheta))
     print("Absolute Sum of Errors: % 8.6f" %(sumerror))
-    print("Peak Top Floor Absolute Acceleration in X-Direction: % 8.6f m/s2" %(peaktopaccx))
-    print("Peak Top Floor Absolute Acceleration in Y-Direction: % 8.6f m/s2" %(peaktopaccy))
+    print("Peak Top Floor Absolute Acceleration in X-Direction: % 8.6f m/s2 | % 8.6f g" %(peaktopaccx, peaktopaccx/9.81))
+    print("Peak Top Floor Absolute Acceleration in Y-Direction: % 8.6f m/s2 | % 8.6f g" %(peaktopaccy, peaktopaccy/9.81))
     print("Peak Top Floor Absolute Acceleration in Theta-Direction: % 8.6f rad/s2" %(peaktopacctheta))
     print("Peak Top Floor Relative Displacement in X-Direction: % 8.6f cm" %(peaktopdispx*100.0))
     print("Peak Top Floor Relative Displacement in Y-Direction: % 8.6f cm" %(peaktopdispy*100.0))
@@ -530,6 +577,20 @@ def simulator_linear_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, 
     print("Peak Isolator Displacement in X-Direction: % 8.6f cm" %(peakbasedispx*100.0))
     print("Peak Isolator Displacement in Y-Direction: % 8.6f cm" %(peakbasedispy*100.0))
     print("Peak Isolator Displacement in Theta-Direction: % 8.6f rad" %(peakbasedisptheta))
+    print("Peak Resultant Base Shear in X-Direction: % 8.6f N" %(peakbaseshearcenterX))
+    print("Peak Resultant Base Shear in Y-Direction: % 8.6f N" %(peakbaseshearcenterY))
+    print("Peak Resultant Base Torsion: % 8.6f N-m" %(peakbasetorsion))
+    print("Torque Amplification: % 8.6f" %(tamp))
+    print("Peak Corner 1 Base Shear in X-Direction: % 8.6f N" %(peakbaseshearcornerX1))
+    print("Peak Corner 1 Base Shear in Y-Direction: % 8.6f N" %(peakbaseshearcornerY1))
+    print("Peak Corner 2 Base Shear in X-Direction: % 8.6f N" %(peakbaseshearcornerX2))
+    print("Peak Corner 2 Base Shear in Y-Direction: % 8.6f N" %(peakbaseshearcornerY2))
+    print("Peak Corner 1 Resultant Isolator Displacement: % 8.6f cm" %(peakisolatordisplacementcorner1*100.0))
+    print("Peak Corner 2 Resultant Isolator Displacement: % 8.6f cm" %(peakisolatordisplacementcorner2*100.0))
+    print("Peak Corner 1 Base Slab Corner Displacement X-Direction: % 8.6f cm" %(peakbasedispcorner1x*100.0))
+    print("Peak Corner 1 Base Slab Corner Displacement Y-Direction: % 8.6f cm" %(peakbasedispcorner1y*100.0))
+    print("Peak Corner 2 Base Slab Corner Displacement X-Direction: % 8.6f cm" %(peakbasedispcorner2x*100.0))
+    print("Peak Corner 2 Base Slab Corner Displacement Y-Direction: % 8.6f cm" %(peakbasedispcorner2y*100.0))
     
     t_s = np.hstack((d.T, v.T, a.T, aa.T))
     t_sc = np.hstack((dcx, dcy, vcx, vcy, acx, acy, aacx, aacy))
@@ -539,7 +600,7 @@ def simulator_linear_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, 
     f_bc = np.hstack((fcx, fcy))
     
 
-    result = ResultFixedXY(ref, ijk, time.T, gx.T, gyi = gy.T, eki = ek, edi = ed, esi = es, eii = ei, errori = error, t_si = t_s, t_bi = t_b, f_bi = f_b,t_sci = t_sc, t_bci = t_bc, f_bci = f_bc, smxi = sm, skxi = sk, cdxi = cd)
+    result = ResultFixedXY(ref, ijk, time.T, gx.T, gyi = gy.T, eki = ek, edi = ed, esi = es, eii = ei, errori = error, t_si = t_s, t_bi = t_b, f_bi = f_b,t_sci = t_sc, t_bci = t_bc, f_bci = f_bc, smxi = sm, skxi = sk, cdxi = cd, t_dbr = dbcr)
     model = ModelInfo(6)
  
     # plt.plot(np.transpose(time), d[1,:]*100)

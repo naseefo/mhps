@@ -1,5 +1,6 @@
 
 import numpy as np
+import sys
 from scipy.optimize import fsolve
 import math
 from data.defaults.param_manager import default
@@ -392,7 +393,7 @@ def wen(iso, vx, vy, zx, zy, dt, alpx, alpy, fyx, fyy):
     return dpzx, dpzy, dzx, dzy
 
 #@profile
-def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb, nb, iso):
+def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb, nb, iso, exd):
 
     gamma = 0.5
     beta = 1/6
@@ -452,15 +453,20 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
 
     
 
-    smg = np.zeros((6, 6), dtype=np.dtype('d'), order='F') # WOW added
+    # smg = np.zeros((6, 6), dtype=np.dtype('d'), order='F') # WOW added
     
-    smg[0:3, 0:3] = sm[0:3,0:3] # WOW added
-    smg[3:6, 3:6] = sm[3:6,3:6] # WOW added
+    # smg[0:3, 0:3] = sm[0:3,0:3] # WOW added
+    # smg[3:6, 3:6] = sm[3:6,3:6] # WOW added
+
+    # Woohoo
+    smg = np.zeros(shape=(6, 6), dtype=np.dtype('d'), order='F') # Woohoo
+    smg[0:3,0:3] = sm[0:3,0:3] # Woohoo
+    smg[3:6,3:6] = sm[3:6,3:6] # Woohoo
 
     sm_inv = np.linalg.inv(sm)
-    r = np.zeros((6,3), dtype=np.dtype('d'), order='F')
-    r[0:3,0:3] = np.diag([1.0, 1.0, 1.0]) # WOW added delete to revert
-    r[3:6,0:3] = np.diag([1.0, 1.0, 1.0])
+    r = np.zeros((6,3), dtype=np.dtype('d'), order='F') # Woohoo
+    r[0:3,0:3] = np.diag([1.0, 1.0, 1.0]) # Woohoo
+    r[3:6,0:3] = np.diag([1.0, 1.0, 1.0]) # Woohoo
 
     time = np.zeros((1, ndt), dtype=np.dtype('d'), order='F')
     
@@ -618,7 +624,7 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
         
         
         ug2 = np.array([[xg[i]],[yg[i]], [0.0]])
-        p2 = -1.0*np.dot(np.dot(smg, r), ug2)
+        p2 = -1.0*np.dot(np.dot(smg, r), ug2) # woohoo to smg
         dp = p2 - p1
 
         for wc in range(4):
@@ -633,8 +639,8 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
             dpz[bc] = 0.0
             dpfs1[bc] = 0.0 # added
 
-        pzt = pz
-        pfs1t = pfs1 # added
+        # pzt = pz
+        # pfs1t = pfs1 # added
         for i2 in range(nit):
             pcx1 = dp + np.dot(na2x, v1) + np.dot(na3x, a1)
             pcx1[3:6,0] = pcx1[3:6,0] - dpz.T - dpfs1.T  # added
@@ -644,13 +650,13 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
             v2 = v1 + dv
             # print(d2)
 
-            ep = p2 - np.dot(cd, v2) - np.dot(sk, d2)
-            ep[3:6,0] = ep[3:6,0] - pzt.T - pfs1t.T  # added
-            a22 = np.dot(sm_inv, ep)
+            # ep = p2 - np.dot(cd, v2) - np.dot(sk, d2)
+            # ep[3:6,0] = ep[3:6,0] - pzt.T - pfs1t.T  # added
+            # a22 = np.dot(sm_inv, ep)
             
             # CALCULATION OF FORCES FROM BEARING
-            dpz1, dpz2, dpz3 = 0.0, 0.0, 0.0
-            dpfs11, dpfs12, dpfs13 = 0.0, 0.0, 0.0 # added
+            # dpz1, dpz2, dpz3 = 0.0, 0.0, 0.0
+            # dpfs11, dpfs12, dpfs13 = 0.0, 0.0, 0.0 # added
             for bc in range(4):
                 dbcx2[bc] = d2[3,0] - yb[bc]*d2[5,0]
                 dbcy2[bc] = d2[4,0] + xb[bc]*d2[5,0]
@@ -658,17 +664,17 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
                 vbcx2[bc] = v2[3,0] - yb[bc]*v2[5,0]
                 vbcy2[bc] = v2[4,0] + xb[bc]*v2[5,0]
 
-                abcx2[bc] = a22[3,0] - yb[bc]*a22[5,0]
-                abcy2[bc] = a22[4,0] + xb[bc]*a22[5,0]
+                # abcx2[bc] = a22[3,0] - yb[bc]*a22[5,0]
+                # abcy2[bc] = a22[4,0] + xb[bc]*a22[5,0]
 
-                aabcx2[bc] = a22[3,0] + xg[i] - yb[bc]*(a22[5,0] + 0.0)
-                aabcy2[bc] = a22[4,0] + yg[i] + xb[bc]*(a22[5,0] + 0.0)
+                # aabcx2[bc] = a22[3,0] + xg[i] - yb[bc]*(a22[5,0] + 0.0)
+                # aabcy2[bc] = a22[4,0] + yg[i] + xb[bc]*(a22[5,0] + 0.0)
 
                 # added
                 dpfs1x[bc], dpfs1y[bc], yd2[bc], yv2[bc], ya2[bc] = fs1(dt, iso, bc, tm, dbcx2[bc], dbcy2[bc], yd1[bc], yv1[bc], fs1x1[bc], fs1y1[bc])
-                dpfs11 = dpfs11 + dpfs1x[bc]
-                dpfs12 = dpfs12 + dpfs1y[bc]
-                dpfs13 = dpfs13 + (-1.0*dpfs1x[bc]*yb[bc] + dpfs1y[bc]*xb[bc])
+                dpfs1[0,0] = dpfs1[0,0] + dpfs1x[bc]
+                dpfs1[1,0] = dpfs1[1,0] + dpfs1y[bc]
+                dpfs1[2,0] = dpfs1[2,0] + (-1.0*dpfs1x[bc]*yb[bc] + dpfs1y[bc]*xb[bc])
                 # added
 
                 # added
@@ -680,32 +686,32 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
                 # print(fyx[bc])
                 # print(vbcx2[bc], vbcy2[bc], zx[bc], zy[bc], dt, alp, alp, fyx[bc], fyy[bc])
                 dpzx[bc], dpzy[bc], dzx[bc], dzy[bc] = wen(iso, vbcx2[bc], vbcy2[bc], zx[bc], zy[bc], dt, alp, alp, fyx[bc], fyy[bc])
-                dpz1 = dpz1 + dpzx[bc]
-                dpz2 = dpz2 + dpzy[bc]
-                dpz3 = dpz3 + (-1.0*dpzx[bc]*yb[bc] + dpzy[bc]*xb[bc])
+                dpz[0,0] = dpz[0,0] + dpzx[bc]
+                dpz[1,0] = dpz[1,0] + dpzy[bc]
+                dpz[2,0] = dpz[2,0] + (-1.0*dpzx[bc]*yb[bc] + dpzy[bc]*xb[bc])
             # print(fyx)
             # print(ya2)
                 
                 
 
-            dpz[0,0] = dpz1
-            dpz[1,0] = dpz2
-            dpz[2,0] = dpz3
+            # dpz[0,0] = dpz1
+            # dpz[1,0] = dpz2
+            # dpz[2,0] = dpz3
 
             # added
-            dpfs1[0,0] = dpfs11
-            dpfs1[1,0] = dpfs12
-            dpfs1[2,0] = dpfs13
+            # dpfs1[0,0] = dpfs11
+            # dpfs1[1,0] = dpfs12
+            # dpfs1[2,0] = dpfs13
             # added
 
-            pzt[0,0] += dpz[0,0]
-            pzt[1,0] += dpz[1,0]
-            pzt[2,0] += dpz[2,0]
+            # pzt[0,0] += dpz[0,0]
+            # pzt[1,0] += dpz[1,0]
+            # pzt[2,0] += dpz[2,0]
 
-            # added
-            pfs1t[0,0] += dpfs1[0,0]
-            pfs1t[1,0] += dpfs1[1,0]
-            pfs1t[2,0] += dpfs1[2,0]
+            # # added
+            # pfs1t[0,0] += dpfs1[0,0]
+            # pfs1t[1,0] += dpfs1[1,0]
+            # pfs1t[2,0] += dpfs1[2,0]
             # added
              
         
@@ -791,6 +797,11 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
                 dbcx[index, nc] = d2[3,0] - yb[nc]*d2[5,0]
                 dbcy[index, nc] = d2[4,0] + xb[nc]*d2[5,0]
                 dbcr[index, nc] = sqrt(pow(dbcx[index, nc], 2.0) + pow(dbcy[index, nc], 2.0))
+                if dbcr[index, nc] > iso.umax[nc]:
+                    print(prRed('WARNING: ') + prCyan('Isolator has crossed maximum displacement.'))
+                    print(dbcr[index, nc], iso.umax[nc])
+                    print("System terminating simulation")
+                    sys.exit()
 
                 vbcx[index, nc] = v2[3,0] - yb[nc]*v2[5,0]
                 vbcy[index, nc] = v2[4,0] + xb[nc]*v2[5,0]
@@ -835,12 +846,17 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
     peakbasedisptheta = max(abs(db[2,:]))
     peakbaseshearcenterX = max(abs(f[:, 0]))
     peakbaseshearcenterY = max(abs(f[:, 1]))
+    peakbasetorsion = max(abs(f[:, 2]))
     peakbaseshearcornerX1 = max(abs(fcx[:, 0]))
     peakbaseshearcornerY1 = max(abs(fcy[:, 0]))
     peakbaseshearcornerX2 = max(abs(fcx[:, 1]))
     peakbaseshearcornerY2 = max(abs(fcy[:, 1]))
     peakisolatordisplacementcorner1 = max(abs(dbcr[:, 0]))
     peakisolatordisplacementcorner2 = max(abs(dbcr[:, 1]))
+    peakbasedispcorner1x = max(abs(dbcx[:, 0]))
+    peakbasedispcorner1y = max(abs(dbcy[:, 0]))
+    peakbasedispcorner2x = max(abs(dbcx[:, 1]))
+    peakbasedispcorner2y = max(abs(dbcy[:, 1]))
     
 
 
@@ -872,6 +888,10 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
     # print("Force Corner-Y in Isolator")
     # print(fcy.shape)
     # print(fcy)
+    Length = xb[0] - xb[1]
+    tamp = peakbasetorsion/(peakbaseshearcenterY*exd*Length)
+    print("I am here")
+    print(Length, peakbasetorsion, peakbaseshearcenterY, exd, tamp)
 
     print(" ")
     print("Simulation" + "\033[91m" + " SET%d-%d" %(ref, ijk) + "\033[0m" + ": Earthquake #: %d, Parameter #: %d" %(ref, ijk))
@@ -888,12 +908,18 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
     print("Peak Isolator Displacement in Theta-Direction: % 8.6f rad" %(peakbasedisptheta))
     print("Peak Resultant Base Shear in X-Direction: % 8.6f N" %(peakbaseshearcenterX))
     print("Peak Resultant Base Shear in Y-Direction: % 8.6f N" %(peakbaseshearcenterY))
+    print("Peak Resultant Base Torsion: % 8.6f N-m" %(peakbasetorsion))
+    print("Torque Amplification: % 8.6f" %(tamp))
     print("Peak Corner 1 Base Shear in X-Direction: % 8.6f N" %(peakbaseshearcornerX1))
     print("Peak Corner 1 Base Shear in Y-Direction: % 8.6f N" %(peakbaseshearcornerY1))
     print("Peak Corner 2 Base Shear in X-Direction: % 8.6f N" %(peakbaseshearcornerX2))
     print("Peak Corner 2 Base Shear in Y-Direction: % 8.6f N" %(peakbaseshearcornerY2))
     print("Peak Corner 1 Resultant Isolator Displacement: % 8.6f cm" %(peakisolatordisplacementcorner1*100.0))
     print("Peak Corner 2 Resultant Isolator Displacement: % 8.6f cm" %(peakisolatordisplacementcorner2*100.0))
+    print("Peak Corner 1 Base Slab Corner Displacement X-Direction: % 8.6f cm" %(peakbasedispcorner1x*100.0))
+    print("Peak Corner 1 Base Slab Corner Displacement Y-Direction: % 8.6f cm" %(peakbasedispcorner1y*100.0))
+    print("Peak Corner 2 Base Slab Corner Displacement X-Direction: % 8.6f cm" %(peakbasedispcorner2x*100.0))
+    print("Peak Corner 2 Base Slab Corner Displacement Y-Direction: % 8.6f cm" %(peakbasedispcorner2y*100.0))
     
     
     t_s = np.hstack((d.T, v.T, a.T, aa.T))

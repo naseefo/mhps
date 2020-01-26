@@ -866,7 +866,7 @@ def biso_pf(const_param, var_param, iso_param, earthquakes, knor, results_type, 
 @click.option('--iso_param', '-vip',type=str, default= 'OSBI_VP.csv', help= 'File name containing variable parameters for linear base isolator')
 @click.option('--earthquakes','-eq', type=(str), default= "Excitations.csv", help= 'Earthquakes')
 @click.option('--knor', '-knor', type=int, default=1, help="Normalizing the superstructure for given time period. 1 for normalized and 0 for un-normalized.")
-@click.option('--results_type', '-r', type=str, default="g*, aa1, vb, db, f*, ro*, sm*, paa1, pdb", help="Choice to select output results")
+@click.option('--results_type', '-r', type=str, default="aa1, db, dbrb, f*, paa1, pdb, zdb, pdbrb, pf*", help="Choice to select output results")
 @click.option('--folder', '-f', type=str, default="result", help="Folder name to store result")
 @click.option('--outputunits', type=list, default=['m/s2', 'cm/s', 'cm', 'kn', 'j'])
 @click.option('--lxy', '-lxy', type=int, default=0)
@@ -1024,13 +1024,13 @@ def biso_osbi(const_param, var_param, iso_param, earthquakes, knor, results_type
 @click.option('--iso_param', '-vip',type=str, default= 'OSBI_T_VP.csv', help= 'File name containing variable parameters for linear base isolator')
 @click.option('--earthquakes','-eq', type=(str), default= "Excitations.csv", help= 'Earthquakes')
 @click.option('--knor', '-knor', type=int, default=1, help="Normalizing the superstructure for given time period. 1 for normalized and 0 for un-normalized.")
-@click.option('--results_type', '-r', type=str, default="tsd2, ptsd2", help="Choice to select output results")
+@click.option('--results_type', '-r', type=str, default="tsaa1, tsaa2, tbd1, tbd2, tbd3, tsaa3, tbcd1, tfc1, tbcd2, tfc2, tbcd3, tfc3, tbcd4, tfc4, tbcdr1, tbcdr2, tbcdr3, tbcdr4, ptsaa1, ptsaa2, ptsaa3, ptbd1, ptbd2, ptbd3, ptbcd1, ptbcd2, ptbcd3, ptbcd4, ptbcdr1, ptbcdr2, ptbcdr3, ptbcdr4", help="Choice to select output results")
 @click.option('--folder', '-f', type=str, default="result", help="Folder name to store result")
 @click.option('--outputunits', type=list, default=['m/s2', 'cm/s', 'cm', 'kn', 'j'])
 @click.option('--lxy', '-lxy', type=int, default=0)
 @click.option('--screen/--no-screen', default=False)
 def biso_osbi_tor(const_param, var_param, iso_param, earthquakes, knor, results_type, folder, outputunits, lxy, screen):
-
+    np.set_printoptions(linewidth=np.inf)
     upload_preference = input('Do you wish to upload (default: no) ? [y/n] : ')
 
     # RESULT FOLDER SETUP
@@ -1103,7 +1103,7 @@ def biso_osbi_tor(const_param, var_param, iso_param, earthquakes, knor, results_
                 p_tx1, p_zeta, p_exd, p_wrwx  = tx1, zeta, exd, wrwx
                 p_iso = iso
                
-            result, model = simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb, nb, iso)
+            result, model = simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb, nb, iso, exd)
             
             # result, model = simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso, screen)    
             analysis_folder = os.path.join('results', folder, 'Time History Response', 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))
@@ -1373,7 +1373,7 @@ def fixed_tor(const_param, var_param, iso_param, earthquakes, knor, results_type
 @click.option('--lxy', '-lxy', type=int, default=0)
 @click.option('--screen/--no-screen', default=False)
 def biso_linear_tor(const_param, var_param, iso_param, earthquakes, knor, results_type, folder, outputunits, lxy, screen):
-
+    np.set_printoptions(linewidth=np.inf)
     upload_preference = input('Do you wish to upload (default: no) ? [y/n] : ')
 
     # RESULT FOLDER SETUP
@@ -1446,7 +1446,7 @@ def biso_linear_tor(const_param, var_param, iso_param, earthquakes, knor, result
                 p_tx1, p_zeta, p_exd, p_wrwx  = tx1, zeta, exd, wrwx
                 p_iso = iso
                
-            result, model = simulator_linear_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb, nb)
+            result, model = simulator_linear_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb, nb, exd)
             
             # result, model = simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso, screen)    
             analysis_folder = os.path.join('results', folder, 'Time History Response', 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))
@@ -1523,13 +1523,13 @@ def biso_linear_tor(const_param, var_param, iso_param, earthquakes, knor, result
 @click.option('--iso_param', '-vip',type=str, default= 'OSBI_T_VP.csv', help= 'File name containing variable parameters for linear base isolator')
 @click.option('--earthquakes','-eq', type=(str), default= "Excitations.csv", help= 'Earthquakes')
 @click.option('--knor', '-knor', type=int, default=1, help="Normalizing the superstructure for given time period. 1 for normalized and 0 for un-normalized.")
-@click.option('--results_type', '-r', type=str, default="tsd*", help="Choice to select output results")
+@click.option('--results_type', '-r', type=str, default="tsaa1, tsaa2, tbd1, tbd2, tbd3, tsaa3, tbcd1, tfc1, tbcd2, tfc2, tbcd3, tfc3, tbcd4, tfc4, tbcdr1, tbcdr2, tbcdr3, tbcdr4, ptsaa1, ptsaa2, ptsaa3, ptbd1, ptbd2, ptbd3, ptbcd1, ptbcd2, ptbcd3, ptbcd4, ptbcdr1, ptbcdr2, ptbcdr3, ptbcdr4", help="Choice to select output results")
 @click.option('--folder', '-f', type=str, default="result", help="Folder name to store result")
 @click.option('--outputunits', type=list, default=['m/s2', 'cm/s', 'cm', 'kn', 'j'])
 @click.option('--lxy', '-lxy', type=int, default=0)
 @click.option('--screen/--no-screen', default=False)
 def biso_parkwen_tor(const_param, var_param, iso_param, earthquakes, knor, results_type, folder, outputunits, lxy, screen):
-
+    np.set_printoptions(linewidth=np.inf)
     upload_preference = input('Do you wish to upload (default: no) ? [y/n] : ')
 
     # RESULT FOLDER SETUP
@@ -1603,7 +1603,7 @@ def biso_parkwen_tor(const_param, var_param, iso_param, earthquakes, knor, resul
                 p_tx1, p_zeta, p_exd, p_wrwx  = tx1, zeta, exd, wrwx
                 p_iso = iso
                
-            result, model = simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb, nb, iso)
+            result, model = simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb, nb, iso, exd)
             
             # result, model = simulator_osbi(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, nst+1, smx, skx, cdx, smy, sky, cdy, iso, screen)    
             analysis_folder = os.path.join('results', folder, 'Time History Response', 'ANA-EQ-' + str(result.eq_ref) + '-PARAM-' + str(result.ijk))

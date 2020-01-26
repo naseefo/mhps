@@ -9,6 +9,7 @@ import pstats
 import pandas as pd
 from mhps.postprocessor import ResultFixedXY, ModelInfo
 import math
+import sys
 
 
 def profile(fnc):
@@ -168,7 +169,7 @@ def wen(iso, vx, vy, zx, zy, dt, alpx, alpy, kbx, kby, fyx, fyy):
 #@profile 
 def simulator_boucwen(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx, smy, sky, cdy, iso, screen_on):
     
-    nit = 3
+    nit = 1
     nst = ndof - 1
     gamma = 0.5
     beta = 1/6
@@ -318,6 +319,8 @@ def simulator_boucwen(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx,
             dy2 = dy1 + ddy
             dvy = (gamma/beta/dt)*ddy - gamma/beta*vy1 + dt*(1.0 - gamma/2.0/beta)*ay1
             vy2 = vy1 + dvy
+
+            
                 
             dpzx, dpzy, dzx, dzy = wen(iso, vx2[ndof-1,0], vy2[ndof-1,0], zx, zy, dt, alpx, alpy, skx[ndof-1, ndof-1], sky[ndof-1, ndof-1], fyx, fyy)
 
@@ -334,6 +337,24 @@ def simulator_boucwen(ref, xg, yg, dt, ndiv, ndt, lxy, ijk, ndof, smx, skx, cdx,
         epy[ndof-1,0] = epy[ndof-1,0] - pzy
         ax2 = np.dot(smx_inv, epx)
         ay2 = np.dot(smy_inv, epy)
+
+        if i == 4:
+                print(pcx1)
+                print(pcy1)
+                print(knx_inv)
+                print(kny_inv)
+                print(ddx)
+                print(ddy)
+                print(dpzx)
+                print(dpzy)
+                print(fyx)
+                print(fyy)
+                print(alpx, alpy)
+                print(epx)
+                print(epy)
+                print(pzx)
+                print(pzy)
+                sys.exit()
 
         eki = eki + 0.5*dt*(np.dot(np.dot(vx2.T, smx),ax2) + np.dot(np.dot(vx1.T, smx),ax1)) + 0.5*dt*(np.dot(np.dot(vy2.T, smy),ay2) + np.dot(np.dot(vy1.T, smy),ay1))
         edi = edi + 0.5*dt*(np.dot(np.dot(vx2.T, cdx),vx2) + np.dot(np.dot(vx1.T, cdx),vx1)) + 0.5*dt*(np.dot(np.dot(vy2.T, cdy),vy2) + np.dot(np.dot(vy1.T, cdy),vy1))

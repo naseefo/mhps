@@ -67,7 +67,7 @@ def wen(iso, vx, vy, zx, zy, dt, alpx, alpy, fyx, fyy):
     return dpzx, dpzy, dzx, dzy
 
 #@profile
-def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb, nb, iso):
+def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb, nb, iso, exd):
 
     gamma = 0.5
     beta = 1/6
@@ -91,6 +91,8 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
     bkx[2] = 0.25*ckabx*(1.0 - 2.0*iso.ebxd)
     bkx[3] = 0.25*ckabx*(1.0 + 2.0*iso.ebxd)
 
+    
+
     bky = bkx
 
     # yield strength strength in each isolator in x- and y-direction
@@ -110,8 +112,8 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
     fyx[3] = qyf*0.25*(1 + 2.0*iso.efxd)
 
     fyy = fyx
-
-    # print(fyx)
+    print("fyx")
+    print(fyx)
 
     # print("f0")
     # print(iso.f0)
@@ -125,10 +127,15 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
     # print(fyx)
 
     
-    smg = np.zeros((6, 6), dtype=np.dtype('d'), order='F') # WOW added
+    # smg = np.zeros((6, 6), dtype=np.dtype('d'), order='F') # WOW added
     
-    smg[0:3, 0:3] = sm[0:3,0:3] # WOW added
-    smg[3:6, 3:6] = sm[3:6,3:6] # WOW added
+    # smg[0:3, 0:3] = sm[0:3,0:3] # WOW added
+    # smg[3:6, 3:6] = sm[3:6,3:6] # WOW added
+
+    # Woohoo
+    smg = np.zeros(shape=(6, 6), dtype=np.dtype('d'), order='F') # Woohoo
+    smg[0:3,0:3] = sm[0:3,0:3] # Woohoo
+    smg[3:6,3:6] = sm[3:6,3:6] # Woohoo
 
     
     
@@ -147,11 +154,16 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
     # print("I am going out here")
     # sys.exit()
 
-    r = np.zeros((6,3), dtype=np.dtype('d'), order='F')
-    r[0:3,0:3] = np.diag([1.0, 1.0, 1.0]) # WOW added delete to revert
-    r[3:6,0:3] = np.diag([1.0, 1.0, 1.0])
+    # Woohoo r all are commented
+    # r = np.zeros((6,3), dtype=np.dtype('d'), order='F')
+    # r[0:3,0:3] = np.diag([1.0, 1.0, 1.0]) # WOW added delete to revert
+    # r[3:6,0:3] = np.diag([1.0, 1.0, 1.0])
 
-    # print(r)
+    r = np.zeros((6,3), dtype=np.dtype('d'), order='F') # Woohoo
+    r[0:3,0:3] = np.diag([1.0, 1.0, 1.0]) # Woohoo
+    r[3:6,0:3] = np.diag([1.0, 1.0, 1.0]) # Woohoo
+    print("Naseef has changed r")
+    print(r)
     # print("I am going out here")
     # sys.exit()
 
@@ -228,8 +240,10 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
     na1x = (1.0/beta/np.power(dt,2))*sm + (gamma/beta/dt)*cd
     na2x = (1.0/beta/dt)*sm + gamma/beta*cd
     na3x = 1.0/2.0/beta*sm + (gamma*dt/2.0/beta - dt)*cd
-
+    print("na1x")
+    print(na1x)
     knx = sk + na1x
+
     knx_inv = np.linalg.inv(knx)
 
     index = 0
@@ -263,6 +277,8 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
     print(cd)
     print("Excitation mass matrix")
     print(smg)
+    print("Effective Stiffness Matrix")
+    print(knx)
    
 
     pzx = np.zeros((4, ), dtype=np.dtype('d'), order='F')
@@ -288,7 +304,7 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
     fabx = np.zeros((4, 1), dtype=np.dtype('d'), order='F')
     faby = np.zeros((4, 1), dtype=np.dtype('d'), order='F')
 
-    
+    pcx1 = np.zeros((6, 1), dtype=np.dtype('d'), order='F')
     
 
     for i in range(1,len(xg)):
@@ -296,32 +312,35 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
         t += dt
         
         ug2 = np.array([[xg[i]],[yg[i]], [0.0]])
-        p2 = -1.0*np.dot(np.dot(smg, r), ug2)         # wow sm to smg
-        
+        # p2 = -1.0*np.dot(np.dot(smg, r), ug2)         # wow sm to smg
+        p2 = -1.0*np.dot(np.dot(smg, r), ug2) # woohoo to smg
         dp = p2 - p1
 
         for wc in range(4):
             dpzx[wc] = 0.0
             dpzy[wc] = 0.0
-        
-        for bc in range(3):
-            dpz[bc] = 0.0
 
-        pzt = pz
+        for wc in range(3):  # woohoo
+            dpz[wc,0] = 0.0
+      
+
+        # dpz1, dpz2, dpz3 = 0.0, 0.0, 0.0 # woohoo
         for i2 in range(nit):
             pcx1 = dp + np.dot(na2x, v1) + np.dot(na3x, a1)
             pcx1[3:6,0] = pcx1[3:6,0] - dpz.T
             dd = np.dot(knx_inv, pcx1)
             d2 = d1 + dd
+           
             dv = (gamma/beta/dt)*dd - gamma/beta*v1 + dt*(1.0 - gamma/2.0/beta)*a1
             v2 = v1 + dv
 
-            ep = p2 - np.dot(cd, v2) - np.dot(sk, d2)
-            ep[3:6,0] = ep[3:6,0] - pzt.T
-            a2 = np.dot(sm_inv, ep)
+            
+
+            
+            
             
             # CALCULATION OF FORCES FROM BEARING
-            dpz1, dpz2, dpz3 = 0.0, 0.0, 0.0
+            
             for bc in range(4):
                 dbcx2[bc] = d2[3,0] - yb[bc]*d2[5,0]
                 dbcy2[bc] = d2[4,0] + xb[bc]*d2[5,0]
@@ -336,22 +355,15 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
                 aabcy2[bc] = a2[4,0] + yg[i] + xb[bc]*(a2[5,0] + 0.0)
 
                 dpzx[bc], dpzy[bc], dzx[bc], dzy[bc] = wen(iso, vbcx2[bc], vbcy2[bc], zx[bc], zy[bc], dt, alp, alp, fyx[bc], fyy[bc])
-                dpz1 = dpz1 + dpzx[bc]
-                dpz2 = dpz2 + dpzy[bc]
-                dpz3 = dpz3 + (-1.0*dpzx[bc]*yb[bc] + dpzy[bc]*xb[bc])
+                dpz[0,0] = dpz[0,0] + dpzx[bc]
+                dpz[1,0] = dpz[1,0] + dpzy[bc]
+                dpz[2,0] = dpz[2,0] + (-1.0*dpzx[bc]*yb[bc] + dpzy[bc]*xb[bc])
 
-            dpz[0,0] = dpz1
-            dpz[1,0] = dpz2
-            dpz[2,0] = dpz3
-
-            pzt[0,0] += dpz[0,0]
-            pzt[1,0] += dpz[1,0]
-            pzt[2,0] += dpz[2,0]
              
         
-        pz[0,0] += dpz[0,0]
-        pz[1,0] += dpz[1,0]
-        pz[2,0] += dpz[2,0]
+        pz[0,0] = pz[0,0] + dpz[0,0] #woohoo
+        pz[1,0] = pz[1,0] + dpz[1,0]
+        pz[2,0] = pz[2,0] + dpz[2,0]
 
         for wc in range(4):
             zx[wc] = zx[wc] + dzx[wc]
@@ -360,6 +372,22 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
             pzy[wc] = pzy[wc] + dpzy[wc]
             fabx[wc, 0] = bkx[wc]*dbcx2[wc] + pzx[wc]
             faby[wc, 0] = bky[wc]*dbcy2[wc] + pzy[wc]
+        
+        ep = p2 - np.dot(cd, v2) - np.dot(sk, d2) # woohoo
+        ep[3:6,0] = ep[3:6,0] - pz.T # woohoo
+        a2 = np.dot(sm_inv, ep) # woohoo
+
+        # if i == 4:
+        #         print(pcx1)
+        #         print(knx_inv)
+        #         print(dd)
+        #         print(dpz)
+        #         print(fyx)
+        #         print(fyy)
+        #         print(alp)
+        #         print(ep)
+        #         print(pz)
+        #         sys.exit()
 
         eki = eki + 0.5*dt*(np.dot(np.dot(v2.T, sm),a2) + np.dot(np.dot(v1.T, sm),a1))
         edi = edi + 0.5*dt*(np.dot(np.dot(v2.T, cd),v2) + np.dot(np.dot(v1.T, cd),v1))
@@ -459,12 +487,17 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
     peakbasedisptheta = max(abs(db[2,:]))
     peakbaseshearcenterX = max(abs(f[:, 0]))
     peakbaseshearcenterY = max(abs(f[:, 1]))
+    peakbasetorsion = max(abs(f[:, 2]))
     peakbaseshearcornerX1 = max(abs(fcx[:, 0]))
     peakbaseshearcornerY1 = max(abs(fcy[:, 0]))
     peakbaseshearcornerX2 = max(abs(fcx[:, 1]))
     peakbaseshearcornerY2 = max(abs(fcy[:, 1]))
     peakisolatordisplacementcorner1 = max(abs(dbcr[:, 0]))
     peakisolatordisplacementcorner2 = max(abs(dbcr[:, 1]))
+    peakbasedispcorner1x = max(abs(dbcx[:, 0]))
+    peakbasedispcorner1y = max(abs(dbcy[:, 0]))
+    peakbasedispcorner2x = max(abs(dbcx[:, 1]))
+    peakbasedispcorner2y = max(abs(dbcy[:, 1]))
     
     
 
@@ -497,6 +530,10 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
     # print("Force Corner-Y in Isolator")
     # print(fcy.shape)
     # print(fcy)
+    Length = xb[0] - xb[1]
+    tamp = peakbasetorsion/(peakbaseshearcenterY*exd*Length)
+    # print("I am here")
+    # print(Length, peakbasetorsion, peakbaseshearcenterY, exd, tamp)
 
     print(" ")
     print("Simulation" + "\033[91m" + " SET%d-%d" %(ref, ijk) + "\033[0m" + ": Earthquake #: %d, Parameter #: %d" %(ref, ijk))
@@ -513,12 +550,18 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
     print("Peak Isolator Displacement in Theta-Direction: % 8.6f rad" %(peakbasedisptheta))
     print("Peak Resultant Base Shear in X-Direction: % 8.6f N" %(peakbaseshearcenterX))
     print("Peak Resultant Base Shear in Y-Direction: % 8.6f N" %(peakbaseshearcenterY))
+    print("Peak Resultant Base Torsion: % 8.6f N-m" %(peakbasetorsion))
+    print("Torque Amplification: % 8.6f" %(tamp))
     print("Peak Corner 1 Base Shear in X-Direction: % 8.6f N" %(peakbaseshearcornerX1))
     print("Peak Corner 1 Base Shear in Y-Direction: % 8.6f N" %(peakbaseshearcornerY1))
     print("Peak Corner 2 Base Shear in X-Direction: % 8.6f N" %(peakbaseshearcornerX2))
     print("Peak Corner 2 Base Shear in Y-Direction: % 8.6f N" %(peakbaseshearcornerY2))
-    print("Peak Corner 1 Resultant Isolator Displacement: % 8.6f N" %(peakisolatordisplacementcorner1*100.0))
-    print("Peak Corner 2 Resultant Isolator Displacement: % 8.6f N" %(peakisolatordisplacementcorner2*100.0))
+    print("Peak Corner 1 Resultant Isolator Displacement: % 8.6f cm" %(peakisolatordisplacementcorner1*100.0))
+    print("Peak Corner 2 Resultant Isolator Displacement: % 8.6f cm" %(peakisolatordisplacementcorner2*100.0))
+    print("Peak Corner 1 Base Slab Corner Displacement X-Direction: % 8.6f cm" %(peakbasedispcorner1x*100.0))
+    print("Peak Corner 1 Base Slab Corner Displacement Y-Direction: % 8.6f cm" %(peakbasedispcorner1y*100.0))
+    print("Peak Corner 2 Base Slab Corner Displacement X-Direction: % 8.6f cm" %(peakbasedispcorner2x*100.0))
+    print("Peak Corner 2 Base Slab Corner Displacement Y-Direction: % 8.6f cm" %(peakbasedispcorner2y*100.0))
     
     
     t_s = np.hstack((d.T, v.T, a.T, aa.T))
@@ -529,7 +572,7 @@ def simulator_parkwen_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb,
     f_bc = np.hstack((fcx, fcy))
     
 
-    result = ResultFixedXY(ref, ijk, time.T, gx.T, gyi = gy.T, eki = ek, edi = ed, esi = es, eii = ei, errori = error, t_si = t_s, t_bi = t_b, f_bi = f_b,t_sci = t_sc, t_bci = t_bc, f_bci = f_bc, smxi = sm, skxi = sk, cdxi = cd, t_dbr = dbcr)
+    result = ResultFixedXY(ref, ijk, time.T, gx.T, gyi = gy.T, eki = ek, edi = ed, esi = es, eii = ei, errori = error, t_si = t_s, t_bi = t_b, f_bi = f_b,t_sci = t_sc, t_bci = t_bc, f_bci = f_bc, smxi = sm, skxi = sk, cdxi = cd, t_dbr = dbcr, tamp=tamp)
     model = ModelInfo(6)
  
     # plt.plot(np.transpose(time), d[1,:]*100)
