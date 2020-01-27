@@ -567,13 +567,15 @@ def simulator_osbi_tor(ref, xg, yg, dt, ndiv, ndt, ijk, sm, sk, cd, x, y, xb, yb
     iwbx = 2.0*pi/iso.tbe0x
     iwrb = iwbx*iso.wrwxb
     ikttb = np.sum(iso.k0i*np.square(yb)) + np.sum(iso.k0i*np.square(xb))
-    bmr = ikttb/pow(iwrb, 2.0)
+    bmr = ikttb/pow(iwrb, 2.0) - sm[2,2]
     sm[5,5] = bmr
     print(sm)
     print("Linear-Stiffness Matrix")
     print(sk)
     print("Linear-Damping Matrix")
     print(cd)
+    print("Excitation Matrix")
+    print(smg)
 
     pzx = np.zeros((4, ), dtype=np.dtype('d'), order='F')
     pzy = np.zeros((4, ), dtype=np.dtype('d'), order='F')
